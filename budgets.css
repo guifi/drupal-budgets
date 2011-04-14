@@ -1,0 +1,27 @@
+.budgets_bar .bar {
+  height: 7px;
+  margin: 1px 0;
+  background-color: #ddd;
+  text-align: center;
+  font-size: 11px;
+}
+
+.budgets_bar .bar .foreground {
+  background-color: #9DBD51;
+  height: 7px;
+  clear: left;
+  float: left;
+}
+
+.budgets_bar .links {
+  text-align: center;
+}
+
+.budgets_bar .percent {
+  text-align: right;
+}
+
+.budgets_bar .total {
+  text-align: center;
+}
+

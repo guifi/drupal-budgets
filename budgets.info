@@ -1,0 +1,9 @@
+; $Id: budgets.info,v 2.0 2008/28/01 $
+name = Budgets
+description = Budgets module for drupal 6
+package = budgets
+core = 6.x
+version = 6.3-dev6.3
+dependencies[] = guifi
+package = guifi.net
+

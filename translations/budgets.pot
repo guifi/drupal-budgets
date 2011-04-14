@@ -1,0 +1,831 @@
+# $Id$
+#
+# LANGUAGE translation of Drupal (general)
+# Copyright YEAR NAME <EMAIL@ADDRESS>
+# Generated from files:
+#  quotes.inc.php: n/a
+#  budgets.module: n/a
+#  supplier.inc.php: n/a
+#  budgets.info: n/a
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: PROJECT VERSION\n"
+"POT-Creation-Date: 2010-09-06 14:58+0200\n"
+"PO-Revision-Date: YYYY-mm-DD HH:MM+ZZZZ\n"
+"Last-Translator: NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <EMAIL@ADDRESS>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=INTEGER; plural=EXPRESSION;\n"
+
+#: quotes.inc.php:30
+msgid "Create @name"
+msgstr ""
+
+#: quotes.inc.php:52;74
+msgid "Supplier"
+msgstr ""
+
+#: quotes.inc.php:53;75
+msgid "Supplier for this quote."
+msgstr ""
+
+#: quotes.inc.php:87
+msgid "Part number"
+msgstr ""
+
+#: quotes.inc.php:88
+msgid "Part number/Code to identify this quote."
+msgstr ""
+
+#: quotes.inc.php:94 budgets.module:984;1022;2142;2144
+msgid "Cost"
+msgstr ""
+
+#: quotes.inc.php:102
+msgid "Quoted value (cost) for this quoted item."
+msgstr ""
+
+#: quotes.inc.php:106 budgets.module:744
+msgid "Expiration"
+msgstr ""
+
+#: quotes.inc.php:108
+msgid "Date when this quote will expire"
+msgstr ""
+
+#: quotes.inc.php:165
+msgid "Partno %partno already exists."
+msgstr ""
+
+#: quotes.inc.php:185
+msgid "Supplier does not exist."
+msgstr ""
+
+#: quotes.inc.php:189
+msgid "Only can add quotes to owned suppliers."
+msgstr ""
+
+#: quotes.inc.php:268 supplier.inc.php:84
+msgid "DELETED"
+msgstr ""
+
+#: quotes.inc.php:270 supplier.inc.php:86
+msgid "CREATED"
+msgstr ""
+
+#: quotes.inc.php:272 supplier.inc.php:88
+msgid "UPDATED"
+msgstr ""
+
+#: quotes.inc.php:274
+msgid "The supplier quote %title has been %action by %user."
+msgstr ""
+
+#: supplier.inc.php:90
+msgid "The supplier %title has been %action by %user."
+msgstr ""
+
+#: supplier.inc.php:170
+msgid "Quotes"
+msgstr ""
+
+#: budgets.module:301
+msgid "guifi.net Proposal/Budget"
+msgstr ""
+
+#: budgets.module:304
+msgid "Proposal/Budget title"
+msgstr ""
+
+#: budgets.module:306
+msgid "Proposal description"
+msgstr ""
+
+#: budgets.module:313
+msgid "guifi.net Provider/Supplier"
+msgstr ""
+
+#: budgets.module:316
+msgid "Supplier name"
+msgstr ""
+
+#: budgets.module:318
+msgid "Supplier information page"
+msgstr ""
+
+#: budgets.module:325
+msgid "guifi.net quote provided by supplier"
+msgstr ""
+
+#: budgets.module:328
+msgid "Quote item title"
+msgstr ""
+
+#: budgets.module:330
+msgid "Description of the quoted item"
+msgstr ""
+
+#: budgets.module:384
+msgid "<p>Create a budget. A budget is an itemized project with allocated due costs. Therefore, contributors can donate funds to it.</p>"
+msgstr ""
+
+#: budgets.module:401;170
+msgid "donate/fund this budget"
+msgstr ""
+
+#: budgets.module:404
+msgid "donate/fund this budget or proposal for this project"
+msgstr ""
+
+#: budgets.module:408;95;103;127
+msgid "cnml"
+msgstr ""
+
+#: budgets.module:411
+msgid "Obtain a CNML export for this budget in abbreviated format"
+msgstr ""
+
+#: budgets.module:414;135
+msgid "detailed cnml"
+msgstr ""
+
+#: budgets.module:417
+msgid "Obtain a CNML export for this budget in detailed format"
+msgstr ""
+
+#: budgets.module:428
+msgid "\nTo contribute to this budget, please allocate your desired contribution and:\n<ul>\n<li>Provide your contact information (name, telf. or email) so a promoter will be able to contact you,</li>\n<li>... or if you wish, make a money transfer to the account EEEE OOOO DD CCCCCC specifying clearly your name for validation purposes.</li>\n</ul>\nYour contribution will be in 'Submitted' status. Once is verified, the promoter will update the status of your contibution to <i>'Approved'</i> if accepts it, <i>'Declined'</i> if for any reason this contribution can't be acceped, or <i>'Paid'</i> to confirm that the money has arrived."
+msgstr ""
+
+#: budgets.module:436
+msgid "<ol>\n<li>An open project budget may change without advice depending in how many funds is receiving. Contributors may ask for a return of their funds if they not agree with those changes.</li>\n<li>Once a budget is closed, promoters are responsible to execute it, and contributors are not longer allowed to ask for a return.</li>\n<li>Promoters are not liable for the results of the project, just for spending the funds in a similar way as described in the budget.</li>\n<li>If a project does not execute, promoters will be responsible of returning funds to contributors or allocate them to a another project.</li>\n<li>The promoters/contributors are liable by their budgets and fundings. This site just provides a way to communicate between them, with no other responsabilities.</li>\n</ol>"
+msgstr ""
+
+#: budgets.module:461
+msgid "Block title"
+msgstr ""
+
+#: budgets.module:463;570
+msgid "proposals"
+msgstr ""
+
+#: budgets.module:466
+msgid "Title of budgets block..."
+msgstr ""
+
+#: budgets.module:472
+msgid "Default payment instructions"
+msgstr ""
+
+#: budgets.module:476
+msgid "Default text for payment instructions."
+msgstr ""
+
+#: budgets.module:482
+msgid "Default terms & conditions"
+msgstr ""
+
+#: budgets.module:486
+msgid "Default text for budget 'Terms & Conditions' box."
+msgstr ""
+
+#: budgets.module:492
+msgid "Default expiration"
+msgstr ""
+
+#: budgets.module:496
+msgid "By default, how many weeks the budget will expire (closed if not covered)"
+msgstr ""
+
+#: budgets.module:502
+msgid "Default currency text"
+msgstr ""
+
+#: budgets.module:507
+msgid "By default, currency symbol"
+msgstr ""
+
+#: budgets.module:513
+msgid "Default currency symbol"
+msgstr ""
+
+#: budgets.module:518
+msgid "By default, currency abbreviation"
+msgstr ""
+
+#: budgets.module:524
+msgid "Default minimum contribution"
+msgstr ""
+
+#: budgets.module:529
+msgid "By default, minimum amount of each single contribution"
+msgstr ""
+
+#: budgets.module:534
+msgid "Default maximum contribution"
+msgstr ""
+
+#: budgets.module:539
+msgid "By default, maximum amount of each single contribution"
+msgstr ""
+
+#: budgets.module:553
+msgid "Open proposals"
+msgstr ""
+
+#: budgets.module:559
+msgid "Number of items"
+msgstr ""
+
+#: budgets.module:579
+msgid "view all open projects"
+msgstr ""
+
+#: budgets.module:593
+msgid "Help raising the green bars with your donations!"
+msgstr ""
+
+#: budgets.module:691
+msgid "One week"
+msgstr ""
+
+#: budgets.module:691
+msgid "Two weeks"
+msgstr ""
+
+#: budgets.module:691
+msgid "One month"
+msgstr ""
+
+#: budgets.module:691
+msgid "Two months"
+msgstr ""
+
+#: budgets.module:691
+msgid "One quarter"
+msgstr ""
+
+#: budgets.module:691
+msgid "4 months"
+msgstr ""
+
+#: budgets.module:691
+msgid "Half year"
+msgstr ""
+
+#: budgets.module:691
+msgid "One year"
+msgstr ""
+
+#: budgets.module:726
+msgid "General"
+msgstr ""
+
+#: budgets.module:732;1293;1851;2164;2187
+msgid "Status"
+msgstr ""
+
+#: budgets.module:735;1815
+msgid "Preparation"
+msgstr ""
+
+#: budgets.module:736;1811
+msgid "Open"
+msgstr ""
+
+#: budgets.module:737;1819
+msgid "Closed"
+msgstr ""
+
+#: budgets.module:746
+msgid "Date when this proposal/budget will expire"
+msgstr ""
+
+#: budgets.module:755
+msgid "contact"
+msgstr ""
+
+#: budgets.module:765
+msgid "Currency"
+msgstr ""
+
+#: budgets.module:772
+msgid "Text"
+msgstr ""
+
+#: budgets.module:776
+msgid "abbreviation"
+msgstr ""
+
+#: budgets.module:782
+msgid "Symbol"
+msgstr ""
+
+#: budgets.module:792
+msgid "Contribution limits"
+msgstr ""
+
+#: budgets.module:799
+msgid "Minimum"
+msgstr ""
+
+#: budgets.module:803
+msgid "Below this amount, contributions will not be accepted"
+msgstr ""
+
+#: budgets.module:810
+msgid "Maximum"
+msgstr ""
+
+#: budgets.module:814
+msgid "Above this amount, contributions will not be accepted"
+msgstr ""
+
+#: budgets.module:825
+msgid "Add items from previous proposals or quotes provided by suppliers"
+msgstr ""
+
+#: budgets.module:831
+msgid "Proposal"
+msgstr ""
+
+#: budgets.module:834;848;1135;1989
+msgid "None"
+msgstr ""
+
+#: budgets.module:840
+msgid "Load Proposal"
+msgstr ""
+
+#: budgets.module:844
+msgid "Supplier quote"
+msgstr ""
+
+#: budgets.module:855
+msgid "Load Quote"
+msgstr ""
+
+#: budgets.module:888
+msgid "Promoter, payment instructions, terms & conditions"
+msgstr ""
+
+#: budgets.module:893;2190
+msgid "Promoter(s)"
+msgstr ""
+
+#: budgets.module:896
+msgid "Explain here who are you, how to contact you, why people have to trust you, what you have already done..."
+msgstr ""
+
+#: budgets.module:902;2200
+msgid "Payment instructions"
+msgstr ""
+
+#: budgets.module:905
+msgid "Explain here how to send money funds for this project, it can be an account for money transfers, ask for contact information, links to paypal or similar online applications..."
+msgstr ""
+
+#: budgets.module:911;2204
+msgid "Terms & Conditions"
+msgstr ""
+
+#: budgets.module:914
+msgid "Explain here the terms and conditions of this project or use the default text provided"
+msgstr ""
+
+#: budgets.module:927
+msgid "New item (unfold to fill a new item)"
+msgstr ""
+
+#: budgets.module:932
+msgid "item"
+msgstr ""
+
+#: budgets.module:964
+msgid "Deleted"
+msgstr ""
+
+#: budgets.module:977;1013
+msgid "Quantity"
+msgstr ""
+
+#: budgets.module:991
+msgid "item deleted"
+msgstr ""
+
+#: budgets.module:1004
+msgid "Title"
+msgstr ""
+
+#: budgets.module:1031
+msgid "Weight"
+msgstr ""
+
+#: budgets.module:1040
+msgid "Ok"
+msgstr ""
+
+#: budgets.module:1048
+msgid "Delete item"
+msgstr ""
+
+#: budgets.module:1058;1783
+msgid "Description"
+msgstr ""
+
+#: budgets.module:1064;1344
+msgid "Comments"
+msgstr ""
+
+#: budgets.module:1076
+msgid "Budget items"
+msgstr ""
+
+#: budgets.module:1108
+msgid "Already filled all items and need for more?"
+msgstr ""
+
+#: budgets.module:1113;2178
+msgid "1 item"
+msgstr ""
+
+#: budgets.module:1113
+msgid "@count items"
+msgstr ""
+
+#: budgets.module:1114
+msgid "total"
+msgstr ""
+
+#: budgets.module:1227
+msgid "This action cannot be undone."
+msgstr ""
+
+#: budgets.module:1228;1369;1390
+msgid "Delete"
+msgstr ""
+
+#: budgets.module:1229
+msgid "Cancel"
+msgstr ""
+
+#: budgets.module:1248
+msgid "Fund for %title from %contributor of %amount deleted by %user."
+msgstr ""
+
+#: budgets.module:1294
+msgid "Current status of this funding."
+msgstr ""
+
+#: budgets.module:1302;1849
+msgid "Name"
+msgstr ""
+
+#: budgets.module:1312
+msgid "e-mail"
+msgstr ""
+
+#: budgets.module:1322
+msgid "Telf"
+msgstr ""
+
+#: budgets.module:1329;1850
+msgid "Amount"
+msgstr ""
+
+#: budgets.module:1338
+msgid "Amount of the contribution"
+msgstr ""
+
+#: budgets.module:1356
+msgid "Do you accept the Terms & Conditions described below?"
+msgstr ""
+
+#: budgets.module:1364
+msgid "Submit"
+msgstr ""
+
+#: budgets.module:1376
+msgid "Back to funds report"
+msgstr ""
+
+#: budgets.module:1404
+msgid "New fund of %amount for %contributor created by %user"
+msgstr ""
+
+#: budgets.module:1409
+msgid "Fund of %amount from %contributor updated by %user"
+msgstr ""
+
+#: budgets.module:1426
+msgid "%status is not a valid fund status"
+msgstr ""
+
+#: budgets.module:1435
+msgid "Funding of %amount by %name set as %status."
+msgstr ""
+
+#: budgets.module:1528
+msgid "You must select an item to perform this action"
+msgstr ""
+
+#: budgets.module:1547
+msgid "Item description is mandatory"
+msgstr ""
+
+#: budgets.module:1550
+msgid "Quantity must be numeric"
+msgstr ""
+
+#: budgets.module:1553
+msgid "Cost must be numeric"
+msgstr ""
+
+#: budgets.module:1604
+msgid "The budget %name has been UPDATED by %user."
+msgstr ""
+
+#: budgets.module:1633
+msgid "The BUDGET %name has been DELETED by %user."
+msgstr ""
+
+#: budgets.module:1660
+msgid "Proposals & budgets"
+msgstr ""
+
+#: budgets.module:1748
+msgid "of"
+msgstr ""
+
+#: budgets.module:1758
+msgid "Proposal/Budget details"
+msgstr ""
+
+#: budgets.module:1767
+msgid "Item:"
+msgstr ""
+
+#: budgets.module:1784
+msgid "Units"
+msgstr ""
+
+#: budgets.module:1785
+msgid "Cost per unit"
+msgstr ""
+
+#: budgets.module:1786
+msgid "Subtotal"
+msgstr ""
+
+#: budgets.module:1802
+msgid "Zone %zname%"
+msgstr ""
+
+#: budgets.module:1807
+msgid "All status"
+msgstr ""
+
+#: budgets.module:1808;1812;1816;1820
+msgid "short format"
+msgstr ""
+
+#: budgets.module:1809;1813;1817;1821
+msgid "long format"
+msgstr ""
+
+#: budgets.module:1826
+msgid "<b>IMPORTANT LEGAL NOTE:</b> This network information is under the <a href=\"http://guifi.net/ComunsSensefils/\">Comuns Sensefils</a> license, and therefore, available for any other network under the same licensing. If this is not your case, you should ask for permission before using it.</a>"
+msgstr ""
+
+#: budgets.module:1839
+msgid "Contributions to"
+msgstr ""
+
+#: budgets.module:1841
+msgid "Fundings"
+msgstr ""
+
+#: budgets.module:1848
+msgid "Date"
+msgstr ""
+
+#: budgets.module:1854
+msgid "Action"
+msgstr ""
+
+#: budgets.module:1857
+msgid "There are no contributions to this project yet"
+msgstr ""
+
+#: budgets.module:1885
+msgid "Accept this funding"
+msgstr ""
+
+#: budgets.module:1890
+msgid "Edit this funding"
+msgstr ""
+
+#: budgets.module:1896
+msgid "Mark the payment as done for this funding"
+msgstr ""
+
+#: budgets.module:1902
+msgid "Decline this funding"
+msgstr ""
+
+#: budgets.module:1946
+msgid "Minimum donation is"
+msgstr ""
+
+#: budgets.module:1948
+msgid "Maximum donation is"
+msgstr ""
+
+#: budgets.module:1957
+msgid "Amount must be numeric"
+msgstr ""
+
+#: budgets.module:1959
+msgid "You must provide at least telf. or email for payment verification purposes"
+msgstr ""
+
+#: budgets.module:1961
+msgid "Name is mandatory"
+msgstr ""
+
+#: budgets.module:1963
+msgid "You must accept the Terms & Conditions"
+msgstr ""
+
+#: budgets.module:1966
+msgid "You must use a valid email address"
+msgstr ""
+
+#: budgets.module:2140
+msgid "Ref."
+msgstr ""
+
+#: budgets.module:2145
+msgid "Reference"
+msgstr ""
+
+#: budgets.module:2146
+msgid "Supplied by"
+msgstr ""
+
+#: budgets.module:2149
+msgid "Part#"
+msgstr ""
+
+#: budgets.module:2166;2186
+msgid "until"
+msgstr ""
+
+#: budgets.module:2179
+msgid "Total"
+msgstr ""
+
+#: budgets.module:2183;2216
+msgid "Zone"
+msgstr ""
+
+#: budgets.module:2211
+msgid "<h1><br>Report of all proposals/budgets defined in the database<br></h1>"
+msgstr ""
+
+#: budgets.module:2218
+msgid "The report includes budgets for parent and child nodes"
+msgstr ""
+
+#: budgets.module:2222
+msgid "Reporting all zones"
+msgstr ""
+
+#: budgets.module:345
+msgid "administer budgets"
+msgstr ""
+
+#: budgets.module:346
+msgid "create budgets"
+msgstr ""
+
+#: budgets.module:348
+msgid "administer suppliers"
+msgstr ""
+
+#: budgets.module:349
+msgid "create suppliers"
+msgstr ""
+
+#: budgets.module:20 budgets.info:0
+msgid "Budgets"
+msgstr ""
+
+#: budgets.module:21
+msgid "Administer Budget defaults."
+msgstr ""
+
+#: budgets.module:28
+msgid "Proposals, budgets and fundings"
+msgstr ""
+
+#: budgets.module:44
+msgid "list"
+msgstr ""
+
+#: budgets.module:52
+msgid "all status"
+msgstr ""
+
+#: budgets.module:60
+msgid "open"
+msgstr ""
+
+#: budgets.module:68
+msgid "preparation"
+msgstr ""
+
+#: budgets.module:76
+msgid "closed"
+msgstr ""
+
+#: budgets.module:84
+msgid "expired"
+msgstr ""
+
+#: budgets.module:152
+msgid "budget details"
+msgstr ""
+
+#: budgets.module:161
+msgid "funds report"
+msgstr ""
+
+#: budgets.module:179
+msgid "Javascript/autocomplete find Budget"
+msgstr ""
+
+#: budgets.module:186
+msgid "Javascript/autocomplete find Supplier"
+msgstr ""
+
+#: budgets.module:192
+msgid "Javascript/autocomplete find Quote"
+msgstr ""
+
+#: budgets.module:199
+msgid "Edit funding"
+msgstr ""
+
+#: budgets.module:207
+msgid "Delete funding"
+msgstr ""
+
+#: budgets.module:215
+msgid "Set a funding status"
+msgstr ""
+
+#: budgets.module:223
+msgid "Javascript/autocomplete find supplier quote"
+msgstr ""
+
+#: budgets.module:249
+msgid "add quotes"
+msgstr ""
+
+#: budgets.module:259
+msgid "Service providers & Commercial suppliers"
+msgstr ""
+
+#: budgets.module:260
+msgid "Find out shops where you can buy equipment and can understand what you require or hire professional services to help you in building infrastructure"
+msgstr ""
+
+#: budgets.module:267
+msgid "Proposals, Budgets & Fundings"
+msgstr ""
+
+#: budgets.module:268
+msgid "Browse the proposals/budgets, find out the costs and help by funding them"
+msgstr ""
+
+#: budgets.module:276
+msgid "budgets settings"
+msgstr ""
+
+#: budgets.module:277
+msgid "Change the settings for \"budgets\" for guifi.net module "
+msgstr ""
+
+#: budgets.info:0
+msgid "Budgets module for drupal 6"
+msgstr ""
+
+#: budgets.info:0
+msgid "guifi.net"
+msgstr ""
+
