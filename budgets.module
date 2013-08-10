@@ -581,7 +581,7 @@ function budgets_display_block_1() {
     $qbudgets = db_query(
       "SELECT b.id, b.expires " .
       "FROM {budgets} b " .
-      "WHERE b.budget_status = 'Open' and b.zone_id = 3671 and b.expires >= " . $today[0] . " " . 
+      "WHERE b.budget_status = 'Open' and b.zone_id = 3671 and b.expires >= " . $today[0] . " " .
       "ORDER BY b.id DESC");
     $content2="";
     while ($budget = db_fetch_object($qbudgets)) {
@@ -733,11 +733,27 @@ function budgets_form(&$node, &$param) {
     '#default_value' => $node->budget_status,
     '#options' => array(
       'Preparation' => t('Preparation'),
-      'Open' => t('Open'),
+      'Open' => t('Crowdfunding open'),
+      'Approved' => t('Approved'),
+      'Executed' => t('Executed'),
       'Closed' => t('Closed')),
     '#prefix' => '<table><tr><td>',
     '#suffix' => '</td>'
   );
+
+  $form['budgets_general']['budget_type'] = array(
+    '#type' => 'select',
+    '#title' => t('Type'),
+    '#default_value' => $node->budget_type,
+    '#options' => array(
+      'crowdfunding' => t('Crowdfunding'),
+      'capex'        => t('CAPEX'),
+      'opex'         => t('OPEX')),
+    '#description' => t("Type of investment"),
+    '#prefix' => '<td>',
+    '#suffix' => '</td>'
+  );
+
 
   $form['budgets_general']['arrexpires'] = array(
     '#type' => 'date',
@@ -1643,7 +1659,7 @@ function budgets_page($zone = NULL, $status = NULL) {
     $zone = guifi_zone_load($zone);
   guifi_log(GUIFILOG_TRACE, sprintf('function budgets_page(%d)', $zone->id),
     $zone);
-  
+
   $today=getdate();
   if ($status=='Expired')
     $status_str = "  AND (budget_status='Open' or budget_status='Preparation') and b.expires < " . $today[0] . " " ;
