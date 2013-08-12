@@ -182,6 +182,12 @@ function budgets_supplier_view($node, $teaser = FALSE, $page = FALSE) {
   return $node;
 }
 
+function budgets_supplier_get_suppliername($id) {
+  $node = db_fetch_object(db_query("SELECT s.title name FROM {supplier} s WHERE s.id=%d",$id));
+  return guifi_to_7bits($node->name);
+}
+
+
 
 
 ?>

@@ -10,11 +10,16 @@ function budgets_schema() {
     'fields' => array(
       'id' => array('type' => 'int', 'size' => 'medium', 'not null' => TRUE, 'default' => 0),
       'budget_status' => array('type' => 'varchar', 'length' => '15', 'not null'  => TRUE),
+      'budget_type' => array('type' => 'varchar', 'length' => '15', 'not null'  => TRUE, 'default' => 'croudfunding', 'comment' => 'CAPEX/OPEX-crowdfunding'),
+      'supplier_id' => array('type' => 'int', 'size' => 'medium', 'unsigned' => TRUE, 'not null'  => TRUE, 'default' => 0, 'comment' => 'Foreign key to supplier'),
+      'ticket_link' => array('type' => 'varchar', 'length' => '100', 'comment' => 'If exists, link to whatever causes the expense, i.e. ticket maintenance...'),
       'notification' => array('type' => 'varchar', 'length' => '1024', 'not null'  => FALSE),
       'promoter' => array('type' => 'text', 'size' => 'big', 'not null'  => TRUE),
       'payment_instructions' => array('type' => 'text', 'size' => 'big', 'not null'  => TRUE),
       'terms' => array('type' => 'text', 'size' => 'big', 'not null'  => TRUE),
+      'accdate' => array('type' => 'int', 'not null'  => FALSE, 'disp-width' => '11'),
       'expires' => array('type' => 'int', 'not null'  => TRUE, 'disp-width' => '11'),
+      'node_id' => array('type' => 'int', 'size' => 'medium', 'unsigned' => TRUE, 'not null'  => TRUE, 'default' => 0, 'comment' => 'Foreign key to guifi_node'),
       'zone_id' => array('type' => 'int', 'size' => 'medium', 'unsigned' => TRUE, 'not null'  => TRUE, 'default' => 0, 'comment' => 'Foreign key to guifi_zone'),
       'currency_txt' => array('type' => 'varchar', 'length' => '10', 'not null'  => TRUE, 'default' => 'Euros'),
       'currency_symbol' => array('type' => 'varchar', 'length' => '5', 'not null'  => TRUE, 'default' => '€'),
@@ -44,6 +49,7 @@ function budgets_schema() {
       'description' => array('type' => 'text', 'size' => 'big', 'not null'  => TRUE),
       'comments' => array('type' => 'text', 'size' => 'big', 'not null'  => TRUE),
       'quantity' => array('type' => 'int', 'size' => 'small', 'not null'  => TRUE, 'default' => 0),
+      'tax' => array('type' => 'int', 'size' => 'small', 'not null'  => FALSE, 'default' => 0),
       'cost' => array('type' => 'numeric', 'not null'  => TRUE, 'default' => 0, 'precision' => '10', 'scale' => '2'),
       'weight' => array('type' => 'int', 'size' => 'tiny', 'not null'  => TRUE, 'default' => 0)),
     'primary key' => array('budget_id', 'id'),
@@ -53,6 +59,18 @@ function budgets_schema() {
       'id' => array('type' => 'int', 'not null'  => TRUE, 'default' => 0, 'disp-width' => '10'),
       'zone_id' => array('type' => 'int', 'unsigned' => TRUE, 'not null'  => TRUE, 'disp-width' => '11', 'default' => 0, 'comment' => 'Foreign key to guifi_zone'),
       'title' => array('type' => 'varchar', 'length' => 60, 'not null'  => TRUE, 'default' => '', 'comment' => 'item title')),
+      'code' => array('type' => 'varchar', 'length' => 5, 'not null'  => TRUE, 'comment' => 'to be used for building part numbers, abbreviations, etc'),
+      'address1' => array('type' => 'varchar', 'length' => '256', 'not null'=>TRUE),
+      'address2' => array('type' => 'varchar', 'length' => '256', 'not null'=>FALSE),
+      'postal_code' => array('type' => 'varchar', 'length' => '20', 'not null'=>TRUE),
+      'city' => array('type' => 'varchar', 'length' => '20', 'not null'=>TRUE),
+      'region' => array('type' => 'varchar', 'length' => '60', 'not null'=>FALSE),
+      'country' => array('type' => 'varchar', 'length' => '60', 'not null'=>FALSE),
+      'contact_email' => array('type' => 'varchar', 'length' => '128', 'not null'=>TRUE),
+      'contact_phone' => array('type' => 'varchar', 'length' => '128', 'not null'=>TRUE),
+      'logo' => array('type' => 'varchar', 'length' => '128', 'not null'=>FALSE),
+      'tax_code' => array('type' => 'varchar', 'length' => '128', 'not null'=>TRUE),
+      'defaut_tax_rate' => array('type' => 'int', 'size' => 'small', 'not null'=>FALSE,'default'=>0),
     'primary key' => array('id'),
   );
   $schema['supplier_quote'] = array(
@@ -63,6 +81,7 @@ function budgets_schema() {
       'title' => array('type' => 'varchar', 'length' => 1024, 'not null'  => TRUE, 'default' => '', 'comment' => 'item title'),
       'description' => array('type' => 'text', 'size' => 'big', 'not null'  => TRUE),
       'cost' => array('type' => 'numeric', 'not null'  => TRUE, 'default' => 0, 'precision' => '10', 'scale' => '2'),
+      'tax' => array('type' => 'int', 'size' => 'small', 'not null'  => FALSE, 'default' => 0),
       'expires' => array('type' => 'int', 'not null'  => TRUE)),
     'primary key' => array('id'),
   );
@@ -179,4 +198,36 @@ function budgets_update_478() {
     array('type' => 'varchar', 'length' => 1024, 'not null'  => TRUE, 'default' => '', 'comment' => 'supplier title'));
 
   return $items;
+}
+
+function budgets_update_500() {
+  $items = array();
+
+  db_add_field($items,'budgets','budget_type',
+  	array('type' => 'varchar', 'length' => '15', 'not null'  => TRUE, 'default' => 'crowdfunding', 'comment' => 'CAPEX/OPEX-croudfunding'));
+  db_add_field($items,'budgets','supplier_id',
+    array('type' => 'int', 'size' => 'medium', 'unsigned' => TRUE, 'not null'  => TRUE, 'default' => 0, 'comment' => 'Foreign key to supplier'));
+  db_add_field($items,'budgets','node_id',
+    array('type' => 'int', 'size' => 'medium', 'unsigned' => TRUE, 'not null'  => TRUE, 'default' => 0, 'comment' => 'Foreign key to guifi_node'));
+}
+
+function budgets_update_501() {
+  $items = array();
+
+  db_add_field($items,'budgets','ticket_link',
+    array('type' => 'varchar', 'length' => '100', 'comment' => 'If exists, link to whatever causes the expense, i.e. ticket maintenance...'));
+}
+
+function budgets_update_502() {
+  $items = array();
+
+  db_add_field($items,'budgets','accdate',
+    array('type' => 'int', 'not null'  => FALSE, 'disp-width' => '11'));
+}
+
+function budgets_update_503() {
+  $items = array();
+
+  db_add_field($items,'budget_items','tax',
+    array('type' => 'int', 'size' => 'small', 'not null'  => FALSE, 'default' => 0));
 }
