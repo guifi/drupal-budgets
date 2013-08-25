@@ -1,6 +1,73 @@
+div.supplier-rated {
+  font-size: 1.3em;
+  background-color: lightyellow;
+}
+
+div.suppliers-help-rating {
+  float: left;
+}
+
+img.supplier-logo {
+  float: left;
+}
+
+div.capson {
+  width: 17px;
+  height: 15px;
+  background: url(small_star.png) center no-repeat 0 -0px;
+  background-image: url(icons/small_star.png);
+  background-position-x: 0px;
+  background-position-y: -32px;
+  display: block;
+  float: left;
+  cursor: pointer;
+}
+div.capsoff {
+  width: 17px;
+  height: 15px;
+  background: url(small_star.png) center no-repeat 0 0px;
+  background-image: url(icons/small_star.png);
+  display: block;
+  float: left;
+  cursor: pointer;
+}
+
+p.rating {
+  color: pink;
+  color: rgba(228, 9, 9, 0.5);
+  font-family: Impact, Haettenschweiler, "Franklin Gothic Bold", Charcoal, "Helvetica Inserat", "Bitstream Vera Sans Bold", "Arial Black", sans-serif;
+  font-size: 50px;
+  font-weight: 100;
+  line-height: 1.2;
+  height: 0;
+  margin: 0;
+  padding: 0;
+  overflow: visible;
+  text-align: right;
+  text-transform: uppercase;
+  border: 1px dashed #000;
+  word-wrap: break-word;
+}
+
+fieldset.quote > div.form-item,
+.fieldset-wrapper > div.certs,
 .fieldset-wrapper > div.form-item {
   float: left;
   margin-right: 1em;
+}
+
+.certs .form-item {
+  margin-top: 0em;
+  margin-bottom: 0em;
+}
+
+.zones .form-item {
+  margin-top: 0em;
+  margin-bottom: 0em;
+}  
+
+.certs td {
+  padding: 0em 0.5em;
 }
 
 .budget-container-inline > div.form-item {
