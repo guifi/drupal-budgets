@@ -872,7 +872,7 @@ function budgets_supplier_list_by_zone($zone) {
        array(0,$zroot));
     $where = 'AND (s.zone_id IN ('.implode(',',$zlist).') ';
     foreach ($zlist as $z)
-      $where .= "OR CONCAT(','||s.zones||',') LIKE '%,".$z."%,' ";
+      $where .= "OR CONCAT(',',s.zones,',') LIKE '%,".$z.",%' ";
     $where.=') ';
   }
 

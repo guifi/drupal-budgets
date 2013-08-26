@@ -49,6 +49,7 @@ p.rating {
   word-wrap: break-word;
 }
 
+div.budgets-zone-form,
 fieldset.quote > div.form-item,
 .fieldset-wrapper > div.certs,
 .fieldset-wrapper > div.form-item {

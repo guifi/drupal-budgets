@@ -149,7 +149,7 @@ function budgets_menu() {
 //    'weight' => -8,
 //    'type' => MENU_DEFAULT_LOCAL_TASK);
   $items['node/%budgets/view/items'] = array(
-    'title' => 'budget details',
+    'title' => 'items',
     'page callback' => 'theme_budgets_items',
     'page arguments' => array(1, TRUE),
     'access callback' => 'user_access',
@@ -160,8 +160,8 @@ function budgets_menu() {
     'title' => 'funds report',
     'page callback' => 'theme_budgets_funds',
     'page arguments' => array(1, TRUE),
-    'access callback' => 'user_access',
-    'access arguments' => array('access content'),
+    'access callback' => 'budgets_check_crowdfunding',
+    'access arguments' => array(1, TRUE),
     'weight' => -7,
     'type' => MENU_LOCAL_TASK);
 
@@ -169,8 +169,8 @@ function budgets_menu() {
     'title' => 'donate/fund this budget',
     'page callback' => 'drupal_get_form',
     'page arguments' => array('budgets_fund_form', 1),
-    'access callback' => 'user_access',
-    'access arguments' => array('access content'),
+    'access callback' => 'budgets_check_crowdfunding',
+    'access arguments' => array(1, FALSE),
     'weight' => -6,
     'type' => MENU_LOCAL_TASK);
 
@@ -301,6 +301,12 @@ function budgets_menu() {
     'access callback' => 'budgets_supplier_access',
     'access arguments' => array('create', arg(1)),
     );*/
+  $items['node/%guifi_zone/view/budgets'] = array(
+    'title' => 'expenses',
+    'page callback' => 'budgets_by_zone',
+    'page arguments' => array(1,4),
+    'access arguments' => array('access content'),
+    'type' => MENU_LOCAL_TASK);
   $items['node/%budgets_supplier/budgets/view'] = array(
     'title' => 'list',
     'page callback' => 'budgets_supplier_list_budgets_by_supplier',
@@ -703,7 +709,10 @@ function budgets_load($node) {
     $k);
   while ($item = db_fetch_array($qry)) {
     $items[] = $item;
-    $total += ($item['quantity'] * $item['cost']);
+    if ($item['tax']>0)
+      $total += ($item['quantity'] * $item['cost']) * (($item['tax']/100)+1);
+    else
+      $total += ($item['quantity'] * $item['cost']);
   }
   $node->items = $items;
   $node->total = $total;
@@ -1390,10 +1399,12 @@ function budgets_form_load_quote($form, &$form_state) {
   $newI['weight'] = $cw;
   $newI['new'] = TRUE;
   $newI['title'] = $quote->title;
-  $newI['quantity'] = 0;
+  $newI['quantity'] = 1;
+  $newI['tax'] = $quote->tax;
   $newI['cost'] = $quote->cost;
 
-  $newI['description'] = $quote->teaser;
+  $newI['description'] = (empty($quote->teaser))?'-':
+    $quote->teaser;
 
   $supplier = node_load(array('nid' => $quote->supplier_id));
 
@@ -1983,12 +1994,27 @@ function budgets_bar($total, $subtotal, $currency = '€') {
   return $output;
 }
 
+function budgets_check_crowdfunding($budget,$funds = false) {
+  if (($budget->budget_status == 'Open') or ($budget->budget_type=='crowdfunding'))
+    return true;
+  else {
+  	$i = db_fetch_object(db_query(
+     'SELECT count(id) ' .
+     'FROM {budget_funds} ' .
+     'WHERE budget_id='.$budget->id)
+     );
+    if (($i->id) > 1)
+      return true;
+    else
+     return false;
+  }
+}
+
 function theme_budgets_items($node, $links = FALSE) {
 
   if (!isset($node->nid))
     $node = node_load(array('nid' => $node->id));
 
-  $output = '<h2>'. t('Crowdfunding/Expense details') .'</h2>';
   $total = 0;
   $totaltax = 0;
   if (!empty($node->items)) foreach ($node->items as $item_id => $item) {
@@ -2018,10 +2044,6 @@ function theme_budgets_items($node, $links = FALSE) {
       array('data' => ($item['tax']>0)?number_format($item['tax'], 0, $decml, $thsnd):t('incl.'),'class' => 'budget-items-number-data'),
       array('data' => number_format($subtotal, 2, $decml, $thsnd) . $node->currency_symbol, 'class' => 'budget-items-subtotal-data')
     );
-//    $rows[] = array(
-//      array(
-//       'data' => $item['description'] .'<hr><small>'. $item['comments'] .'</small><hr>'));
-
   }
   $rows[] = array(array('data'=>'<hr>','colspan'=>5));
   $rows[] = array(array('data'=>null,'colspan'=>5));
@@ -2041,7 +2063,7 @@ function theme_budgets_items($node, $links = FALSE) {
     array('data' => t('Tax %'),         'class' => 'budget-items-number-header'),
     array('data' => t('Subtotal'),      'class' => 'budget-items-number-subtotal'));
 
-  $output .=theme('table', $header, $rows);
+  $output .=theme('box',t('Items'),theme('table', $header, $rows));
 
   if ($links)
     $output .= theme_links(module_invoke_all('link', 'node', $node, FALSE));
@@ -2221,6 +2243,176 @@ function budgets_validate_fund(&$fund) {
     if (!valid_email_address($fund['contributor_email']))
     form_set_error('contributor_email', t('You must use a valid email address'));
   }
+}
+
+function budgets_by_zone_form($parm,$zid,$keys=null) {
+  guifi_log(GUIFILOG_TRACE,'budgets_by_zone_form',$keys);
+
+  /*
+   * Filter form
+   */
+  $form['filter'] = array(
+    '#title'=> t('Filters'),
+    '#type'=>'fieldset',
+    '#tree'=>false,
+    '#collapsed'=>false,
+    '#collapsible'=>true,
+  );
+  $form['filter']['details'] = array(
+    '#type'=>'radios',
+    '#title'=>t('Detail'),
+    '#options'=>array(
+        'detailed'=>t('Totals & details'),
+        'totals'=>t('Totals only'),
+      ),
+    '#default_value'=>$keys['details'][0],
+  );
+  $form['filter']['types'] = array(
+    '#type'=>'select',
+    '#title'=>t('Type'),
+    '#options'=>guifi_types('budget_type'),
+    '#multiple'=>true,
+    '#size'=>8,
+    '#default_value'=>$keys['types'],
+  );
+  $form['filter']['status'] = array(
+    '#type'=>'select',
+    '#title'=>t('Status'),
+    '#options'=>guifi_types('budget_status'),
+    '#multiple'=>true,
+    '#size'=>8,
+    '#default_value'=>$keys['status'],
+  );
+  $form['filter']['from'] = array(
+    '#type'=>'date',
+    '#title'=>t('From'),
+    '#default_value'=>$keys['from'],
+    '#prefix'=> '<div class="budgets-zone-form">',
+  );
+  $form['filter']['to'] = array(
+    '#type'=>'date',
+    '#title'=>t('To'),
+    '#default_value'=>$keys['to'],
+    '#suffix'=> '</div>',
+  );
+  $form['filter']['zone_id'] = array('#type'=>hidden,'#value'=>$zid);
+  $form['filter']['submit'] = array(
+    '#type'=>'submit',
+    '#title'=>t('Press to proceed'),
+    '#value'=>t('Filter'),
+//    '#suffix'=> '</td></table>',
+  );
+
+  return $form;
+}
+
+function budgets_by_zone_form_submit($form_id, &$form_values) {
+  $v=$form_values['values'];
+  guifi_log(GUIFILOG_TRACE,'SUBMIT',$params);
+
+  $s='details='.$v['details'].
+    ',types='.implode('|',$v['types']).
+    ',status='.implode('|',$v['status']).
+    ',from='.$v['from']['year'].'|'.$v['from']['month'].'|'.$v['from']['day'].
+    ',to='.$v['to']['year'].'|'.$v['to']['month'].'|'.$v['to']['day'];
+
+  drupal_goto('node/'.$v['zone_id'].'/view/budgets/'.$s);
+}
+
+function budgets_by_zone($zone,$params=null) {
+
+  $btypes=guifi_types('budget_type');
+  $bstatus=guifi_types('budget_status');
+
+  if (empty($params)) {
+    $vars['details'][0]='detailed';
+    $vars['types']=array_keys($btypes);
+    $vars['status']=array_keys($bstatus);
+    $vars['from']=array_combine(array('year','month','day'),explode(' ',date('Y n j',time()-(60*60*24*30*3))));
+    $vars['to']=array_combine(array('year','month','day'),explode(' ',date('Y n j')));
+  } else {
+    $p=explode(',',$params);
+    foreach ($p as $v) {
+      $v=explode('=',$v);
+      if (($v[0]=='from') or ($v[0]=='to'))
+        $vars[$v[0]]=array_combine(array('year','month','day'),explode('|',$v[1]));
+      else
+        $vars[$v[0]]=explode('|',$v[1]);
+    }
+  }
+
+  $zroot = guifi_bg_zone_root();
+  if (($zone->id==0) or (empty($zone->id))) {
+    $zone->id=$zroot;
+  }
+
+  $zlist = guifi_zone_childs($zone->id);
+
+  guifi_log(GUIFILOG_TRACE,'budgets_by_zone (zone)',$vars);
+
+  $output = drupal_get_form('budgets_by_zone_form',$zone->id,$vars);
+
+  if ($zone->id == $zroot)
+    $where = ' ';
+  else
+    $where = ' AND (b.zone_id IN ('.implode(',',$zlist).')) ';
+
+  if ($vars['types'])
+    $where .= " AND b.budget_type in ('".implode("','",$vars['types'])."') ";
+  if ($vars['status'])
+    $where .= " AND b.budget_status in ('".implode("','",$vars['status'])."') ";
+
+  $f = mktime(0,0,0,$vars['from']['month'],$vars['from']['day'],$vars['from']['year']);
+  $where .= sprintf(' AND IFNULL(b.accdate,b.expires) > %d',$f);
+  $t = mktime(23,59,59,$vars['to']['month'],$vars['to']['day'],$vars['to']['year']);
+  $where .= sprintf(' AND IFNULL(b.accdate,b.expires) <= %d ',$t);
+
+  $qquery =
+    'SELECT b.id ' .
+    'FROM {budgets} b, {node} n ' .
+    'WHERE b.id=n.nid ' .
+    ' AND n.status=1 '.
+    $where.
+    // Order by rating, creating a code for sort the trend:
+    //  ''+''=0, ''=1, '-'=2
+    'ORDER BY b.id';
+
+  guifi_log(GUIFILOG_TRACE,'list_by_zone (budgets query)',$qquery);
+
+  $query = db_query($qquery);
+
+  $subtotals = array();
+  while ($b = db_fetch_object($query)) {
+    $budget = node_load(array('nid' => $b->id));
+    $subtotals[$budget->supplier_id] += $budget->total;
+//    guifi_log(GUIFILOG_BASIC,'list_by_zone (var)',$var['details'][0]);
+    if (budgets_access('view',$budget))
+      if ($vars['details'][0]=='detailed')
+        $output .= node_view($budget, TRUE, FALSE, TRUE);
+  }
+  if (count($subtotals) > 0)
+    foreach($subtotals as $s => $stotal) {
+      if ($s>1) {
+        $sup=budgets_supplier_load($s);
+        $ssup = l($s.'-'.$sup->title,'node/'.$s.'/budgets');
+      } else
+        $ssup = t('No supplier defined');
+
+      $rows[] = array(
+        array('data'=>$ssup),
+        array('data'=>number_format($stotal, 2, $decml, $thsnd). $budget->currency_symbol,
+          'class' =>'budget-items-number-total'),
+      );
+  }
+  $output .= theme('box',t('Totals by supplier'),theme('table',null,$rows));
+//  $output .= theme('page', NULL, $output);
+
+  drupal_set_breadcrumb(guifi_zone_ariadna($zone->id,'node/%d/view/budgets'));
+//  $output .= theme_pager(NULL, variable_get("guifi_pagelimit", 50));
+//  $node = node_load(array('nid' => $zone->id));
+//  $output .= theme_links(module_invoke_all('link', 'node', $node, FALSE));
+  print theme('page',$output, FALSE);
+  return;
 }
 
 
@@ -2483,23 +2675,46 @@ function theme_refquote($quote, $supplier, $teaser = FALSE) {
 }
 
 function theme_budgets_header($node, $teaser) {
+
+  // $dfshort = variable_get('date_format_short');
+
+  /*
+   * Common logic
+   */
+  if ($node->supplier_id > 0)
+    $sup=node_load($node->supplier_id);
+
+  $dfshort = "d/m/Y";
+  if (($node->budget_status=='Open') or ($node->budget_type=='crowdfunding')) {
+    $SDate = t('until').' '.date($dfshort,$node->expires);
+  } else {
+    $SDate = t('due').' '.date($dfshort,$node->accdate);
+  }
+  $TBStatus = guifi_types('budget_status');
+  $TBType   = guifi_types('budget_type');
+  $SBStatus = t($TBStatus[$node->budget_status]);
+  $SBType   = t($TBType[$node->budget_type]);
+
+  if (!empty($node->node_id)) {
+    $SLocation = t('Node').': '.l($node->node_id.'-'.guifi_get_nodename($node->node_id),'node/'.$node->node_id).', ';
+  }
+  $SLocation .= t('Zone').': '.guifi_zone_l($node->zone_id);
+    $SContact = '<a href="mailto:'.$node->notification.'">'.$node->notification.'</a>';
+    if (isset($sup)) {
+      $SContact .= ' - '.l($sup->id.'-'.$sup->title,'node/'.$sup->id);
+    }
+
   $node->expires = mktime(0, 0, 0,
     $node->arrexpires['month'],
     $node->arrexpires['day'],
     $node->arrexpires['year']
     );
+
   $btypes = guifi_types('budget_type');
-  if ($node->supplier_id > 0)
-    $sup=node_load($node->supplier_id);
   if ($teaser) {
   	$output = '';
     if (isset($sup))
-      $output .= t('Supplier').': '.l($sup->title,'node/'.$sup->id);
-    $output .= '<small> '.
-      guifi_zone_l($node->zone_id) .' '.
-      t('Status') .': '. $node->budget_status;
-    if (in_array($node->budget_status, array('Open', 'Preparation')))
-      $output .= ', '. t('until') .' '. format_date($node->expires .'small');
+      $output .= t('Supplier').': '.l($sup->title,'node/'.$sup->id).' - ';
 
     $total = 0;
     $items = 0;
@@ -2513,27 +2728,40 @@ function theme_budgets_header($node, $teaser) {
       $total += $subtotal;
       $items++;
     }
-    $output .= ', '. format_plural($items, t('1 item'), '@count items') .', '.
-      t('Total') .' '. number_format($total, 2, ',', '.') . $node->currency_symbol;
-    $output .= '</small>';
+    $output .= $SBStatus.' - '.$SBType.' - '.$SDate.' - '.$SLocation;
+    $output .= ', '. format_plural($items, t('1 item'), '@count items');
+    $rows[] = array(
+      array('data'=>$output),
+      array('data'=>number_format($total, 2, $decml, $thsnd). $node->currency_symbol,'class' =>'budget-items-number-total' ),
+    );
+    $output = theme('table',null,$rows);
   }
   else {
- //   $output = theme('box', t('Location'), $node->node_id) ?
- //     $node->node_id : guifi_zone_l($node->zone_id);
-    $lcontact = '<a href="mailto:'.$node->notification.'">'.$node->notification.'</a>';
-    if (isset($sup)) {
-      $lcontact .= ' - '.l($sup->id.'-'.$sup->title,'node/'.$sup->id);
+  	$rows = array();
+  	$rows[] = array (
+  	  array('data'=>t('Date & Status')),
+  	  array('data'=>$SBType.', '.$SDate. ' - '.t('Status').': '.$SBStatus),
+  	);
+    if (isset($sup))
+//  	$rows[] = array (
+//  	  array('data'=>t('Supplier')),
+//  	  array('data'=>l($sup->title,'node/'.$sup->id)),
+//  	);
+  	$rows[] = array (
+  	  array('data'=>t('Location')),
+  	  array('data'=>$SLocation),
+  	);
+  	$rows[] = array (
+  	  array('data'=>t('Contact')),
+  	  array('data'=>$SContact),
+  	);
+    if (!empty($node->promoters)) {
+      $rows[] = array(
+        array('data'=>t('Promoter(s)')),
+        array('data'=>$node->promoters),
+      );
     }
-    $output .= theme('box', t('Contact'),$lcontact);
-    if (in_array($node->budget_status, array('Open', 'Preparation')))
-      $until = ', '. t('until') .' '. format_date($node->expires .'large');
-    if (!empty($node->ticket_link))
-      $ticket = '<br>'.t('Linked to ticket').': <a href="'.$node->ticket_link.'">'.$node->ticket_link.'</a>';
-    $output .= theme('box', t('Type & Status'),
-      $btypes[$node->budget_type]. ' - '. $node->budget_status . $until.$ticket);
-    if (!empty($node->promoter)) {
-      $output .= theme('boox', t('Promoter(s)'), $node->promoter);
-    }
+  	$output .= theme('table',null,$rows);
   }
   if (!(($node->budget_type=='crowdfunding') or ($node->budget_status=='Open')))
     return $output;

@@ -122,8 +122,8 @@ function budgets_install() {
   /*
    *  budget_type
    */
-  db_query("INSERT INTO {guifi_types} (id, type, text, description, relations) VALUES ('1', 'budget_type', 'none', 'Preparation', NULL)");
-  db_query("INSERT INTO {guifi_types} (id, type, text, description, relations) VALUES ('2', 'budget_type', 'crowdfunding', 'Under review', NULL)");
+  db_query("INSERT INTO {guifi_types} (id, type, text, description, relations) VALUES ('1', 'budget_type', 'none', 'None', NULL)");
+  db_query("INSERT INTO {guifi_types} (id, type, text, description, relations) VALUES ('2', 'budget_type', 'crowdfunding', 'Crowdfunding', NULL)");
   db_query("INSERT INTO {guifi_types} (id, type, text, description, relations) VALUES ('3', 'budget_type', 'w-capex', 'Wireless-CAPEX', NULL)");
   db_query("INSERT INTO {guifi_types} (id, type, text, description, relations) VALUES ('4', 'budget_type', 'w-opex', 'Wireless-OPEX', NULL)");
   db_query("INSERT INTO {guifi_types} (id, type, text, description, relations) VALUES ('5', 'budget_type', 'f-capex', 'Fiber-CAPEX', NULL)");
@@ -375,8 +375,8 @@ function budgets_update_504() {
   /*
    *  budget_type
    */
-  db_query("INSERT INTO {guifi_types} (id, type, text, description, relations) VALUES ('1', 'budget_type', 'none', 'Preparation', NULL)");
-  db_query("INSERT INTO {guifi_types} (id, type, text, description, relations) VALUES ('2', 'budget_type', 'crowdfunding', 'Under review', NULL)");
+  db_query("INSERT INTO {guifi_types} (id, type, text, description, relations) VALUES ('1', 'budget_type', 'none', 'None', NULL)");
+  db_query("INSERT INTO {guifi_types} (id, type, text, description, relations) VALUES ('2', 'budget_type', 'crowdfunding', 'Crowdfunding', NULL)");
   db_query("INSERT INTO {guifi_types} (id, type, text, description, relations) VALUES ('3', 'budget_type', 'w-capex', 'Wireless-CAPEX', NULL)");
   db_query("INSERT INTO {guifi_types} (id, type, text, description, relations) VALUES ('4', 'budget_type', 'w-opex', 'Wireless-OPEX', NULL)");
   db_query("INSERT INTO {guifi_types} (id, type, text, description, relations) VALUES ('5', 'budget_type', 'f-capex', 'Fiber-CAPEX', NULL)");
