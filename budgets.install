@@ -336,15 +336,6 @@ function budgets_update_533() {
   db_add_field($items,'supplier','urating',
       array('type' => 'numeric', 'not null'  => FALSE, 'default' => 0, 'precision' => '10', 'scale' => '2'));
 
-  db_add_field($items,'supplier','caps_services',
-      array('type' => 'text', 'not null'  => FALSE));
-  db_add_field($items,'supplier','caps_network',
-      array('type' => 'text', 'not null'  => FALSE));
-  db_add_field($items,'supplier','caps_project',
-      array('type' => 'text', 'not null'  => FALSE));
-  db_add_field($items,'supplier','other_caps',
-      array('type' => 'text', 'not null'  => FALSE));
-
 
   db_add_field($items,'supplier','code',
       array('type' => 'varchar', 'length' => 5, 'not null'  => TRUE, 'comment' => 'to be used for building part numbers, abbreviations, etc'));
