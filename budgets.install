@@ -74,17 +74,17 @@ function budgets_schema() {
       'role' => array('type' => 'varchar', 'length' => '15', 'default'=>'volunteer', 'not null'  => TRUE, 'volunteer, professional' ),
       'tax_code' => array('type' => 'varchar', 'length' => '128', 'not null'=>TRUE),
       'defaut_tax_rate' => array('type' => 'int', 'size' => 'small', 'not null'=>FALSE,'default'=>0),
-      'guifi_certs' => array('type' => 'varchar', 'length' => '1024', 'not null'  => FALSE),
-      'tp_certs' => array('type' => 'varchar', 'length' => '1024', 'not null'  => FALSE),
-      'other_certs' => array('type' => 'varchar', 'length' => '1024', 'not null'  => FALSE),
-      'caps_services' => array('type' => 'varchar', 'length' => '1024', 'not null'  => FALSE),
-      'caps_network' => array('type' => 'varchar', 'length' => '1024', 'not null'  => FALSE),
-      'caps_project' => array('type' => 'varchar', 'length' => '1024', 'not null'  => FALSE),
-      'other_caps' => array('type' => 'varchar', 'length' => '1024', 'not null'  => FALSE),
+      'guifi_certs' => array('type' => 'text', 'not null'  => FALSE),
+      'tp_certs' => array('type' => 'text', 'not null'  => FALSE),
+      'other_certs' => array('type' => 'text', 'not null'  => FALSE),
+      'caps_services' => array('type' => 'text', 'not null'  => FALSE),
+      'caps_network' => array('type' => 'text', 'not null'  => FALSE),
+      'caps_project' => array('type' => 'text', 'not null'  => FALSE),
+      'other_caps' => array('type' => 'text', 'not null'  => FALSE),
       'self_rating' => array('type' => 'varchar', 'length' => '5', 'not null'  => FALSE, 'default'=>'~~'),
       'official_rating' => array('type' => 'varchar', 'length' => '5', 'not null'  => FALSE, 'default'=>'~~'),
       'user_rating' => array('type' => 'numeric', 'not null'  => FALSE, 'default' => 0, 'precision' => '10', 'scale' => '2'),
-      'accounting_urls' => array('type' => 'varchar', 'length' => '1024', 'not null'  => FALSE),
+      'accounting_urls' => array('type' => 'text', 'not null'  => FALSE),
       'ack' => array('type' => 'varchar', 'length' => '1', 'not null'  => FALSE, 'default'=>0,'comment'=>'Terms acknoledgement'),
     'primary key' => array('id'),
   );
@@ -312,7 +312,7 @@ function budgets_update_478() {
   return $items;
 }
 
-function budgets_update_500() {
+function budgets_update_533() {
   $items = array();
 
   db_add_field($items,'budgets','budget_type',
@@ -321,114 +321,30 @@ function budgets_update_500() {
     array('type' => 'int', 'size' => 'medium', 'unsigned' => TRUE, 'not null'  => TRUE, 'default' => 0, 'comment' => 'Foreign key to supplier'));
   db_add_field($items,'budgets','node_id',
     array('type' => 'int', 'size' => 'medium', 'unsigned' => TRUE, 'not null'  => TRUE, 'default' => 0, 'comment' => 'Foreign key to guifi_node'));
-}
-
-function budgets_update_501() {
-  $items = array();
 
   db_add_field($items,'budgets','ticket_link',
     array('type' => 'varchar', 'length' => '100', 'comment' => 'If exists, link to whatever causes the expense, i.e. ticket maintenance...'));
-}
-
-function budgets_update_502() {
-  $items = array();
-
   db_add_field($items,'budgets','accdate',
     array('type' => 'int', 'not null'  => FALSE, 'disp-width' => '11'));
-}
-
-function budgets_update_503() {
-  $items = array();
-
   db_add_field($items,'budget_items','tax',
     array('type' => 'int', 'size' => 'small', 'not null'  => FALSE, 'default' => 0));
-}
 
-function budgets_update_504() {
-
-  db_add_field($items,'supplier','tp_certs',
-      array('type' => 'varchar', 'length' => '4096', 'not null'  => FALSE));
-  db_add_field($items,'supplier','guifi_certs',
-      array('type' => 'varchar', 'length' => '4096', 'not null'  => FALSE));
-  db_add_field($items,'supplier','other_certs',
-      array('type' => 'varchar', 'length' => '1024', 'not null'  => FALSE));
-  db_add_field($items,'supplier','capabilities',
-      array('type' => 'varchar', 'length' => '1024', 'not null'  => FALSE));
   db_add_field($items,'supplier','frating',
       array('type' => 'varchar', 'length' => '5', 'not null'  => FALSE));
   db_add_field($items,'supplier','wrating',
       array('type' => 'varchar', 'length' => '5', 'not null'  => FALSE));
   db_add_field($items,'supplier','urating',
       array('type' => 'numeric', 'not null'  => FALSE, 'default' => 0, 'precision' => '10', 'scale' => '2'));
-  /*
-   *  budget_status
-   */
-  db_query("INSERT INTO {guifi_types} (id, type, text, description, relations) VALUES ('1', 'budget_status', 'Preparation', 'Preparation', NULL)");
-  db_query("INSERT INTO {guifi_types} (id, type, text, description, relations) VALUES ('2', 'budget_status', 'Review', 'Under review', NULL)");
-  db_query("INSERT INTO {guifi_types} (id, type, text, description, relations) VALUES ('3', 'budget_status', 'Approved', 'Approved', NULL)");
-  db_query("INSERT INTO {guifi_types} (id, type, text, description, relations) VALUES ('4', 'budget_status', 'Executed', 'Executed', NULL)");
-  db_query("INSERT INTO {guifi_types} (id, type, text, description, relations) VALUES ('5', 'budget_status', 'Open', 'Crowdfunding open', NULL)");
-  db_query("INSERT INTO {guifi_types} (id, type, text, description, relations) VALUES ('6', 'budget_status', 'Closed', 'Closed', NULL)");
-  db_query("INSERT INTO {guifi_types} (id, type, text, description, relations) VALUES ('7', 'budget_status', 'Abandoned', 'Abandoned', NULL)");
-  db_query("INSERT INTO {guifi_types} (id, type, text, description, relations) VALUES ('8', 'budget_status', 'Executed', 'Executed', NULL)");
-
-  /*
-   *  budget_type
-   */
-  db_query("INSERT INTO {guifi_types} (id, type, text, description, relations) VALUES ('1', 'budget_type', 'none', 'None', NULL)");
-  db_query("INSERT INTO {guifi_types} (id, type, text, description, relations) VALUES ('2', 'budget_type', 'crowdfunding', 'Crowdfunding', NULL)");
-  db_query("INSERT INTO {guifi_types} (id, type, text, description, relations) VALUES ('3', 'budget_type', 'w-capex', 'Wireless-CAPEX', NULL)");
-  db_query("INSERT INTO {guifi_types} (id, type, text, description, relations) VALUES ('4', 'budget_type', 'w-opex', 'Wireless-OPEX', NULL)");
-  db_query("INSERT INTO {guifi_types} (id, type, text, description, relations) VALUES ('5', 'budget_type', 'f-capex', 'Fiber-CAPEX', NULL)");
-  db_query("INSERT INTO {guifi_types} (id, type, text, description, relations) VALUES ('6', 'budget_type', 'f-opex', 'Fiber-OPEX', NULL)");
-
-  /*
-   * 3th part certs (tp_certs)
-   */
-  db_query("INSERT INTO {guifi_types} (id, type, text, description, relations) VALUES ('1', 'tp_certs', 'ISP', 'NRA Registered - ISP Provider', NULL)");
-  db_query("INSERT INTO {guifi_types} (id, type, text, description, relations) VALUES ('2', 'tp_certs', 'TIProf', 'TI Builder', NULL)");
-  db_query("INSERT INTO {guifi_types} (id, type, text, description, relations) VALUES ('3', 'tp_certs', 'TPEng', 'TI Engineering', NULL)");
-  db_query("INSERT INTO {guifi_types} (id, type, text, description, relations) VALUES ('4', 'tp_certs', 'VWorks', 'Vertical works', NULL)");
-  db_query("INSERT INTO {guifi_types} (id, type, text, description, relations) VALUES ('5', 'tp_certs', 'LRTraining', 'Labour Risks Trained', NULL)");
-  db_query("INSERT INTO {guifi_types} (id, type, text, description, relations) VALUES ('6', 'tp_certs', 'LRInsurance', 'Civil Responsibiliy Insurance', NULL)");
-
-  /*
-   * guifi_certs
-   */
-  db_query("INSERT INTO {guifi_types} (id, type, text, description, relations) VALUES ('1', 'guifi_certs', 'Commons','Comuns XOLN Compliance', NULL)");
-  db_query("INSERT INTO {guifi_types} (id, type, text, description, relations) VALUES ('2', 'guifi_certs', 'BEthics', 'Bussiness Practices & Ethics Compliance', NULL)");
-  db_query("INSERT INTO {guifi_types} (id, type, text, description, relations) VALUES ('3', 'guifi_certs', 'BPractices','Best Practices Compliance', NULL)");
-  db_query("INSERT INTO {guifi_types} (id, type, text, description, relations) VALUES ('4', 'guifi_certs', 'PoPIX-Part','PoPIX Participant agreement', NULL)");
-  db_query("INSERT INTO {guifi_types} (id, type, text, description, relations) VALUES ('5', 'guifi_certs', 'PoPIX-Mgmt','PoP-IX Management Agreement', NULL)");
-  db_query("INSERT INTO {guifi_types} (id, type, text, description, relations) VALUES ('6', 'guifi_certs', 'FO-Dist','Fibre Optics Distribution Agreement', NULL)");
-  db_query("INSERT INTO {guifi_types} (id, type, text, description, relations) VALUES ('7', 'guifi_certs', 'FO-Mgmt','Fibre Optics Management Agreement', NULL)");
-  db_query("INSERT INTO {guifi_types} (id, type, text, description, relations) VALUES ('8', 'guifi_certs', 'W-Dist', 'Wireless Management Agreement', NULL)");
-  db_query("INSERT INTO {guifi_types} (id, type, text, description, relations) VALUES ('9', 'guifi_certs', 'W-Mgmt','Wireless Management Agreement', NULL)");
-
-  /*
-   * skills
-   */
-  db_query("INSERT INTO {guifi_types} (id, type, text, description, relations) VALUES ('1', 'skills', 0,'No', NULL)");
-  db_query("INSERT INTO {guifi_types} (id, type, text, description, relations) VALUES ('2', 'skills', 1,'Subcontracting', NULL)");
-  db_query("INSERT INTO {guifi_types} (id, type, text, description, relations) VALUES ('3', 'skills', 2,'Yes, no experience', NULL)");
-  db_query("INSERT INTO {guifi_types} (id, type, text, description, relations) VALUES ('4', 'skills', 3,'Yes, some experience', NULL)");
-  db_query("INSERT INTO {guifi_types} (id, type, text, description, relations) VALUES ('5', 'skills', 4,'Yes, experienced', NULL)");
-}
-
-function budgets_update_506() {
 
   db_add_field($items,'supplier','caps_services',
-      array('type' => 'varchar', 'length' => '4096', 'not null'  => FALSE));
+      array('type' => 'text', 'not null'  => FALSE));
   db_add_field($items,'supplier','caps_network',
-      array('type' => 'varchar', 'length' => '4096', 'not null'  => FALSE));
+      array('type' => 'text', 'not null'  => FALSE));
   db_add_field($items,'supplier','caps_project',
-      array('type' => 'varchar', 'length' => '4096', 'not null'  => FALSE));
+      array('type' => 'text', 'not null'  => FALSE));
   db_add_field($items,'supplier','other_caps',
-      array('type' => 'varchar', 'length' => '1024', 'not null'  => FALSE));
+      array('type' => 'text', 'not null'  => FALSE));
 
-};
-
-function budgets_update_511() {
 
   db_add_field($items,'supplier','code',
       array('type' => 'varchar', 'length' => 5, 'not null'  => TRUE, 'comment' => 'to be used for building part numbers, abbreviations, etc'));
@@ -453,33 +369,23 @@ function budgets_update_511() {
   db_add_field($items,'supplier','default_tax_rate',
       array('type' => 'int', 'size' => 'small', 'not null'=>TRUE, 'default'=>0));
   db_add_field($items,'supplier','guifi_certs',
-      array('type' => 'varchar', 'length' => '1024', 'not null'  => FALSE));
+      array('type' => 'text', 'not null'  => FALSE));
   db_add_field($items,'supplier','tp_certs',
-      array('type' => 'varchar', 'length' => '1024', 'not null'  => FALSE));
+      array('type' => 'text', 'not null'  => FALSE));
   db_add_field($items,'supplier','other_certs',
-      array('type' => 'varchar', 'length' => '1024', 'not null'  => FALSE));
+      array('type' => 'text', 'not null'  => FALSE));
   db_add_field($items,'supplier','caps_services',
-      array('type' => 'varchar', 'length' => '1024', 'not null'  => FALSE));
+      array('type' => 'text', 'not null'  => FALSE));
   db_add_field($items,'supplier','caps_network',
-      array('type' => 'varchar', 'length' => '1024', 'not null'  => FALSE));
+      array('type' => 'text', 'not null'  => FALSE));
   db_add_field($items,'supplier','caps_project',
-      array('type' => 'varchar', 'length' => '1024', 'not null'  => FALSE));
+      array('type' => 'text', 'not null'  => FALSE));
   db_add_field($items,'supplier','other_caps',
-      array('type' => 'varchar', 'length' => '1024', 'not null'  => FALSE));
+      array('type' => 'text', 'not null'  => FALSE));
 
-};
-
-function budgets_update_512() {
   db_add_field($items,'supplier','zones',
       array('type' => 'varchar', 'length' => '256', 'not null'=>TRUE, 'comment' => 'Fireign key of zones where the supplier is available'));
-};
 
-function budgets_update_515() {
-  db_query("UPDATE {supplier} set zones = zone_id");
-};
-
-
-function budgets_update_521() {
   db_add_field($items,'supplier','self_rating',
     array('type' => 'varchar', 'length' => '5', 'not null'  => FALSE,'default' => '~~'));
   db_add_field($items,'supplier','official_rating',
@@ -487,21 +393,8 @@ function budgets_update_521() {
   db_add_field($items,'supplier','user_rating',
     array('type' => 'numeric', 'not null'  => FALSE, 'default' => 0, 'precision' => '10', 'scale' => '2'));
   db_add_field($items,'supplier','accounting_urls',
-    array('type' => 'varchar', 'length' => '2048', 'not null'  => FALSE));
+    array('type' => 'text', 'not null'  => FALSE));
 
-  db_query("INSERT INTO {guifi_types} (id, type, text, description, relations) VALUES ('1', 'commitment_rate', 'A','A-Totally commited, priority to the Commons, ', NULL)");
-  db_query("INSERT INTO {guifi_types} (id, type, text, description, relations) VALUES ('2', 'commitment_rate', 'B','B-Case by case, depending on circumstances', NULL)");
-  db_query("INSERT INTO {guifi_types} (id, type, text, description, relations) VALUES ('3', 'commitment_rate', 'C','C-General provider. No special commitment', NULL)");
-  db_query("INSERT INTO {guifi_types} (id, type, text, description, relations) VALUES ('4', 'commitment_rate', '~','Not rated', NULL)");
-
-  db_query("INSERT INTO {guifi_types} (id, type, text, description, relations) VALUES ('1', 'experience_rate', 'A','A-Main activity and above the average experience', NULL)");
-  db_query("INSERT INTO {guifi_types} (id, type, text, description, relations) VALUES ('2', 'experience_rate', 'B','B-Some experience or up to the average', NULL)");
-  db_query("INSERT INTO {guifi_types} (id, type, text, description, relations) VALUES ('3', 'experience_rate', 'C','C-None or few experience, willing to start', NULL)");
-  db_query("INSERT INTO {guifi_types} (id, type, text, description, relations) VALUES ('4', 'experience_rate', '~','Not rated', NULL)");
-
-};
-
-function budgets_update_532() {
   db_add_field($items,'supplier','web_url',
       array('type' => 'varchar', 'length' => '128', 'not null'  => FALSE));
   db_add_field($items,'supplier','role',
@@ -512,8 +405,44 @@ function budgets_update_532() {
       array('type' => 'varchar', 'length' => '1', 'not null'  => FALSE, 'default'=>0,'comment'=>'Terms acknoledgement'));
   db_add_field($items,'supplier_quote','tax',
       array('type' => 'int', 'size' => 'small', 'not null'  => FALSE, 'default' => 0));
+}
+
+function budgets_update_534() {
+  /*
+   *  budget_status
+   */
+  db_query("INSERT INTO {guifi_types} (id, type, text, description, relations) VALUES ('1', 'budget_status', 'Preparation', 'Preparation', NULL)");
+  db_query("INSERT INTO {guifi_types} (id, type, text, description, relations) VALUES ('2', 'budget_status', 'Review', 'Under review', NULL)");
+  db_query("INSERT INTO {guifi_types} (id, type, text, description, relations) VALUES ('3', 'budget_status', 'Approved', 'Approved', NULL)");
+  db_query("INSERT INTO {guifi_types} (id, type, text, description, relations) VALUES ('4', 'budget_status', 'Executed', 'Executed', NULL)");
+  db_query("INSERT INTO {guifi_types} (id, type, text, description, relations) VALUES ('5', 'budget_status', 'Open', 'Crowdfunding open', NULL)");
+  db_query("INSERT INTO {guifi_types} (id, type, text, description, relations) VALUES ('6', 'budget_status', 'Closed', 'Closed', NULL)");
+  db_query("INSERT INTO {guifi_types} (id, type, text, description, relations) VALUES ('7', 'budget_status', 'Abandoned', 'Abandoned', NULL)");
+  db_query("INSERT INTO {guifi_types} (id, type, text, description, relations) VALUES ('8', 'budget_status', 'Executed', 'Executed', NULL)");
+
+  /*
+   *  budget_type
+   */
+  db_query("INSERT INTO {guifi_types} (id, type, text, description, relations) VALUES ('1', 'budget_type', 'none', 'None', NULL)");
+  db_query("INSERT INTO {guifi_types} (id, type, text, description, relations) VALUES ('2', 'budget_type', 'crowdfunding', 'Crowdfunding', NULL)");
+  db_query("INSERT INTO {guifi_types} (id, type, text, description, relations) VALUES ('3', 'budget_type', 'w-capex', 'Wireless-CAPEX', NULL)");
+  db_query("INSERT INTO {guifi_types} (id, type, text, description, relations) VALUES ('4', 'budget_type', 'w-opex', 'Wireless-OPEX', NULL)");
+  db_query("INSERT INTO {guifi_types} (id, type, text, description, relations) VALUES ('5', 'budget_type', 'f-capex', 'Fiber-CAPEX', NULL)");
+  db_query("INSERT INTO {guifi_types} (id, type, text, description, relations) VALUES ('6', 'budget_type', 'f-opex', 'Fiber-OPEX', NULL)");
+
+  db_query("UPDATE {supplier} set zones = zone_id");
 
   db_query("DELETE FROM {guifi_types} WHERE type in ('caps_services','caps_network','caps_project','tp_certs','guifi_certs')");
+
+  db_query("INSERT INTO {guifi_types} (id, type, text, description, relations) VALUES ('1', 'commitment_rate', 'A','A-Totally commited, priority to the Commons, ', NULL)");
+  db_query("INSERT INTO {guifi_types} (id, type, text, description, relations) VALUES ('2', 'commitment_rate', 'B','B-Case by case, depending on circumstances', NULL)");
+  db_query("INSERT INTO {guifi_types} (id, type, text, description, relations) VALUES ('3', 'commitment_rate', 'C','C-General provider. No special commitment', NULL)");
+  db_query("INSERT INTO {guifi_types} (id, type, text, description, relations) VALUES ('4', 'commitment_rate', '~','Not rated', NULL)");
+
+  db_query("INSERT INTO {guifi_types} (id, type, text, description, relations) VALUES ('1', 'experience_rate', 'A','A-Main activity and above the average experience', NULL)");
+  db_query("INSERT INTO {guifi_types} (id, type, text, description, relations) VALUES ('2', 'experience_rate', 'B','B-Some experience or up to the average', NULL)");
+  db_query("INSERT INTO {guifi_types} (id, type, text, description, relations) VALUES ('3', 'experience_rate', 'C','C-None or few experience, willing to start', NULL)");
+  db_query("INSERT INTO {guifi_types} (id, type, text, description, relations) VALUES ('4', 'experience_rate', '~','Not rated', NULL)");
   /*
    * 3th part certs (tp_certs)
    */
