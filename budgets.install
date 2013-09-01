@@ -149,7 +149,7 @@ function budgets_install() {
   db_query("INSERT INTO {guifi_types} (id, type, text, description, relations) VALUES ('5', 'guifi_certs', 'PoPIX-Mgmt','PoP-IX Management Agreement', NULL)");
   db_query("INSERT INTO {guifi_types} (id, type, text, description, relations) VALUES ('6', 'guifi_certs', 'FO-Dist','Fibre Optics Distribution Agreement', NULL)");
   db_query("INSERT INTO {guifi_types} (id, type, text, description, relations) VALUES ('7', 'guifi_certs', 'FO-Mgmt','Fibre Optics Management Agreement', NULL)");
-  db_query("INSERT INTO {guifi_types} (id, type, text, description, relations) VALUES ('8', 'guifi_certs', 'W-Dist', 'Wireless Management Agreement', NULL)");
+  db_query("INSERT INTO {guifi_types} (id, type, text, description, relations) VALUES ('8', 'guifi_certs', 'W-Dist', 'Wireless Distribution Agreement', NULL)");
   db_query("INSERT INTO {guifi_types} (id, type, text, description, relations) VALUES ('9', 'guifi_certs', 'W-Mgmt','Wireless Management Agreement', NULL)");
   /*
    * skills
@@ -454,7 +454,7 @@ function budgets_update_534() {
   db_query("INSERT INTO {guifi_types} (id, type, text, description, relations) VALUES ('5', 'guifi_certs', 'PoPIX-Mgmt','PoP-IX Management Agreement', NULL)");
   db_query("INSERT INTO {guifi_types} (id, type, text, description, relations) VALUES ('6', 'guifi_certs', 'FO-Dist','Fibre Optics Distribution Agreement', NULL)");
   db_query("INSERT INTO {guifi_types} (id, type, text, description, relations) VALUES ('7', 'guifi_certs', 'FO-Mgmt','Fibre Optics Management Agreement', NULL)");
-  db_query("INSERT INTO {guifi_types} (id, type, text, description, relations) VALUES ('8', 'guifi_certs', 'W-Dist', 'Wireless Management Agreement', NULL)");
+  db_query("INSERT INTO {guifi_types} (id, type, text, description, relations) VALUES ('8', 'guifi_certs', 'W-Dist', 'Wireless Distribution Agreement', NULL)");
   db_query("INSERT INTO {guifi_types} (id, type, text, description, relations) VALUES ('9', 'guifi_certs', 'W-Mgmt','Wireless Management Agreement', NULL)");
 
   /*

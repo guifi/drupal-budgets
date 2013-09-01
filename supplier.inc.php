@@ -183,6 +183,7 @@ function budgets_supplier_form(&$node,&$param) {
   /*
    * Certifications
    */
+  if (!empty($node->role))
   $form['certs'] = array(
     '#type'        => 'fieldset',
     '#title'       => t('Enabling Certifications'),
@@ -216,25 +217,27 @@ function budgets_supplier_form(&$node,&$param) {
     }
   $options_guifi_certs=guifi_types('guifi_certs');
   $count = 1; $totalv = count($options_guifi_certs);
-  foreach ($options_guifi_certs as $key=>$cert) {
-  	$prefix = ''; $suffix = '';
-  	if ($count == 1)
-  	  $prefix = '<div class=certs><table><tr><th>'.
-        t('date').'</th><th>'.
-        t('guifi.net certificate').'</th></tr>';
-  	if ($count == $totalv)
-	  $suffix = '</table></div>';
-  	$form['certs']['guifi_certs'][$key] = array(
-      '#type' => 'textfield',
-      //'#title' => t($cert),
-      '#size' => 10,
-      '#default_value' => $node->certs['guifi_certs'][$key],
-      '#attributes'=>array('class'=>"cert-field"),
-      '#prefix' => $prefix.'<tr><td>',
-      '#suffix' => '</td><td>'.$cert.'</td>'.$suffix,
-    );
-    $count++;
-  }
+  if (!empty($node->role))
+    foreach ($options_guifi_certs as $key=>$cert) {
+    	$prefix = ''; $suffix = '';
+  	  if ($count == 1)
+  	    $prefix = '<div class=certs><table><tr><th>'.
+          t('date').'</th><th>'.
+          t('guifi.net certificate').'</th></tr>';
+    	if ($count == $totalv)
+  	  $suffix = '</table></div>';
+    	$form['certs']['guifi_certs'][$key] = array(
+        '#type' => 'textfield',
+        //'#title' => t($cert),
+        '#size' => 10,
+        '#default_value' => $node->certs['guifi_certs'][$key],
+        '#attributes'=>array('class'=>"cert-field"),
+        '#prefix' => $prefix.'<tr><td>',
+        '#suffix' => '</td><td>'.$cert.'</td>'.$suffix,
+      );
+      $count++;
+    }
+  if (!empty($node->role))
   $form['certs']['other_certs'] = array(
     '#type'             => 'textfield',
     '#title'            => t('Other certificates'),
@@ -251,9 +254,11 @@ function budgets_supplier_form(&$node,&$param) {
    * Capabilities
    */
   $skills_list=guifi_types('skills');
+  if (!empty($node->role))
   foreach ($skills_list as $k=>$value)
      if (guifi_type_relation('skills',$k,$node->role))
        $skill_opts[$k] = $value;
+  if (!empty($node->role))
   $form['caps'] = array(
     '#type'        => 'fieldset',
     '#title'       => t('Capabilities, services & offerings'),
@@ -268,6 +273,7 @@ function budgets_supplier_form(&$node,&$param) {
   $skills=t('capability & skills');
   $opt_caps=guifi_types('caps_services');
   $count = 1; $totalv = count($opt_caps);
+  if (!empty($node->role))
   foreach ($opt_caps as $key=>$cap) {
   	$prefix = ''; $suffix = '';
   	if ($count == 1)
@@ -293,6 +299,7 @@ function budgets_supplier_form(&$node,&$param) {
 
   $opt_caps=guifi_types('caps_network');
   $count = 1; $totalv = count($opt_caps);
+  if (!empty($node->role))
   foreach ($opt_caps as $key=>$cap) {
   	$prefix = ''; $suffix = '';
   	if ($count == 1)
@@ -318,6 +325,7 @@ function budgets_supplier_form(&$node,&$param) {
 
   $opt_caps=guifi_types('caps_project');
   $count = 1; $totalv = count($opt_caps);
+  if (!empty($node->role))
   foreach ($opt_caps as $key=>$cap) {
   	$prefix = ''; $suffix = '';
   	if ($count == 1)
@@ -339,6 +347,7 @@ function budgets_supplier_form(&$node,&$param) {
     );
     $count++;
   }
+  if (!empty($node->role))
   $form['caps']['other_caps'] = array(
     '#type'             => 'textfield',
     '#title'            => t('Other capabilities'),
@@ -373,13 +382,13 @@ function budgets_supplier_form(&$node,&$param) {
     '#type'        => 'select',
     '#title'       => t('Commitment'),
     '#description' => t('Commitment to the Commons and the Community'),
-    '#default_value'=>$node->sr_commitment,
+    '#default_value'=>($node->sr_commitment)?($node->sr_commitment):'~',
     '#options'     => guifi_types('commitment_rate'),
   );
   $form['ratings']['self']['sr_experience'] = array(
     '#type'        => 'select',
     '#title'       => t('Experience'),
-    '#default_value'=>$node->sr_experience,
+    '#default_value'=>($node->sr_experience)?($node->sr_experience):'~',
     '#description' => t('Proven experience on executed projects'),
     '#options'     => guifi_types('experience_rate'),
   );
@@ -396,15 +405,14 @@ function budgets_supplier_form(&$node,&$param) {
     '#type'        => 'select',
     '#title'       => t('Commitment'),
     '#description' => t('Commitment to the Commons and the Community'),
-    '#default_value'=>$node->or_commitment,
+    '#default_value'=>($node->or_commitment)?($node->or_commitment):'~',
     '#options'     => guifi_types('commitment_rate'),
     '#access'      => user_access('official rating'),
   );
   $form['ratings']['official']['or_experience'] = array(
     '#type'        => 'select',
     '#title'       => t('Experience'),
-    '#description' => t('Proven experience on executed projects'),
-    '#default_value'=>$node->or_experience,
+    '#default_value'=>($node->or_experience)?($node->or_experience):'~',
     '#options'     => guifi_types('experience_rate'),
     '#access'      => user_access('official rating'),
   );
@@ -412,7 +420,7 @@ function budgets_supplier_form(&$node,&$param) {
     '#type'        => 'select',
     '#title'       => t('Trend'),
     '#description' => t('Revision to'),
-    '#default_value'=>$node->or_trend,
+    '#default_value'=>($node->or_trend)?($node->or_trend):' ',
     '#options'     => array('+'=>'+',' '=>t('Stable'),'-'=>'-'),
     '#access'      => user_access('official rating'),
   );
@@ -645,6 +653,8 @@ function budgets_supplier_form_submit($form_id, &$form_values) {
 
   #this leads us to sites/mysite.example.com/files/
   $dir = file_directory_path();
+  $dir .= '/suppliers';
+  guifi_log(GUIFILOG_BASIC, 'function budgets_supplier_submit(DIR)',$dir);
 
   # unlike form submissions, multipart form submissions are not in
   # $form_state, but rather in $FILES, which requires more checking
@@ -950,7 +960,8 @@ function budgets_supplier_view($node, $teaser = FALSE, $page = FALSE) {
   );
 
   if ($page) {
-//    drupal_set_breadcrumb(guifi_zone_ariadna($node->zone_id));
+    drupal_set_breadcrumb(guifi_zone_ariadna($node->zone_id,'node/%d/view/suppliers'));
+
     $body = $node->content['body']['#value'];
     if (!empty($node->logo))
         $img = '<img class="supplier-logo" src="/'.$node->logo.'" width="200">';
