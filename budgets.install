@@ -151,6 +151,8 @@ function budgets_install() {
   db_query("INSERT INTO {guifi_types} (id, type, text, description, relations) VALUES ('7', 'guifi_certs', 'FO-Mgmt','Fibre Optics Management Agreement', NULL)");
   db_query("INSERT INTO {guifi_types} (id, type, text, description, relations) VALUES ('8', 'guifi_certs', 'W-Dist', 'Wireless Distribution Agreement', NULL)");
   db_query("INSERT INTO {guifi_types} (id, type, text, description, relations) VALUES ('9', 'guifi_certs', 'W-Mgmt','Wireless Management Agreement', NULL)");
+  db_query("INSERT INTO {guifi_types} (id, type, text, description, relations) VALUES ('10', 'guifi_certs', 'AVolunteer','Volunteer Agreement', 'volunteer')");
+
   /*
    * skills
    */
@@ -456,6 +458,7 @@ function budgets_update_534() {
   db_query("INSERT INTO {guifi_types} (id, type, text, description, relations) VALUES ('7', 'guifi_certs', 'FO-Mgmt','Fibre Optics Management Agreement', NULL)");
   db_query("INSERT INTO {guifi_types} (id, type, text, description, relations) VALUES ('8', 'guifi_certs', 'W-Dist', 'Wireless Distribution Agreement', NULL)");
   db_query("INSERT INTO {guifi_types} (id, type, text, description, relations) VALUES ('9', 'guifi_certs', 'W-Mgmt','Wireless Management Agreement', NULL)");
+  db_query("INSERT INTO {guifi_types} (id, type, text, description, relations) VALUES ('10', 'guifi_certs', 'AVolunteer','Volunteer Agreement', 'volunteer')");
 
   /*
    * caps_services
@@ -492,4 +495,10 @@ function budgets_update_534() {
   db_query("INSERT INTO {guifi_types} (id, type, text, description, relations) VALUES ('3', 'skills', 2,'Subcontracting', 'professional|volunteer')");
   db_query("INSERT INTO {guifi_types} (id, type, text, description, relations) VALUES ('4', 'skills', 3,'Yes, some experience', 'professional|volunteer')");
   db_query("INSERT INTO {guifi_types} (id, type, text, description, relations) VALUES ('5', 'skills', 4,'Yes, experienced', 'professional|volunteer')");
+}
+
+function budgets_update_540() {
+  $items = array();
+
+  db_query("INSERT INTO {guifi_types} (id, type, text, description, relations) VALUES ('10', 'guifi_certs', 'AVolunteer','Volunteer Agreement', 'volunteer')");
 }

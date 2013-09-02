@@ -671,6 +671,7 @@ function budgets_supplier_form_submit($form_id, &$form_values) {
       drupal_set_message(t('You uploaded %name',array('%name'=>$name)));
       guifi_log(GUIFILOG_TRACE, 'file',$file->filepath);
       $supplier['logo']=$file->filepath;
+     file_set_status($file,FILE_STATUS_PERMANENT);
     }
     else{
         drupal_set_message("Something went wrong saving your file.");
