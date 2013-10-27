@@ -714,6 +714,29 @@ function budgets_supplier_access($op, $node, $account = NULL) {
   }
 }
 
+function budgets_supplier_get_name($id){
+  $matches = array();
+
+  $string = strtoupper(arg(3));
+
+  $qry = db_query(
+    'SELECT ' .
+    '  CONCAT(id, "-", title) str '.
+    'FROM {supplier} ' .
+    'WHERE ' .
+    '  (CONCAT(id, "-", upper(title)) ' .
+    '    LIKE "%'.$string.'%") ' .
+    'ORDER BY title');
+
+  $c = 0;
+  while (($value = db_fetch_array($qry)) and ($c < 50)) {
+    $c++;
+    $matches[$value['str']] = $value['str'];
+  }
+  print drupal_to_js($matches);
+  exit();
+}
+
 function budgets_supplier_save($node) {
   global $user;
 
@@ -904,11 +927,10 @@ function budgets_supplier_list_by_zone($zone) {
     '        s.official_rating),' .
     '      "-",2),' .
     '    "+","0"),' .
-    ' role ';
+    ' role, rand() ';
   guifi_log(GUIFILOG_TRACE,'list_by_zone (suppliers query)',$qquery);
-
-  $pager = pager_query($qquery,
-    variable_get('default_nodes_main', 10)
+  $pager = pager_query($qquery,50
+  //  variable_get('default_nodes_main', 25)
   );
   $output = '';
   while ($s = db_fetch_object($pager)) {

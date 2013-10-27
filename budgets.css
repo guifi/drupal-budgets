@@ -14,13 +14,19 @@ img.supplier-logo {
 div.capson {
   width: 17px;
   height: 15px;
-  background: url(small_star.png) center no-repeat 0 -0px;
-  background-image: url(icons/small_star.png);
-  background-position-x: 0px;
-  background-position-y: -32px;
   display: block;
   float: left;
   cursor: pointer;
+  
+  background: url("icons/small_star.png") no-repeat scroll 0px -32px transparent;
+  background-color: transparent;
+  background-image: url("icons/small_star.png");
+  background-repeat: no-repeat;
+  background-attachment: scroll;
+  background-position: 0px -32px;
+  background-clip: border-box;
+  background-origin: padding-box;
+  background-size: auto auto;
 }
 div.capsoff {
   width: 17px;
