@@ -992,6 +992,8 @@ function budgets_supplier_list_by_zone_filter_submit($form_id, &$form_values) {
 function budgets_supplier_list_by_zone($zone,$params = NULL) {
 
   $zroot = guifi_bg_zone_root();
+  $vars = array();
+
   if (($zone->id==0) or (empty($zone->id))) {
     $zone->id=$zroot;
   }
