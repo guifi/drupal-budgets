@@ -819,6 +819,7 @@ function budgets_supplier_update($node) {
 }
 
 function budgets_supplier_load_explode_caps($fields,&$node) {
+	$node->caps[$field] = array();
     foreach ($fields as $field) if ($node->$field != '') {
       $elements = explode(',',$node->$field);
 //      guifi_log(GUIFILOG_BASIC,'function budgets_save 2()',$elements);
@@ -829,6 +830,7 @@ function budgets_supplier_load_explode_caps($fields,&$node) {
 };
 
 function budgets_supplier_load_explode_certs($fields,&$node) {
+	$node->certs[$field] = array();
     foreach ($fields as $field) if ($node->$field != '') {
       $elements = explode(',',$node->$field);
 //      guifi_log(GUIFILOG_BASIC,'function budgets_save 2()',$elements);
@@ -986,7 +988,7 @@ function budgets_supplier_list_by_zone_filter_submit($form_id, &$form_values) {
     ',caps_network='.implode('|',$v['caps_network']).
     ',caps_project='.implode('|',$v['caps_project']);
 
-  drupal_goto('node/'.$v['zone_id'].'/view/suppliers/'.$s);
+  drupal_goto('node/'.$v['zone_id'].'/suppliers/'.$s);
 }
 
 function budgets_supplier_list_by_zone($zone,$params = NULL) {
@@ -1257,14 +1259,14 @@ function theme_budgets_supplier_footer($node, $teaser) {
 
   	for ($i=0;$i<$max;$i++) {
       $rows[$i] = array(
-        is_array($node->certs['tp_certs']) ? array('data'=>$tp_certs[key($node->certs['tp_certs'])].' '.current($node->certs['tp_certs'])) : null,
-        is_array($node->certs['guifi_certs']) ? array('data'=>$guifi_certs[key($node->certs['guifi_certs'])].' '.current($node->certs['guifi_certs']))  : null,
-        is_array($node->certs['caps_services']) ? array('data'=>theme_budgets_supplier_showcap($caps_services[key($node->caps['caps_services'])],
-          current($node->caps['caps_services']))) : null,
-        is_array($node->certs['caps_network']) ? array('data'=>theme_budgets_supplier_showcap($caps_network[key($node->caps['caps_network'])],
-          current($node->caps['caps_network']))) : null,
-        is_array($node->certs['caps_project']) ? array('data'=>theme_budgets_supplier_showcap($caps_project[key($node->caps['caps_project'])],
-          current($node->caps['caps_project']))) : null,
+        array('data'=>$tp_certs[key($node->certs['tp_certs'])].' '.current($node->certs['tp_certs'])),
+        array('data'=>$guifi_certs[key($node->certs['guifi_certs'])].' '.current($node->certs['guifi_certs'])),
+        array('data'=>theme_budgets_supplier_showcap($caps_services[key($node->caps['caps_services'])],
+          current($node->caps['caps_services']))),
+        array('data'=>theme_budgets_supplier_showcap($caps_network[key($node->caps['caps_network'])],
+          current($node->caps['caps_network']))),
+        array('data'=>theme_budgets_supplier_showcap($caps_project[key($node->caps['caps_project'])],
+          current($node->caps['caps_project']))),
       );
 
       next($node->certs['tp_certs']);
