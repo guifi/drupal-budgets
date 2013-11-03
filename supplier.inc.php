@@ -819,7 +819,6 @@ function budgets_supplier_update($node) {
 }
 
 function budgets_supplier_load_explode_caps($fields,&$node) {
-	$node->caps[$fields] = array();
     foreach ($fields as $field) if ($node->$field != '') {
       $elements = explode(',',$node->$field);
 //      guifi_log(GUIFILOG_BASIC,'function budgets_save 2()',$elements);
@@ -855,6 +854,12 @@ function budgets_supplier_load($node) {
 
   if (is_null($node->id))
     return FALSE;
+
+  $node->certs['tp_certs'] = array();
+  $node->certs['guifi_certs'] = array();
+  $node->caps['caps_services'] = array();
+  $node->caps['caps_network'] = array();
+  $node->caps['caps_project'] = array();
 
   budgets_supplier_load_explode_certs(
     array(
