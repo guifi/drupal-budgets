@@ -552,7 +552,7 @@ function budgets_supplier_form(&$node,&$param) {
     '#title'       => t('Terms & conditions agreement'),
     '#required'    => TRUE,
     '#default_value'=>$node->ack,
-    '#options'     => array('1'=>t('Yes, I agree')),
+    '#options'     => array('0'=>'No','1'=>t('Yes, I agree')),
     '#description' => t(
        'I agree on:<br>' .
        '<ul><li>I\'m responsible for all the information I provided, that is truthfulness and available for being verified upon request. ' .
@@ -572,7 +572,10 @@ function budgets_supplier_form(&$node,&$param) {
 }
 
 function budgets_supplier_validate(&$node) {
-  guifi_log(GUIFILOG_TRACE, 'function budgets_supplier_validate()', $node->role);
+//  guifi_log(GUIFILOG_BASIC, 'function budgets_supplier_validate()', $node->ack);
+
+  if (!$node->ack)
+    form_set_error('ack',t('You should accept the Terms & Conditions to proceed'));
 
   if (($node->caps['caps_services']['isp'] > 2) and (empty($node->certs['tp_certs']['ISP'])))
     form_set_error('certs][tp_certs][ISP',t('You should have the NRA or equivalent certificate to operate as ISP'));
