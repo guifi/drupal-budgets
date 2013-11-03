@@ -819,7 +819,7 @@ function budgets_supplier_update($node) {
 }
 
 function budgets_supplier_load_explode_caps($fields,&$node) {
-	$node->caps[$field] = array();
+	$node->caps[$fields] = array();
     foreach ($fields as $field) if ($node->$field != '') {
       $elements = explode(',',$node->$field);
 //      guifi_log(GUIFILOG_BASIC,'function budgets_save 2()',$elements);
@@ -830,7 +830,7 @@ function budgets_supplier_load_explode_caps($fields,&$node) {
 };
 
 function budgets_supplier_load_explode_certs($fields,&$node) {
-	$node->certs[$field] = array();
+	$node->certs[$fields] = array();
     foreach ($fields as $field) if ($node->$field != '') {
       $elements = explode(',',$node->$field);
 //      guifi_log(GUIFILOG_BASIC,'function budgets_save 2()',$elements);
