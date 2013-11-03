@@ -272,6 +272,83 @@ function budgets_menu() {
     'access callback' => 'budgets_supplier_access',
     'access arguments' => array('create', arg(1)),
     'type' => MENU_LOCAL_TASK);
+
+  $items['node/%budgets_supplier/fundings'] = array(
+    'title' => 'Fundings',
+    'page callback' => 'budgets_supplier_fundings',
+    'page arguments' => array(1,'all'),
+    'access callback' => 'budgets_supplier_access',
+    'access arguments' => array('create', arg(1)),
+    'type' => MENU_LOCAL_TASK);
+  $items['node/%budgets_supplier/fundings/all'] = array(
+    'title' => 'all',
+    'page callback' => 'budgets_supplier_fundings',
+    'page arguments' => array(1,'all'),
+    'access callback' => 'budgets_supplier_access',
+    'access arguments' => array('create', arg(1)),
+    'file' => 'node.pages.inc',
+    'file path' => drupal_get_path('module', 'node'),
+    'type' => MENU_LOCAL_TASK);
+  $items['node/%budgets_supplier/fundings/location'] = array(
+    'title' => 'locations',
+    'page callback' => 'budgets_supplier_fundings',
+    'page arguments' => array(1,'location'),
+    'access callback' => 'budgets_supplier_access',
+    'access arguments' => array('create', arg(1)),
+    'file' => 'node.pages.inc',
+    'file path' => drupal_get_path('module', 'node'),
+    'type' => MENU_LOCAL_TASK);
+  $items['node/%budgets_supplier/fundings/device'] = array(
+    'title' => 'devices',
+    'page callback' => 'budgets_supplier_fundings',
+    'page arguments' => array(1,'device'),
+    'access callback' => 'budgets_supplier_access',
+    'access arguments' => array('create', arg(1)),
+    'type' => MENU_LOCAL_TASK);
+
+  $items['node/%budgets_supplier/sla'] = array(
+    'title' => 'SLAs',
+    'page callback' => 'budgets_supplier_sla',
+    'page arguments' => array(1,'all'),
+    'access callback' => 'budgets_supplier_access',
+    'access arguments' => array('create', arg(1)),
+    'type' => MENU_LOCAL_TASK);
+  $items['node/%budgets_supplier/sla/all'] = array(
+    'title' => 'all',
+    'page callback' => 'budgets_supplier_sla',
+    'page arguments' => array(1,'all'),
+    'access callback' => 'budgets_supplier_access',
+    'access arguments' => array('create', arg(1)),
+    'file' => 'node.pages.inc',
+    'file path' => drupal_get_path('module', 'node'),
+    'type' => MENU_LOCAL_TASK);
+  $items['node/%budgets_supplier/sla/zone'] = array(
+    'title' => 'zone',
+    'page callback' => 'budgets_supplier_sla',
+    'page arguments' => array(1,'zone'),
+    'access callback' => 'budgets_supplier_access',
+    'access arguments' => array('create', arg(1)),
+    'file' => 'node.pages.inc',
+    'file path' => drupal_get_path('module', 'node'),
+    'type' => MENU_LOCAL_TASK);
+  $items['node/%budgets_supplier/sla/location'] = array(
+    'title' => 'locations',
+    'page callback' => 'budgets_supplier_sla',
+    'page arguments' => array(1,'location'),
+    'access callback' => 'budgets_supplier_access',
+    'access arguments' => array('create', arg(1)),
+    'file' => 'node.pages.inc',
+    'file path' => drupal_get_path('module', 'node'),
+    'type' => MENU_LOCAL_TASK);
+  $items['node/%budgets_supplier/sla/device'] = array(
+    'title' => 'devices',
+    'page callback' => 'budgets_supplier_sla',
+    'page arguments' => array(1,'device'),
+    'access callback' => 'budgets_supplier_access',
+    'access arguments' => array('create', arg(1)),
+    'type' => MENU_LOCAL_TASK);
+
+
   $items['node/%budgets_supplier/budgets'] = array(
     'title' => 'Budgets',
     'page callback' => 'budgets_supplier_list_budgets_by_supplier',
@@ -2660,7 +2737,7 @@ function theme_refquote($quote, $supplier, $teaser = FALSE) {
     return t('Ref.') .': '. l($quote->partno, 'node/'. $quote->nid) .'-'.
       l($supplier->title, 'node/'. $supplier->nid) .', '.
       $tax.
-      t('Cost') .': '. number_format($quote->cost, 2, ',', '.');
+      '<h2>'.t('Cost') .': <bold><em>'. number_format($quote->cost, 2, ',', '.').'</bold></em></h2>';
 
   return
     $tax.' <br>'.

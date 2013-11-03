@@ -654,7 +654,7 @@ function budgets_supplier_form_submit($form_id, &$form_values) {
   #this leads us to sites/mysite.example.com/files/
   $dir = file_directory_path();
   $dir .= '/suppliers';
-  guifi_log(GUIFILOG_BASIC, 'function budgets_supplier_submit(DIR)',$dir);
+  guifi_log(GUIFILOG_TRACE, 'function budgets_supplier_submit(DIR)',$dir);
 
   # unlike form submissions, multipart form submissions are not in
   # $form_state, but rather in $FILES, which requires more checking
@@ -886,12 +886,126 @@ function budgets_supplier_load($node) {
   return $node;
 }
 
-function budgets_supplier_list_by_zone($zone) {
+function budgets_supplier_list_by_zone_filter($parm,$zid,$keys=NULL) {
+  guifi_log(GUIFILOG_TRACE,'form_quotes_by_zone_filter',$keys);
+
+  /*
+   * Filter form
+   */
+  $form['filter'] = array(
+    '#title'=> t('Filter').' '.$keyword,
+    '#type'=>'fieldset',
+    '#tree'=>false,
+    '#collapsed'=>true,
+    '#collapsible'=>true,
+  );
+  $form['filter']['tp_certs'] = array(
+    '#type'=>'checkboxes',
+    '#title'=>t('Professional certificate'),
+    '#options'=> guifi_types('tp_certs'),
+    '#multiple'=>true,
+    '#size'=>6,
+    '#default_value'=>$keys['tp_certs'],
+//    '#attributes'=> array('class'=>"budgets-zone-form"),
+  );
+  $form['filter']['guifi_certs'] = array(
+    '#type'=>'checkboxes',
+    '#title'=>t('guifi.net certificate'),
+    '#options'=> guifi_types('guifi_certs'),
+    '#multiple'=>true,
+    '#size'=>8,
+    '#default_value'=>$keys['guifi_certs'],
+//    '#attributes'=> array('class'=>"budgets-zone-form"),
+  );
+  $form['filter']['caps_services'] = array(
+    '#type'=>'checkboxes',
+    '#title'=>t('services & content providers'),
+    '#options'=> guifi_types('caps_services'),
+    '#multiple'=>true,
+    '#size'=>8,
+    '#default_value'=>$keys['caps_services'],
+//    '#attributes'=> array('class'=>"budgets-zone-form"),
+  );
+  $form['filter']['caps_network'] = array(
+    '#type'=>'checkboxes',
+    '#title'=>t('network dev. & mgmt.'),
+    '#options'=> guifi_types('caps_network'),
+    '#multiple'=>true,
+    '#size'=>8,
+    '#default_value'=>$keys['caps_network'],
+//    '#attributes'=> array('class'=>"budgets-zone-form"),
+  );
+  $form['filter']['caps_project'] = array(
+    '#type'=>'checkboxes',
+    '#title'=>t('project development'),
+    '#options'=> guifi_types('caps_project'),
+    '#multiple'=>true,
+    '#size'=>8,
+    '#default_value'=>$keys['caps_project'],
+//    '#attributes'=> array('class'=>"budgets-zone-form"),
+  );
+  $form['filter']['role'] = array(
+    '#type'=>'radios',
+    '#title'=>t('Role'),
+    '#options'=> array('volunteer'=>t('Volunteer'),'professional'=>t('Professional')),
+    '#multiple'=>true,
+    '#size'=>2,
+    '#default_value'=>$keys['role'],
+//    '#attributes'=> array('class'=>"budgets-zone-form"),
+  );
+  $form['filter']['zone_id'] = array('#type'=>hidden,'#value'=>$zid);
+  $form['filter']['title'] = array(
+    '#type'=>'textfield',
+    '#size'=>60,
+    '#title'=>t('Keyword'),
+    '#description'=>t('Name contains (use single keyword)'),
+    '#value'=>$keys['title'][0],
+    '#prefix'=> '<table><td>',
+  );
+  $form['filter']['submit'] = array(
+    '#type'=>'submit',
+    '#title'=>t('Press to proceed'),
+    '#value'=>t('Search'),
+    '#suffix'=> '</td></table>',
+  );
+
+  return $form;
+}
+
+function budgets_supplier_list_by_zone_filter_submit($form_id, &$form_values) {
+  $v=$form_values['values'];
+  guifi_log(GUIFILOG_TRACE,'SUBMIT',$params);
+
+  $s='title='.$v['title'].
+    ',role='.implode('|',$v['role']).
+    ',tp_certs='.implode('|',$v['tp_certs']).
+    ',guifi_certs='.implode('|',$v['guifi_certs']).
+    ',caps_services='.implode('|',$v['caps_services']).
+    ',guifi_certs='.implode('|',$v['guifi_certs']).
+    ',caps_services='.implode('|',$v['caps_services']).
+    ',caps_network='.implode('|',$v['caps_network']).
+    ',caps_project='.implode('|',$v['caps_project']);
+
+  drupal_goto('node/'.$v['zone_id'].'/view/suppliers/'.$s);
+}
+
+function budgets_supplier_list_by_zone($zone,$params = NULL) {
 
   $zroot = guifi_bg_zone_root();
   if (($zone->id==0) or (empty($zone->id))) {
     $zone->id=$zroot;
   }
+
+  if ($params) {
+    $p=explode(',',$params);
+    foreach ($p as $v) {
+      $v=explode('=',$v);
+      if (!empty($v[1]))
+        $vars[$v[0]]=explode('|',$v[1]);
+    }
+  }
+
+  $output = drupal_get_form('budgets_supplier_list_by_zone_filter',$zone->id,$vars);
 
   $parents = array();
 
@@ -910,11 +1024,28 @@ function budgets_supplier_list_by_zone($zone) {
     $where.=') ';
   }
 
+  guifi_log(GUIFILOG_TRACE,'list_suppliers_by_zone (zones)',$vars);
+
+  $svars = array();
+  foreach ($vars as $k => $v) {
+    foreach ($v as $p)
+      if (!empty($p))
+        if ($k == 'title')
+          $svars[] = "upper(s.title) like '%".strtoupper($p)."%' ";
+        else
+          $svars[] = $k." LIKE '%".$p."%' ";
+  }
+  if (count($svars)>0)
+    $swhere = ' AND ('.implode(' AND ',$svars).') ';
+  else
+    $swhere = '';
+
   $qquery =
     'SELECT s.id ' .
     'FROM {supplier} s, {node} n ' .
     'WHERE s.id=n.nid ' .
     ' AND n.status=1 '.
+    $swhere.
     $where.
     // Order by rating, creating a code for sort the trend:
     //  ''+''=0, ''=1, '-'=2
@@ -932,7 +1063,7 @@ function budgets_supplier_list_by_zone($zone) {
   $pager = pager_query($qquery,50
   //  variable_get('default_nodes_main', 25)
   );
-  $output = '';
+  // $output = '';
   while ($s = db_fetch_object($pager)) {
     $supplier = node_load(array('nid' => $s->id));
     $output .= node_view($supplier, TRUE, FALSE, TRUE);
@@ -952,6 +1083,8 @@ function budgets_supplier_view($node, $teaser = FALSE, $page = FALSE) {
 
   if (!isset($node->nid))
     $node = node_load(array('nid' => $node->id));
+  if ($node->sticky)
+    $node->sticky=0;
 
   guifi_log(GUIFILOG_TRACE, 'function budgets_supplier_view(teaser)',$teaser);
 
@@ -1214,6 +1347,127 @@ function budgets_supplier_list_budgets_by_supplier($supplier) {
 //  $output .= theme_pager(NULL, variable_get("guifi_pagelimit", 50));
 //  $node = node_load(array('nid' => $zone->id));
 //  $output .= theme_links(module_invoke_all('link', 'node', $node, FALSE));
+  print theme('page',$output, FALSE);
+  return;
+}
+
+function budgets_supplier_fundings($supplier,$type, $pager = 50) {
+
+
+  guifi_log(GUIFILOG_TRACE,'budgets_supplier_fundings (supplier)',$type);
+
+  if ($type != 'all')
+    $swt = ' AND subject_type = "'.$type.'" ';
+  $qquery =
+    'SELECT * ' .
+    'FROM {guifi_funders} ' .
+    'WHERE supplier_id=' .$supplier->id.' '.$swt.
+    'ORDER BY timestamp_created desc ';
+  guifi_log(GUIFILOG_TRACE,'budgets_supplier_fundings (budgets query)',$qquery);
+ $pager = pager_query($qquery,
+    variable_get('default_nodes_main', $pager)
+  );
+  $output = '';
+  $rows = array();
+  while ($s = db_fetch_object($pager)) {
+    guifi_log(GUIFILOG_TRACE,'budgets_supplier_fundings (row)',$s);
+    switch ($s->subject_type) {
+      case 'location':
+        $n=guifi_get_nodename($s->subject_id);
+        $l='node/'.$s->subject_id;
+        break;
+      case 'device':
+        $n=guifi_get_devicename($s->subject_id);
+        $l='guifi/device/'.$s->subject_id.'/view';
+        break;
+    }
+    if ($type=='all')
+      $n .= ' ('.t($s->subject_type).')';
+    $u=user_load($s->user_created);
+    $rows[] = array(
+      l($s->subject_id.'-'.$n,$l),
+      $s->comment,
+      l(t('by').' '.$u->name,'user/'.$s->user_created),
+      format_date($s->timestamp_created),
+    );
+  }
+  if (count($rows)==0)
+    $rows[] = array(array('data'=>t('none'),'colspan'=>4));
+
+  $header = array(
+    t($type),
+    t('comment'),
+    t('created'));
+  $output = theme('table',$header,$rows);
+  $output .= theme('pager', NULL, $pager);
+
+  print theme('page',$output, FALSE);
+  return;
+}
+
+function budgets_supplier_sla($supplier,$type, $pager = 50) {
+
+
+  guifi_log(GUIFILOG_TRACE,'budgets_supplier_sla (supplier)',$type);
+
+  if ($type != 'all')
+    $swt = ' AND subject_type = "'.$type.'" ';
+  $qquery =
+    'SELECT * ' .
+    'FROM {guifi_maintainers} ' .
+    'WHERE supplier_id=' .$supplier->id.' '.$swt.
+    'ORDER BY timestamp_created desc ';
+  guifi_log(GUIFILOG_TRACE,'budgets_supplier_sla (budgets query)',$qquery);
+ $pager = pager_query($qquery,
+    variable_get('default_nodes_main', $pager)
+  );
+  $output = '';
+  $rows = array();
+  while ($s = db_fetch_object($pager)) {
+    guifi_log(GUIFILOG_TRACE,'budgets_supplier_sla (row)',$s);
+    switch ($s->subject_type) {
+      case 'location':
+        $n=guifi_get_nodename($s->subject_id);
+        $l='node/'.$s->subject_id;
+        break;
+      case 'zone':
+        $n=guifi_get_zone_name($s->subject_id);
+        $l='node/'.$s->subject_id;
+        break;
+      case 'device':
+        $n=guifi_get_devicename($s->subject_id);
+        $l='guifi/device/'.$s->subject_id.'/view';
+        break;
+    }
+    if ($type=='all')
+      $n .= ' ('.t($s->subject_type).')';
+    $u=user_load($s->user_created);
+    $rows[] = array(
+      l($s->subject_id.'-'.$n,$l),
+      $s->commitment,
+      $s->sla,
+      $s->sla_resp,
+      $s->sla_fix,
+ //     $s->comment,
+      l(t('by').' '.$u->name,'user/'.$s->user_created),
+      format_date($s->timestamp_created),
+    );
+  }
+  if (count($rows)==0)
+    $rows[] = array(array('data'=>t('none'),'colspan'=>8));
+
+  $header = array(
+    t($type),
+    t('type'),
+    t('SLA'),
+    t('resp.'),
+    t('fix.'),
+//    t('comment'),
+    t('created'),
+    null,);
+  $output = theme('table',$header,$rows);
+  $output .= theme('pager', NULL, $pager);
+
   print theme('page',$output, FALSE);
   return;
 }
