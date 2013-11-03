@@ -905,7 +905,7 @@ function budgets_supplier_list_by_zone_filter($parm,$zid,$keys=NULL) {
     '#options'=> guifi_types('tp_certs'),
     '#multiple'=>true,
     '#size'=>6,
-    '#default_value'=>$keys['tp_certs'],
+//    '#default_value'=>$keys['tp_certs'],
 //    '#attributes'=> array('class'=>"budgets-zone-form"),
   );
   $form['filter']['guifi_certs'] = array(
@@ -914,7 +914,7 @@ function budgets_supplier_list_by_zone_filter($parm,$zid,$keys=NULL) {
     '#options'=> guifi_types('guifi_certs'),
     '#multiple'=>true,
     '#size'=>8,
-    '#default_value'=>$keys['guifi_certs'],
+//    '#default_value'=>$keys['guifi_certs'],
 //    '#attributes'=> array('class'=>"budgets-zone-form"),
   );
   $form['filter']['caps_services'] = array(
@@ -923,7 +923,7 @@ function budgets_supplier_list_by_zone_filter($parm,$zid,$keys=NULL) {
     '#options'=> guifi_types('caps_services'),
     '#multiple'=>true,
     '#size'=>8,
-    '#default_value'=>$keys['caps_services'],
+//    '#default_value'=>$keys['caps_services'],
 //    '#attributes'=> array('class'=>"budgets-zone-form"),
   );
   $form['filter']['caps_network'] = array(
@@ -932,7 +932,7 @@ function budgets_supplier_list_by_zone_filter($parm,$zid,$keys=NULL) {
     '#options'=> guifi_types('caps_network'),
     '#multiple'=>true,
     '#size'=>8,
-    '#default_value'=>$keys['caps_network'],
+//    '#default_value'=>$keys['caps_network'],
 //    '#attributes'=> array('class'=>"budgets-zone-form"),
   );
   $form['filter']['caps_project'] = array(
@@ -941,7 +941,7 @@ function budgets_supplier_list_by_zone_filter($parm,$zid,$keys=NULL) {
     '#options'=> guifi_types('caps_project'),
     '#multiple'=>true,
     '#size'=>8,
-    '#default_value'=>$keys['caps_project'],
+//    '#default_value'=>$keys['caps_project'],
 //    '#attributes'=> array('class'=>"budgets-zone-form"),
   );
   $form['filter']['role'] = array(
@@ -950,7 +950,7 @@ function budgets_supplier_list_by_zone_filter($parm,$zid,$keys=NULL) {
     '#options'=> array('volunteer'=>t('Volunteer'),'professional'=>t('Professional')),
     '#multiple'=>true,
     '#size'=>2,
-    '#default_value'=>$keys['role'],
+//    '#default_value'=>$keys['role'],
 //    '#attributes'=> array('class'=>"budgets-zone-form"),
   );
   $form['filter']['zone_id'] = array('#type'=>hidden,'#value'=>$zid);
