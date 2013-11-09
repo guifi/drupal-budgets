@@ -572,7 +572,10 @@ function budgets_supplier_form(&$node,&$param) {
 }
 
 function budgets_supplier_validate(&$node) {
-//  guifi_log(GUIFILOG_BASIC, 'function budgets_supplier_validate()', $node->ack);
+  guifi_log(GUIFILOG_BASIC, 'function budgets_supplier_validate()', $node->op.'-'.$node->delete);
+
+  if ($node->op==$node->delete)
+    return;
 
   if (!$node->ack)
     form_set_error('ack',t('You should accept the Terms & Conditions to proceed'));
