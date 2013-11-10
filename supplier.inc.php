@@ -908,7 +908,7 @@ function budgets_supplier_list_by_zone_filter($parm,$zid,$keys=NULL) {
     '#title'=> t('Filter').' '.$keyword,
     '#type'=>'fieldset',
     '#tree'=>false,
-    '#collapsed'=>true,
+    '#collapsed'=>empty($keys) ? true : false,
     '#collapsible'=>true,
   );
   $form['filter']['tp_certs'] = array(
@@ -917,7 +917,7 @@ function budgets_supplier_list_by_zone_filter($parm,$zid,$keys=NULL) {
     '#options'=> guifi_types('tp_certs'),
     '#multiple'=>true,
     '#size'=>6,
-//    '#default_value'=>$keys['tp_certs'],
+    '#default_value'=>$keys['tp_certs'],
 //    '#attributes'=> array('class'=>"budgets-zone-form"),
   );
   $form['filter']['guifi_certs'] = array(
@@ -926,7 +926,7 @@ function budgets_supplier_list_by_zone_filter($parm,$zid,$keys=NULL) {
     '#options'=> guifi_types('guifi_certs'),
     '#multiple'=>true,
     '#size'=>8,
-//    '#default_value'=>$keys['guifi_certs'],
+    '#default_value'=>$keys['guifi_certs'],
 //    '#attributes'=> array('class'=>"budgets-zone-form"),
   );
   $form['filter']['caps_services'] = array(
@@ -935,7 +935,7 @@ function budgets_supplier_list_by_zone_filter($parm,$zid,$keys=NULL) {
     '#options'=> guifi_types('caps_services'),
     '#multiple'=>true,
     '#size'=>8,
-//    '#default_value'=>$keys['caps_services'],
+    '#default_value'=>$keys['caps_services'],
 //    '#attributes'=> array('class'=>"budgets-zone-form"),
   );
   $form['filter']['caps_network'] = array(
@@ -944,7 +944,7 @@ function budgets_supplier_list_by_zone_filter($parm,$zid,$keys=NULL) {
     '#options'=> guifi_types('caps_network'),
     '#multiple'=>true,
     '#size'=>8,
-//    '#default_value'=>$keys['caps_network'],
+    '#default_value'=>$keys['caps_network'],
 //    '#attributes'=> array('class'=>"budgets-zone-form"),
   );
   $form['filter']['caps_project'] = array(
@@ -953,7 +953,7 @@ function budgets_supplier_list_by_zone_filter($parm,$zid,$keys=NULL) {
     '#options'=> guifi_types('caps_project'),
     '#multiple'=>true,
     '#size'=>8,
-//    '#default_value'=>$keys['caps_project'],
+    '#default_value'=>$keys['caps_project'],
 //    '#attributes'=> array('class'=>"budgets-zone-form"),
   );
   $form['filter']['role'] = array(
@@ -962,7 +962,7 @@ function budgets_supplier_list_by_zone_filter($parm,$zid,$keys=NULL) {
     '#options'=> array('volunteer'=>t('Volunteer'),'professional'=>t('Professional')),
     '#multiple'=>true,
     '#size'=>2,
-//    '#default_value'=>$keys['role'],
+    '#default_value'=>$keys['role'][0],
 //    '#attributes'=> array('class'=>"budgets-zone-form"),
   );
   $form['filter']['zone_id'] = array('#type'=>hidden,'#value'=>$zid);
@@ -971,7 +971,7 @@ function budgets_supplier_list_by_zone_filter($parm,$zid,$keys=NULL) {
     '#size'=>60,
     '#title'=>t('Keyword'),
     '#description'=>t('Name contains (use single keyword)'),
-    '#value'=>$keys['title'][0],
+    '#default_value'=>$keys['title'][0],
     '#prefix'=> '<table><td>',
   );
   $form['filter']['submit'] = array(
@@ -986,22 +986,33 @@ function budgets_supplier_list_by_zone_filter($parm,$zid,$keys=NULL) {
 
 function budgets_supplier_list_by_zone_filter_submit($form_id, &$form_values) {
   $v=$form_values['values'];
-  guifi_log(GUIFILOG_TRACE,'SUBMIT',$params);
+  guifi_log(GUIFILOG_TRACE,'SUBMIT',$v);
 
-  $s='title='.$v['title'].
-    ',role='.implode('|',$v['role']).
-    ',tp_certs='.implode('|',$v['tp_certs']).
-    ',guifi_certs='.implode('|',$v['guifi_certs']).
-    ',caps_services='.implode('|',$v['caps_services']).
-    ',guifi_certs='.implode('|',$v['guifi_certs']).
-    ',caps_services='.implode('|',$v['caps_services']).
-    ',caps_network='.implode('|',$v['caps_network']).
-    ',caps_project='.implode('|',$v['caps_project']);
+  $sv = array();
+
+  $v['tp_certs']=array_diff($v['tp_certs'],array(0));
+  $v['guifi_certs']=array_diff($v['guifi_certs'],array(0));
+  $v['caps_services']=array_diff($v['caps_services'],array(0));
+  $v['caps_network']=array_diff($v['caps_network'],array(0));
+  $v['caps_project']=array_diff($v['caps_project'],array(0));
+  if (!empty($v['title']))         $sv[] = 'title='.$v['title'];
+  if (!empty($v['role']))          $sv[] = 'role='.$v['role'];
+  if (!empty($v['tp_certs']))      $sv[] = 'tp_certs='.implode(',',$v['tp_certs']);
+  if (!empty($v['guifi_certs']))   $sv[] = 'guifi_certs='.implode(',',$v['guifi_certs']);
+  if (!empty($v['caps_services'])) $sv[] = 'caps_services='.implode(',',$v['caps_services']);
+  if (!empty($v['caps_network']))  $sv[] = 'caps_network='.implode(',',$v['caps_network']);
+  if (!empty($v['caps_project']))  $sv[] = 'caps_project='.implode(',',$v['caps_project']);
+
+  $s = implode(',',$sv);
+
+  guifi_log(GUIFILOG_TRACE,'budgets_supplier_list_by_zone_submit',$sv);
 
   drupal_goto('node/'.$v['zone_id'].'/suppliers/'.$s);
 }
 
 function budgets_supplier_list_by_zone($zone,$params = NULL) {
+
+  guifi_log(GUIFILOG_TRACE,'budgets_supplier_list_by_zone',$params);
 
   $zroot = guifi_bg_zone_root();
   $vars = array();
