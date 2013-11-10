@@ -899,7 +899,7 @@ function budgets_supplier_load($node) {
 }
 
 function budgets_supplier_list_by_zone_filter($parm,$zid,$keys=NULL) {
-  guifi_log(GUIFILOG_TRACE,'form_quotes_by_zone_filter',$keys);
+  guifi_log(GUIFILOG_TRACE,'budgets_supplier_list_by_zone_filter',$keys);
 
   /*
    * Filter form
@@ -986,7 +986,7 @@ function budgets_supplier_list_by_zone_filter($parm,$zid,$keys=NULL) {
 
 function budgets_supplier_list_by_zone_filter_submit($form_id, &$form_values) {
   $v=$form_values['values'];
-  guifi_log(GUIFILOG_TRACE,'SUBMIT',$v);
+  guifi_log(GUIFILOG_TRACE,'budgets_supplier_list_by_zone_filter_submit',$v);
 
   $sv = array();
 
@@ -1012,7 +1012,7 @@ function budgets_supplier_list_by_zone_filter_submit($form_id, &$form_values) {
 
 function budgets_supplier_list_by_zone($zone,$params = NULL) {
 
-  guifi_log(GUIFILOG_TRACE,'budgets_supplier_list_by_zone',$params);
+  guifi_log(GUIFILOG_TRACE,'budgets_supplier_list_by_zone (PARAMS)',$params);
 
   $zroot = guifi_bg_zone_root();
   $vars = array();
@@ -1251,6 +1251,7 @@ function theme_budgets_supplier_footer($node, $teaser) {
   $caps_network = guifi_types('caps_network');
   $caps_project = guifi_types('caps_project');
 
+  $certs = array();
   if ($teaser) {
   	if ((count($node->certs))>0) {
       $certs_types=array_merge($tp_certs,$guifi_certs);
