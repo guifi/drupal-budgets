@@ -917,7 +917,7 @@ function budgets_supplier_list_by_zone_filter($parm,$zid,$keys=NULL) {
     '#options'=> guifi_types('tp_certs'),
     '#multiple'=>true,
     '#size'=>6,
-    '#default_value'=>$keys['tp_certs'],
+    '#default_value'=> (is_array($keys['tp_certs'])) ? $keys['tp_certs'] : array(),
 //    '#attributes'=> array('class'=>"budgets-zone-form"),
   );
   $form['filter']['guifi_certs'] = array(
@@ -926,7 +926,7 @@ function budgets_supplier_list_by_zone_filter($parm,$zid,$keys=NULL) {
     '#options'=> guifi_types('guifi_certs'),
     '#multiple'=>true,
     '#size'=>8,
-    '#default_value'=>$keys['guifi_certs'],
+    '#default_value'=> (is_array($keys['guifi_certs'])) ? $keys['guifi_certs'] : array(),
 //    '#attributes'=> array('class'=>"budgets-zone-form"),
   );
   $form['filter']['caps_services'] = array(
@@ -935,7 +935,7 @@ function budgets_supplier_list_by_zone_filter($parm,$zid,$keys=NULL) {
     '#options'=> guifi_types('caps_services'),
     '#multiple'=>true,
     '#size'=>8,
-    '#default_value'=>$keys['caps_services'],
+    '#default_value'=> (is_array($keys['caps_services'])) ? $keys['caps_services'] : array(),
 //    '#attributes'=> array('class'=>"budgets-zone-form"),
   );
   $form['filter']['caps_network'] = array(
@@ -943,8 +943,7 @@ function budgets_supplier_list_by_zone_filter($parm,$zid,$keys=NULL) {
     '#title'=>t('network dev. & mgmt.'),
     '#options'=> guifi_types('caps_network'),
     '#multiple'=>true,
-    '#size'=>8,
-    '#default_value'=>$keys['caps_network'],
+    '#default_value'=> (is_array($keys['caps_network'])) ? $keys['caps_network'] : array(),
 //    '#attributes'=> array('class'=>"budgets-zone-form"),
   );
   $form['filter']['caps_project'] = array(
@@ -953,7 +952,7 @@ function budgets_supplier_list_by_zone_filter($parm,$zid,$keys=NULL) {
     '#options'=> guifi_types('caps_project'),
     '#multiple'=>true,
     '#size'=>8,
-    '#default_value'=>$keys['caps_project'],
+    '#default_value'=> (is_array($keys['caps_project'])) ? $keys['caps_project'] : array(),
 //    '#attributes'=> array('class'=>"budgets-zone-form"),
   );
   $form['filter']['role'] = array(
