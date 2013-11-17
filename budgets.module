@@ -1408,7 +1408,7 @@ function budgets_items_form($items) {
   );
 
   // Sort items by weight
-  $C = 0;
+  $c = 0;
   $cw = -30;
   $total = 0;
   if (count($items)) {
@@ -1458,7 +1458,7 @@ function budgets_form_submit($form, &$form_state) {
 
 function budgets_form_load_budget($form, &$form_state) {
   $node = &$form_state['values'];
-  guifi_log(GUIFILOG_BASIC, 'function budgets_form_load_budget()', $node['loadbudget']);
+  guifi_log(GUIFILOG_TRACE, 'function budgets_form_load_budget()', $node['loadbudget']);
 
 
   $toLoad = explode('-', $node['loadbudget']);
@@ -1499,7 +1499,7 @@ function budgets_form_load_budget($form, &$form_state) {
 
 function budgets_form_load_quote($form, &$form_state) {
   $node = &$form_state['values'];
-  guifi_log(GUIFILOG_BASIC, 'function budgets_form_load_quote()', $node['loadquote']);
+  guifi_log(GUIFILOG_TRACE, 'function budgets_form_load_quote()', $node['loadquote']);
   $form_state['#redirect'] = FALSE;
   $form_state['rebuild'] = TRUE;
 
