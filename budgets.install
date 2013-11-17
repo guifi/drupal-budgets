@@ -142,16 +142,18 @@ function budgets_install() {
   /*
    * guifi_certs
    */
-  db_query("INSERT INTO {guifi_types} (id, type, text, description, relations) VALUES ('1', 'guifi_certs', 'Commons','Comuns XOLN Compliance', NULL)");
-  db_query("INSERT INTO {guifi_types} (id, type, text, description, relations) VALUES ('2', 'guifi_certs', 'BEthics', 'Bussiness Practices & Ethics Compliance', NULL)");
-  db_query("INSERT INTO {guifi_types} (id, type, text, description, relations) VALUES ('3', 'guifi_certs', 'BPractices','Best Practices Compliance', NULL)");
-  db_query("INSERT INTO {guifi_types} (id, type, text, description, relations) VALUES ('4', 'guifi_certs', 'PoPIX-Part','PoPIX Participant agreement', NULL)");
-  db_query("INSERT INTO {guifi_types} (id, type, text, description, relations) VALUES ('5', 'guifi_certs', 'PoPIX-Mgmt','PoP-IX Management Agreement', NULL)");
-  db_query("INSERT INTO {guifi_types} (id, type, text, description, relations) VALUES ('6', 'guifi_certs', 'FO-Dist','Fibre Optics Distribution Agreement', NULL)");
-  db_query("INSERT INTO {guifi_types} (id, type, text, description, relations) VALUES ('7', 'guifi_certs', 'FO-Mgmt','Fibre Optics Management Agreement', NULL)");
-  db_query("INSERT INTO {guifi_types} (id, type, text, description, relations) VALUES ('8', 'guifi_certs', 'W-Dist', 'Wireless Distribution Agreement', NULL)");
-  db_query("INSERT INTO {guifi_types} (id, type, text, description, relations) VALUES ('9', 'guifi_certs', 'W-Mgmt','Wireless Management Agreement', NULL)");
-  db_query("INSERT INTO {guifi_types} (id, type, text, description, relations) VALUES ('10', 'guifi_certs', 'AVolunteer','Volunteer Agreement', 'volunteer')");
+  db_query("INSERT INTO {guifi_types} (id, type, text, description, relations) VALUES ('1',  'guifi_certs', 'Commons','Comuns XOLN Compliance', NULL)");
+  db_query("INSERT INTO {guifi_types} (id, type, text, description, relations) VALUES ('2',  'guifi_certs', 'BEthics', 'Bussiness Practices & Ethics Compliance', NULL)");
+  db_query("INSERT INTO {guifi_types} (id, type, text, description, relations) VALUES ('3',  'guifi_certs', 'BPractices','Best Practices Compliance', NULL)");
+  db_query("INSERT INTO {guifi_types} (id, type, text, description, relations) VALUES ('4',  'guifi_certs', 'PoPIX-Part','PoPIX Participant agreement', NULL)");
+  db_query("INSERT INTO {guifi_types} (id, type, text, description, relations) VALUES ('5',  'guifi_certs', 'PoPIX-Mgmt','PoP-IX Management Agreement', NULL)");
+  db_query("INSERT INTO {guifi_types} (id, type, text, description, relations) VALUES ('6',  'guifi_certs', 'FOInst','Fibre Optics End User Installation Agreement', NULL)");
+  db_query("INSERT INTO {guifi_types} (id, type, text, description, relations) VALUES ('7',  'guifi_certs', 'FO-Dist','Fibre Optics Distribution Agreement', NULL)");
+  db_query("INSERT INTO {guifi_types} (id, type, text, description, relations) VALUES ('8',  'guifi_certs', 'FO-Mgmt','Fibre Optics Management Agreement', NULL)");
+  db_query("INSERT INTO {guifi_types} (id, type, text, description, relations) VALUES ('8',  'guifi_certs', 'W-Inst', 'Wireless End User Installation Agreement', NULL)");
+  db_query("INSERT INTO {guifi_types} (id, type, text, description, relations) VALUES ('10', 'guifi_certs', 'W-Dist', 'Wireless Distribution Agreement', NULL)");
+  db_query("INSERT INTO {guifi_types} (id, type, text, description, relations) VALUES ('11', 'guifi_certs', 'W-Mgmt','Wireless Management Agreement', NULL)");
+  db_query("INSERT INTO {guifi_types} (id, type, text, description, relations) VALUES ('12', 'guifi_certs', 'AVolunteer','Volunteer Agreement', 'volunteer')");
 
   /*
    * skills
@@ -502,3 +504,23 @@ function budgets_update_540() {
 
   db_query("INSERT INTO {guifi_types} (id, type, text, description, relations) VALUES ('10', 'guifi_certs', 'AVolunteer','Volunteer Agreement', 'volunteer')");
 }
+
+function budgets_update_541() {
+  $items = array();
+
+  db_query("DELETE FROM {guifi_types} WHERE type in ('guifi_certs')");
+  db_query("INSERT INTO {guifi_types} (id, type, text, description, relations) VALUES ('1',  'guifi_certs', 'Commons','Comuns XOLN Compliance', NULL)");
+  db_query("INSERT INTO {guifi_types} (id, type, text, description, relations) VALUES ('2',  'guifi_certs', 'BEthics', 'Bussiness Practices & Ethics Compliance', NULL)");
+  db_query("INSERT INTO {guifi_types} (id, type, text, description, relations) VALUES ('3',  'guifi_certs', 'BPractices','Best Practices Compliance', NULL)");
+  db_query("INSERT INTO {guifi_types} (id, type, text, description, relations) VALUES ('4',  'guifi_certs', 'PoPIX-Part','PoPIX Participant agreement', NULL)");
+  db_query("INSERT INTO {guifi_types} (id, type, text, description, relations) VALUES ('5',  'guifi_certs', 'PoPIX-Mgmt','PoP-IX Management Agreement', NULL)");
+  db_query("INSERT INTO {guifi_types} (id, type, text, description, relations) VALUES ('6',  'guifi_certs', 'FOInst','Fibre Optics End User Installation Agreement', NULL)");
+  db_query("INSERT INTO {guifi_types} (id, type, text, description, relations) VALUES ('7',  'guifi_certs', 'FO-Dist','Fibre Optics Distribution Agreement', NULL)");
+  db_query("INSERT INTO {guifi_types} (id, type, text, description, relations) VALUES ('8',  'guifi_certs', 'FO-Mgmt','Fibre Optics Management Agreement', NULL)");
+  db_query("INSERT INTO {guifi_types} (id, type, text, description, relations) VALUES ('8',  'guifi_certs', 'W-Inst', 'Wireless End User Installation Agreement', NULL)");
+  db_query("INSERT INTO {guifi_types} (id, type, text, description, relations) VALUES ('10', 'guifi_certs', 'W-Dist', 'Wireless Distribution Agreement', NULL)");
+  db_query("INSERT INTO {guifi_types} (id, type, text, description, relations) VALUES ('11', 'guifi_certs', 'W-Mgmt','Wireless Management Agreement', NULL)");
+  db_query("INSERT INTO {guifi_types} (id, type, text, description, relations) VALUES ('12', 'guifi_certs', 'AVolunteer','Volunteer Agreement', 'volunteer')");
+}
+
+?>

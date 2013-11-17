@@ -909,7 +909,7 @@ function budgets_add($provider) {
 */
 function budgets_form(&$node, &$param) {
 
-  guifi_log(GUIFILOG_TRACE, 'function budgets_form()', $node);
+  guifi_log(GUIFILOG_TRACE, 'function budgets_form()', $param);
 
   if (!empty($param['values'])) {
      $node = (object)$param['values'];
@@ -1129,6 +1129,7 @@ function budgets_form(&$node, &$param) {
       $type->min_word_count
     );
   }
+  $form['#submit'] = array('budgets_form_submit');
 
   /*
   * If type = crowdfunding, then fill this fields
@@ -1196,13 +1197,17 @@ function budgets_form(&$node, &$param) {
   return $form;
 }
 
-function budgets_item_form($item, $ki) {
+function budgets_item_form($item, $ki, $fold = TRUE) {
 
   $it = $item;
+
   unset($it['weight'], $it['new']);
+
+  $folded =  $fold ? $fold : !empty($item['description']);
+
   if (empty($it)) {
-    $title = t('New item (unfold to fill a new item)');
-    $folded = TRUE;
+    $title = t('New item');
+//    $folded = FALSE;
   }
   else {
     if (empty($item['title']))
@@ -1217,14 +1222,14 @@ function budgets_item_form($item, $ki) {
       number_format($item['quantity'] * $item['cost'], 2, ',', '.');
   }
 
-  $folded = TRUE;
   if ($item['deleted'])
-    $folded = FALSE;
+    $title = t('Deleted').' - '.$title;
+//    $folded = FALSE;
 
   $f = array(
     '#type' => 'fieldset',
     '#title' => $title,
-    '#description' => t('TAX should be in %, zero value means tax included'),
+//    '#description' => t('TAX should be in %, zero value means tax included'),
     '#tree' => TRUE,
     '#collapsible' => TRUE,
     '#collapsed' => $folded
@@ -1275,17 +1280,26 @@ function budgets_item_form($item, $ki) {
     '#maxlength' => 1024,
     '#required' => FALSE,
     '#default_value' => !empty($item['title']) ? $item['title'] : NULL,
-//    '#prefix' => '<table><tr><td>',
-//    '#suffix' => '</td>',
-  );
+/*    '#prefix' => ($ki == 0)  ?
+      '<table><tr><th>'.
+      t('Title').'</th><th>'.
+      t('Count').'</th><th>'.
+      t('Tax').'</th><th>'.
+      t('Cost').'</th><th>'.
+      t('Weight').'</th><th><th></th></tr>'.
+       '<tr><td><div class="budget-item">' :
+       '<tr><td><div class="budget-item">',
+    '#suffix' => '</td>'
+ */
+   );
   $f['quantity'] = array(
     '#type' => 'textfield',
     '#title' => t('Quantity'),
     '#default_value' =>  $item['quantity'],
     '#size' => 6,
     '#maxlength' => 12,
-//    '#prefix' => '<td>',
-//    '#suffix' => '</td>',
+ //   '#prefix' => '<td>',
+//    '#suffix' => '</td>'
   );
   $f['tax'] = array(
     '#type' => 'textfield',
@@ -1294,7 +1308,7 @@ function budgets_item_form($item, $ki) {
     '#size' => 10,
     '#maxlength' => 12,
 //    '#prefix' => '<td>',
-//    '#suffix' => '</td>',
+//    '#suffix' => '</td>'
   );
   $f['cost'] = array(
     '#type' => 'textfield',
@@ -1303,7 +1317,7 @@ function budgets_item_form($item, $ki) {
     '#size' => 10,
     '#maxlength' => 12,
 //    '#prefix' => '<td>',
-//    '#suffix' => '</td>',
+//    '#suffix' => '</td>'
   );
   $f['weight'] = array(
     '#type' => 'weight',
@@ -1311,49 +1325,78 @@ function budgets_item_form($item, $ki) {
     '#default_value' => $item['weight'],
     '#delta' => 30,
 //    '#prefix' => '<td>',
-//    '#suffix' => '</td>',
+//    '#suffix' => '</td>'
   );
   // adding an OK button just to avoid delete as default action if enter
   $f['ok'] = array(
-    '#type' => 'button',
-    '#value' => t('Ok'),
-    '#name' => 'ok-' . $ki,
-    '#prefix' => '<table><tr><td style="width: 100%; text-align: right">',
-    '#suffix' => '</td>',
+    '#type' => 'image_button',
+    '#title' => t('Operations'),
+    '#src'=> drupal_get_path('module', 'budgets').'/icons/ok.png',
+    '#attributes' => array('title' => t('Validate')),
+    '#prefix' => '<td>',
+//    '#submit' => array('budgets_form_item_delete'),
+//    '#value' => t('Ok'),
+//    '#name' => 'ok-' . $ki,
+//    '#executes_submit_callback' => TRUE,
   );
+  if ((!empty($item['title'])) and (!empty($item['description'])))
   $f['delete_button'] = array(
+    '#type' => 'image_button',
+    '#src'=> drupal_get_path('module', 'budgets').'/icons/drop.png',
+//    '#submit' => array('budgets_form_item_delete'),
+    '#attributes' => array('title' => t('Delete item')),
+//    '#prefix' => '<td>',
+//    '#suffix' => '</td></tr>'
+//    '#submit' => array('budgets_form'),
+//    '#name' => 'delete-' . $ki,
+//    '#value' => 'delete-' . $ki,
+//    '#executes_submit_callback' => TRUE,
+  );
+  /*$f['delete_button'] = array(
     '#type' => 'button',
     '#submit' => array('budgets_form_item_delete'),
     '#value' => t('Delete item'),
     '#name' => 'delete-' . $ki,
     '#executes_submit_callback' => TRUE,
-    '#prefix' => '<td style="width: 10%">',
-    '#suffix' => '</td></tr></table>',
-  );
+  );*/
 
+  $f['txt'] = array(
+    '#type' => 'fieldset',
+    '#title' => t('Item description & comments'),
+    '#tree' => FALSE,
+    '#collapsible' => TRUE,
+    '#collapsed' => !empty($item['description']),
+    '#attributes' => array('class' => t('budget-comment')),
+ //   '#prefix' => '<tr><td colspan="5">',
+  );
   // Description
-  $f['description'] = array(
+  $f['txt']['description'] = array(
     '#type' => 'textarea',
     '#description' => t('Description'),
+    '#parents'=> array('items', $ki, 'description'),
     '#default_value' => $item['description'],
     '#prefix' => '<div>',
     '#suffix' => '</div>'
   );
   // Comments
-  $f['comments'] = array(
+  $f['txt']['comments'] = array(
     '#type' => 'textarea',
+    '#parents'=> array('items', $ki, 'comments'),
     '#description' => t('Comments'),
     '#default_value' => $item['comments'],
     '#prefix' => '<div>',
     '#suffix' => '</div>'
   );
 
+  $f['#submit'] = array('budgets_form_submit');
+
+
   return $f;
 }
 
 function budgets_items_form($items) {
   $txtmore = t('If you need more items, save & edit again ' .
-        'or press "Preview" and you will get 3 more items to fill');
+        'or press "Preview" and you will get a new item to fill');
   $f = array(
     '#type' => 'fieldset',
     '#title' => t('Budget items'),
@@ -1361,9 +1404,11 @@ function budgets_items_form($items) {
     '#collapsible' => TRUE,
     '#collapsed' => FALSE,
 //    '#description' => $txtmore
+//    '#prefix'=> '<table>'
   );
 
   // Sort items by weight
+  $C = 0;
   $cw = -30;
   $total = 0;
   if (count($items)) {
@@ -1376,21 +1421,20 @@ function budgets_items_form($items) {
       if (!$items[$ki]['deleted'])
         $total += $items[$ki]['quantity']*$items[$ki]['cost'];
       $f[$ki] = budgets_item_form($items[$ki], $ki);
+      $c++;
       if ($cw < $items[$ki]['weight'])
         $cw = ($items[$ki]['weight']+1);
     } // foreach item
   }
 
-  for ($c = $ki + 1; $c < ($ki + 4); $c++) {
-    $cw++;
-    $f[$c] = budgets_item_form(array('weight' => $cw, 'new' => TRUE), $c);
-  }
+  $cw++;
 
-  $f['items_help'] = array(
-    '#type' => 'item',
-    '#title' => t('Already filled all items and need for more?'),
-    '#value' => $txtmore,
-  );
+  $f[$c] = budgets_item_form(array('weight' => $cw, 'new' => TRUE), $c, FALSE);
+
+//  for ($c = $ki + 1; $c < ($ki + 2); $c++) {
+//    $cw++;
+//    $f[$c] = budgets_item_form(array('weight' => $cw, 'new' => TRUE), $c);
+//  }
 
   $f['#title'] .= ' ('.
     format_plural(count($items), t('1 item'), t('@count items')) . ', ' .
@@ -1400,23 +1444,28 @@ function budgets_items_form($items) {
   return $f;
 }
 
-function budgets_form_item_delete($form, &$form_state) {
-  $params = explode('-', $form_state['clicked_button']['#name']);
-  guifi_log(GUIFILOG_TRACE, 'function budgets_form_item_delete()', $params);
+function budgets_form_submit($form, &$form_state) {
+  $parents = $form_state['clicked_button']['#parents'];
+//  $params = explode('-', $form_state['clicked_button']['delete']);
+  guifi_log(GUIFILOG_TRACE, 'function budgets_form_item_delete()',$form_state['clicked_button']['#parents']);
 
-  if ($params[0]=='delete') {
-    $form_state['values']['items'][$params[1]]['deleted']=TRUE;
+  if ($parents[2]=='delete_button') {
+    $form_state['values']['items'][$parents[1]]['deleted']=TRUE;
+//    guifi_log(GUIFILOG_BASIC, 'function budgets_form_item_delete()', $params);
   }
   $form_state['rebuild'] = TRUE;
 }
 
 function budgets_form_load_budget($form, &$form_state) {
   $node = &$form_state['values'];
-  guifi_log(GUIFILOG_TRACE, 'function budgets_form_load_budget()', $node);
+  guifi_log(GUIFILOG_BASIC, 'function budgets_form_load_budget()', $node['loadbudget']);
+
 
   $toLoad = explode('-', $node['loadbudget']);
-  if ($toLoad[0] == t('None'))
-    return;
+  if ($toLoad[0] == t('None')) {
+  	budgets_form_submit($form, $form_state);
+  	return;
+  }
 
   budgets_items_clean($node['items']);
 
@@ -1450,7 +1499,7 @@ function budgets_form_load_budget($form, &$form_state) {
 
 function budgets_form_load_quote($form, &$form_state) {
   $node = &$form_state['values'];
-  guifi_log(GUIFILOG_TRACE, 'function budgets_form_load_quote()', $node['loadquote']);
+  guifi_log(GUIFILOG_BASIC, 'function budgets_form_load_quote()', $node['loadquote']);
   $form_state['#redirect'] = FALSE;
   $form_state['rebuild'] = TRUE;
 
@@ -1855,6 +1904,7 @@ function budgets_validate(&$node) {
 
   // validate budget items
   if (!empty($node->items)) foreach ($node->items as $item_id => $item) {
+    guifi_log(GUIFILOG_TRACE,'function budgets_validate(4)',$item);
     if ($item['deleted'])
       continue;
     if (empty($item['description']))
@@ -2266,7 +2316,7 @@ function theme_budgets_funds($node, $links = FALSE) {
 
       if (!empty($fund['comments']))
         $rows[] = array(NULL,
-          array('data' => $fund['comments'], 'colspan' => 0));
+          array('data' => $fund['comments'], 'colspan' => 4));
 
     } // foreach fund
   } // if there are funds
@@ -2276,14 +2326,14 @@ function theme_budgets_funds($node, $links = FALSE) {
                  array('data' =>
                    '<strong>'. number_format($total, 2, ',', '.') . $budget->currency_symbol .'</strong>',
                    'align' => 'right',
-                   'colspan' => 0),
+                   'colspan' => 4),
                  );
   foreach ($totals as $k => $v) {
     $rows[] = array(NULL,
                 $k, array('data' =>
                   number_format($v, 2, ',', '.') . $budget->currency_symbol,
                   'align' => 'right',
-                  'colspan' => 0),
+                  'colspan' => 3),
               );
   }
 
