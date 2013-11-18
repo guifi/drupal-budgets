@@ -4,6 +4,7 @@
 /**
  * @file
  * allow to create budgets, allocated to projects, and then collect funds for them
+ *
  */
 
 include_once("supplier.inc.php");      // suppliers node management
