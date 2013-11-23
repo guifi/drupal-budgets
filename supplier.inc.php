@@ -1301,7 +1301,7 @@ function theme_budgets_supplier_footer($node, $teaser) {
       array('data'=>t('Professional certifications')),
       array('data'=>t('guifi.net certifications')),
       array('data'=>t('Services')),
-      array('data'=>t('Metwork infraestructure')),
+      array('data'=>t('Network infraestructure')),
       array('data'=>t('Projects')),
     );
 
