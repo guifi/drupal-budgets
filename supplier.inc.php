@@ -1219,7 +1219,8 @@ function budgets_supplier_view($node, $teaser = FALSE, $page = FALSE) {
 
 function budgets_supplier_get_suppliername($id) {
   $node = db_fetch_object(db_query("SELECT s.title name FROM {supplier} s WHERE s.id=%d",$id));
-  return guifi_to_7bits($node->name);
+  return $node->name;
+//  return guifi_to_7bits($node->name);
 }
 
 function theme_budgets_supplier_header($node, $teaser) {
@@ -1235,7 +1236,7 @@ function theme_budgets_supplier_header($node, $teaser) {
 }
 
 function theme_budgets_supplier_footer($node, $teaser) {
-  $output = '<br></hr><em>'.strtoupper($node->role).'</em><br>';
+  $output = '<br></hr><em>'.strtoupper(t($node->role)).'</em><br>';
 
   $max=0;
   ($max<(count($node->certs['tp_certs']))) ? $max = count($node->certs['tp_certs'])         : NULL;
