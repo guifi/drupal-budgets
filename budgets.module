@@ -509,7 +509,7 @@ function budgets_perm() {
 function budgets_access($op, $node) {
   global $user;
 
-  guifi_log(GUIFILOG_BASIC, 'function budgets_access()', $op);
+  guifi_log(GUIFILOG_TRACE, 'function budgets_access()', $op);
 
   $node = node_load(array('nid' => $node->id));
   switch ($op) {
@@ -937,14 +937,14 @@ function budgets_form(&$node, &$param) {
 
   $form['general'] = array(
     '#type'        => 'fieldset',
-    '#title'       => t('General'),
+    '#title'       => t('General: Status, type, date, ...'),
     '#attributes'  => array('class'=>"budget-container-inline"),
     '#collapsible' => TRUE,
     '#collapsed'   => FALSE,
-    '#description'   => t("<em>Status, type and date</em><br>" .
+    '#description'   => t(
     		"Budgets in <em>preparation</em> or <em>review</em> status are not publicly visible.<br>" .
     		"Use <em>Crowdfunding</em> for donations or make public open calls for crowdfundings.<br>".
-    		"Use <em>CAPEX/OPEX</em> options as type if you plan to get compensated or reimbursed.<br>".
+    		"Use <em>CAPEX/OPEX</em> type options if you plan to get compensated or reimbursed.<br>".
     		"Expiration date (open crowdfundings) and due/execution date."),
  );
   $form['general']['budget_status'] = array(
