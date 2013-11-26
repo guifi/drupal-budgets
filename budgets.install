@@ -514,4 +514,24 @@ function budgets_update_542() {
   db_query("INSERT INTO {guifi_types} (id, type, text, description, relations) VALUES ('7',  'guifi_certs', 'AVolunteer','Volunteer Agreement', 'volunteer')");
 }
 
+function budgets_update_543() {
+
+  db_query("DELETE FROM {guifi_types} WHERE type in ('budget_status','budget_type')");
+  db_query("INSERT INTO {guifi_types} (id, type, text, description, relations) VALUES ('1',  'budget_status', 'Preparation','Preparation', NULL)");
+  db_query("INSERT INTO {guifi_types} (id, type, text, description, relations) VALUES ('2',  'budget_status', 'Review','Under review', NULL)");
+  db_query("INSERT INTO {guifi_types} (id, type, text, description, relations) VALUES ('3',  'budget_status', 'Approved','Approved', NULL)");
+  db_query("INSERT INTO {guifi_types} (id, type, text, description, relations) VALUES ('4',  'budget_status', 'Executed','Executed', NULL)");
+  db_query("INSERT INTO {guifi_types} (id, type, text, description, relations) VALUES ('5',  'budget_status', 'Open','Crowdfunding open', NULL)");
+  db_query("INSERT INTO {guifi_types} (id, type, text, description, relations) VALUES ('6',  'budget_status', 'Closed','Closed', NULL)");
+  db_query("INSERT INTO {guifi_types} (id, type, text, description, relations) VALUES ('7',  'budget_status', 'Abandoned','Abandoned', NULL)");
+
+  db_query("INSERT INTO {guifi_types} (id, type, text, description, relations) VALUES ('1',  'budget_type', 'none','Not defined', NULL)");
+  db_query("INSERT INTO {guifi_types} (id, type, text, description, relations) VALUES ('2',  'budget_type', 'crowdfunding','Crowdfunding', NULL)");
+  db_query("INSERT INTO {guifi_types} (id, type, text, description, relations) VALUES ('3',  'budget_type', 'w-capex','Wireless-CAPEX', NULL)");
+  db_query("INSERT INTO {guifi_types} (id, type, text, description, relations) VALUES ('4',  'budget_type', 'w-opex','Wireless-OPEX', NULL)");
+  db_query("INSERT INTO {guifi_types} (id, type, text, description, relations) VALUES ('5',  'budget_type', 'f-capex','Fiber-CAPEX', NULL)");
+  db_query("INSERT INTO {guifi_types} (id, type, text, description, relations) VALUES ('6',  'budget_type', 'f-opex','Fiber-OPEX', NULL)");
+
+}
+
 ?>
