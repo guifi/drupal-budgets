@@ -390,29 +390,6 @@ function budgets_quote_batch_upload($form_id, &$form_values) {
 
 }
 
-function budgets_quote_ahah_select_supplier($string){
-  $matches = array();
-
-  $string = strtoupper(arg(3));
-
-  $qry = db_query(
-    'SELECT ' .
-    '  CONCAT(id, "-", title) str '.
-    'FROM {supplier} ' .
-    'WHERE ' .
-    '  (CONCAT(id, "-", upper(title)) ' .
-    '    LIKE "%'.$string.'%") ' .
-    'ORDER BY title');
-
-  $c = 0;
-  while (($value = db_fetch_array($qry)) and ($c < 50)) {
-    $c++;
-    $matches[$value['str']] = $value['str'];
-  }
-  print drupal_to_js($matches);
-  exit();
-}
-
 function budgets_quote_validate($node, &$form) {
 
   guifi_log(GUIFILOG_TRACE, 'quote validate',$node);

@@ -572,7 +572,7 @@ function budgets_supplier_form(&$node,&$param) {
 }
 
 function budgets_supplier_validate(&$node) {
-  guifi_log(GUIFILOG_BASIC, 'function budgets_supplier_validate()', $node->op.'-'.$node->delete);
+  guifi_log(GUIFILOG_TRACE, 'function budgets_supplier_validate()', $node->op.'-'.$node->delete);
 
   if ($node->op==$node->delete)
     return;
@@ -718,6 +718,13 @@ function budgets_supplier_access($op, $node, $account = NULL) {
         return user_access('create suppliers',$account);
       }
   }
+}
+
+function budgets_supplier_get_supplier_id($uid) {
+  guifi_log(GUIFILOG_TRACE, 'function budgets_supplier_get_supplier_id()', $uid);
+
+  $sid = db_fetch_object(db_query("SELECT s.id FROM {supplier} s, {node} n WHERE n.nid=s.id AND n.uid = %d",$uid));
+  return $sid->id;
 }
 
 function budgets_supplier_get_name($id){
@@ -1355,7 +1362,7 @@ function budgets_supplier_list_budgets_by_supplier($supplier) {
     // $where.
     // Order by rating, creating a code for sort the trend:
     //  ''+''=0, ''=1, '-'=2
-    'ORDER BY b.expires desc ';
+    'ORDER BY b.accdate desc ';
   guifi_log(GUIFILOG_TRACE,'list_budgets_by_supplier (budgets query)',$qquery);
 
   $pager = pager_query($qquery,

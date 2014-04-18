@@ -184,7 +184,7 @@ function budgets_menu() {
   );
   $items['budgets/js/select-supplier'] = array(
     'title' => 'Javascript/autocomplete find Supplier',
-    'page callback' => 'budgets_quote_ahah_select_supplier',
+    'page callback' => 'budgets_ahah_select_supplier',
     'access arguments' => array('access content'),
     'type' => MENU_CALLBACK,
   );
@@ -822,8 +822,8 @@ function budgets_load($node) {
     $node->arraccdate['day']) = explode(',', date('Y,n,j', $node->accdate));
 
 
-
   if (($node->zone_id == 0) or ($node->zone_id == guifi_zone_root())) {
+    // Fill the zone_id field if it is set to null, but we have the node_id
     if (!empty($node->node_id)) {
       $node->zone_id = guifi_get_zone_of_node($node->node_id);
     } else if (!empty($node->supplier_id)) {
@@ -891,6 +891,11 @@ function budgets_add($provider) {
 
   guifi_log(GUIFILOG_TRACE, 'function budgets_add()', $provider);
 
+  if (empty($provider->id))
+    $supplier_id = budgets_supplier_get_supplier_id($user->uid);
+  else
+    $supplier_id = $provider->id;
+
   $types = node_get_types();
   $type = 'budgets';
   // Initialize settings:
@@ -899,8 +904,8 @@ function budgets_add($provider) {
     'notification'=>$user->mail,
     'name' => (isset($user->name) ? $user->name : ''),
     'type' => $type,
-    'language' => '',
-    'supplier_id' => $provider->id);
+    'language' => $user->language,
+    'supplier_id' => $supplier_id);
 
   drupal_set_title(t('Create @name', array('@name' => $types[$type]->name)));
   return drupal_get_form($type .'_node_form', $node);
@@ -909,6 +914,7 @@ function budgets_add($provider) {
 * Implementation of hook_form().
 */
 function budgets_form(&$node, &$param) {
+  global $user;
 
   guifi_log(GUIFILOG_TRACE, 'function budgets_form()', $param);
 
@@ -921,9 +927,11 @@ function budgets_form(&$node, &$param) {
 
   if (isset($node->nid))
     $form['id'] = array('#type' => '#hidden', '#value' => $node->nid);
-  else
+  else {
     $form['new'] = array('#type' => '#hidden', '#value' => TRUE);
-
+    $node->language = $user->language;
+    $node->supplier_id = budgets_supplier_get_supplier_id($user->uid);
+  }
   $type = node_get_types('type', $node);
 
   if (($type->has_title)) {
@@ -1806,6 +1814,11 @@ function budgets_items_clean(&$nitems) {
 function budgets_validate(&$node) {
   guifi_log(GUIFILOG_TRACE, 'function budgets_validate()', $node);
 
+  if ($node->budget_type = 'none')
+    form_set_error('budget_type',
+          t('You must specify the budget type'));
+
+
   if (empty($node->nid)) {
     // Fill default values
     if (empty($node->payment_instructions))
@@ -1857,6 +1870,9 @@ function budgets_validate(&$node) {
     if (!is_numeric($n[0]) or (guifi_get_nodename($n[0])==NULL))
         form_set_error('node_id',
           t('%s is not a valid node',array('%s'=>$node->node_id)));
+    if ((empty($node->zone_id)) and ($node->node_id>0))
+      $node->zone_id = guifi_get_zone_of_node($node->node_id);
+
   }
 
   if (!empty($node->ticket_link)) if (!valid_url($node->ticket_link, TRUE)) {
@@ -1920,6 +1936,9 @@ function budgets_save(&$node) {
   global $user;
 
   guifi_log(GUIFILOG_TRACE,'function budgets_save()',$node);
+
+  if ((empty($node->zone_id)) and ($node->node_id>0))
+    $node->zone_id = guifi_get_zone_of_node($node->node_id);
 
   budgets_items_clean($node->items);
   $node->expires = mktime(0, 0, 0,
@@ -2568,24 +2587,21 @@ function budgets_ahah_select_budget($string) {
   exit();
 }
 
-function budgets_ahah_select_supplier($string) {
+function budgets_ahah_select_supplier($string){
   $matches = array();
 
   $string = strtoupper(arg(3));
 
   $qry = db_query(
     'SELECT ' .
-    '  CONCAT(s.id, "-", n.title) str '.
-    'FROM {suppliers} b, {node} n ' .
-    'WHERE s.id = n.nid ' .
-    '  AND (CONCAT(s.id, "-", upper(n.title)) ' .
-    '    LIKE "%'. $string .'%") ' .
-    'ORDER BY b.id DESC',
-    $_POST['id']);
+    '  CONCAT(s.id, "-", s.title) str '.
+    'FROM {supplier} s, {node} n ' .
+    'WHERE s.id=n.nid and ' .
+    '  (CONCAT(s.id, "-", upper(s.title)) ' .
+    '    LIKE "%'.$string.'%") ' .
+    'ORDER BY s.title');
 
   $c = 0;
-  $na = t('None');
-  $matches[$na] = $na;
   while (($value = db_fetch_array($qry)) and ($c < 50)) {
     $c++;
     $matches[$value['str']] = $value['str'];

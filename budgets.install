@@ -117,7 +117,7 @@ function budgets_install() {
   db_query("INSERT INTO {guifi_types} (id, type, text, description, relations) VALUES ('5', 'budget_status', 'Open', 'Crowdfunding open', NULL)");
   db_query("INSERT INTO {guifi_types} (id, type, text, description, relations) VALUES ('6', 'budget_status', 'Closed', 'Closed', NULL)");
   db_query("INSERT INTO {guifi_types} (id, type, text, description, relations) VALUES ('7', 'budget_status', 'Abandoned', 'Abandoned', NULL)");
-  db_query("INSERT INTO {guifi_types} (id, type, text, description, relations) VALUES ('8', 'budget_status', 'Executed', 'Executed', NULL)");
+  db_query("INSERT INTO {guifi_types} (id, type, text, description, relations) VALUES ('8', 'budget_status', 'Compensated', 'Compensated', NULL)");
 
   /*
    *  budget_type
@@ -534,4 +534,42 @@ function budgets_update_543() {
 
 }
 
+function budgets_update_544() {
+
+  db_query("INSERT INTO {guifi_types} (id, type, text, description, relations) VALUES ('8',  'budget_status', 'Compensated','Compensated', NULL)");
+}
+
+function budgets_update_545() {
+
+  $query = db_query(
+        "SELECT b.id, b.node_id " .
+        "FROM {budgets} b " .
+  		"WHERE " .
+  		"zone_id = 0 ".
+  		"AND node_id > 0");
+  while ($budget = db_fetch_object($query)) {
+  	  $zid = guifi_get_zone_of_node($budget->node_id);
+      db_query("UPDATE {budgets} SET zone_id = %d WHERE id = %d",$zid,$budget->id);
+  };
+}
+
+function budgets_update_547	() {
+
+  $query = db_query(
+        "SELECT b.id, u.uid " .
+        "FROM {budgets} b, {node} n, {users} u " .
+  		"WHERE b.id=n.nid AND u.uid=n.uid " .
+  		"AND u.uid IN (11597,4169,1376) ".
+  		"AND supplier_id = 0");
+  while ($budget = db_fetch_object($query)) {
+    switch ($budget->uid) {
+      case 11597: db_query ("UPDATE {budgets} SET supplier_id=61891 WHERE id = %d",$budget->id);
+        break;
+      case 4169: db_query ("UPDATE {budgets} SET supplier_id=59855 WHERE id = %d",$budget->id);
+        break;
+      case 1376: db_query ("UPDATE {budgets} SET supplier_id=61722 WHERE id = %d",$budget->id);
+        break;
+    }
+  };
+}
 ?>
