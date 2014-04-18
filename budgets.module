@@ -2518,7 +2518,7 @@ function budgets_by_zone($zone,$params=null) {
     $where.
     // Order by rating, creating a code for sort the trend:
     //  ''+''=0, ''=1, '-'=2
-    'ORDER BY b.id';
+    'ORDER BY b.accdate';
 
   guifi_log(GUIFILOG_TRACE,'list_by_zone (budgets query)',$qquery);
 
