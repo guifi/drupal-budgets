@@ -2473,7 +2473,7 @@ function budgets_by_zone($zone,$params=null) {
     $vars['details'][0]='detailed';
     $vars['types']=array_keys($btypes);
     $vars['status']=array_keys($bstatus);
-    $vars['from']=array_combine(array('year','month','day'),explode(' ',date('Y n j',time()-(60*60*24*30*3))));
+    $vars['from']=array_combine(array('year','month','day'),explode(' ',date('Y n j',time()-(60*60*24*30*12))));
     $vars['to']=array_combine(array('year','month','day'),explode(' ',date('Y n j')));
   } else {
     $p=explode(',',$params);
@@ -2528,11 +2528,13 @@ function budgets_by_zone($zone,$params=null) {
 
   $subtotals = array();
   $monthly_subtotals = array();
+  $time_subtotalsn = array();
 
   while ($b = db_fetch_object($query)) {
     $budget = node_load(array('nid' => $b->id));
 
     $subtotals[$budget->supplier_id] += $budget->total;
+    $time_subtotals[date('Y',$budget->accdate)][date('n',$budget->accdate)] [$budget->supplier_id] += $budget->total;
     $monthly_subtotals[date("Y - m",$budget->accdate)][$budget->supplier_id] += $budget->total;
 
 //    guifi_log(GUIFILOG_BASIC,'list_by_zone (var)',$var['details'][0]);
@@ -2565,46 +2567,47 @@ function budgets_by_zone($zone,$params=null) {
   }
   $output .= theme('box',t('Totals by supplier'),theme('table',null,$rows));
 
+  // totals by year, month and supplier
   $rows = array();
-  if (count($monthly_subtotals) > 0) {
-    $ttotal = 0;
-    ksort($monthly_subtotals);
-    foreach($monthly_subtotals as $m => $month) {
-//      $rows[] = array(
-//        array('data'=>$m),
-//        array('data'=>number_format($stotal, 2, $decml, $thsnd). $budget->currency_symbol,
-//          'class' =>'budget-items-number-total'),
-//      );
-      $mrows = array();
-      foreach($month as $s => $stotal) {
-        if ($s>1) {
-          $sup=budgets_supplier_load($s);
-          $ssup = l($s.'-'.$sup->title,'node/'.$s.'/budgets');
-        } else
-          $ssup = t('No supplier defined');
+  if (count($time_subtotals) > 0) {
+  	ksort($time_subtotals);
+  	foreach ($time_subtotals as $y => $year) {
+  	  $mrows = array();
+  	  	$mrows = array();
+  	  	foreach ($subtotals as $s => $stotal) {
+          if ($s>1) {
+            $sup=budgets_supplier_load($s);
+            $ssup = l($s.'-'.$sup->title,'node/'.$s.'/budgets');
+          } else
+            $ssup = t('No supplier defined');
 
-        $mrows[] = array(
-          array('data'=>$ssup),
-          array('data'=>number_format($stotal, 2, $decml, $thsnd). $budget->currency_symbol,
-            'class' =>'budget-items-number-total'),
-        );
-        $ttotal += $stotal;
-      }
-      $rows[] = array(
-        array('data'=>theme('box',$m,theme('table',null,$mrows)))
+          $mrow = array();
+          $mrow[] = array('data'=>$ssup);
+
+    	  $month = 1;
+    	  do {
+            if (isset($time_subtotals[$y][$month]))
+              if (isset($time_subtotals[$y][$month][$s]))
+                $mrow[]=array('data'=>number_format($time_subtotals[$y][$month][$s]	, 2, $decml, $thsnd). $budget->currency_symbol,
+                  'class' =>'budget-items-number-data');
+              else
+                $mrow[] = array('data'=>'-');
+            else
+              $mrow[] = array('data'=>'-');
+     	    $month++;
+    	  } while ($month < 13);
+          $mrows[] = $mrow;
+  	  	}
+      $mh = array(
+        array('data'=>' '),
+        array('data'=>t('Jan')), array('data'=>t('Feb')), array('data'=>t('Mar')), array('data'=>t('Apr')),
+        array('data'=>t('May')), array('data'=>t('Jun')), array('data'=>t('Jul')), array('data'=>t('Aug')),
+        array('data'=>t('Sep')), array('data'=>t('Oct')), array('data'=>t('Nov')), array('data'=>t('Dec')),
       );
-      $rows[] = array(array('data'=>null));
-    }
-    $mrows[] = array(
-      array('data'=>t('Total')),
-      array('data'=>number_format($ttotal, 2, $decml, $thsnd). $budget->currency_symbol,
-        'class' =>'budget-items-number-total'),
-    );
+      $output .= theme('box',t('Monthly totals for year %year',array('%year'=>$y)),theme('table',$mh,$mrows));
+  	} // foreach year
+  } // if there are time_sutotals
 
-
-  }
-  $output .= theme('box',t('Monthly totals by supplier'),theme('table',null,$rows));
-//  $output .= theme('page', NULL, $output);
 
   drupal_set_breadcrumb(guifi_zone_ariadna($zone->id,'node/%d/view/budgets'));
 //  $output .= theme_pager(NULL, variable_get("guifi_pagelimit", 50));
