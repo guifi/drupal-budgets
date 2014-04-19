@@ -2093,6 +2093,8 @@ function budgets_view($node, $teaser = FALSE, $page = FALSE) {
   if (!isset($node->nid))
     $node = node_load(array('nid' => $node->id));
 
+  $node->title = $node->nid .' '.$node->title;
+
   guifi_log(GUIFILOG_TRACE, 'function budgets_view()');
 
   node_prepare($node, $teaser);
@@ -2525,15 +2527,22 @@ function budgets_by_zone($zone,$params=null) {
   $query = db_query($qquery);
 
   $subtotals = array();
+  $monthly_subtotals = array();
+
   while ($b = db_fetch_object($query)) {
     $budget = node_load(array('nid' => $b->id));
+
     $subtotals[$budget->supplier_id] += $budget->total;
+    $monthly_subtotals[date("Y - m",$budget->accdate)][$budget->supplier_id] += $budget->total;
+
 //    guifi_log(GUIFILOG_BASIC,'list_by_zone (var)',$var['details'][0]);
     if (budgets_access('view',$budget))
       if ($vars['details'][0]=='detailed')
         $output .= node_view($budget, TRUE, FALSE, TRUE);
   }
-  if (count($subtotals) > 0)
+
+  if (count($subtotals) > 0) {
+    $ttotal = 0;
     foreach($subtotals as $s => $stotal) {
       if ($s>1) {
         $sup=budgets_supplier_load($s);
@@ -2546,8 +2555,55 @@ function budgets_by_zone($zone,$params=null) {
         array('data'=>number_format($stotal, 2, $decml, $thsnd). $budget->currency_symbol,
           'class' =>'budget-items-number-total'),
       );
+      $ttotal += $stotal;
+    }
+    $rows[] = array(
+      array('data'=>t('Total')),
+      array('data'=>number_format($ttotal, 2, $decml, $thsnd). $budget->currency_symbol,
+        'class' =>'budget-items-number-total'),
+    );
   }
   $output .= theme('box',t('Totals by supplier'),theme('table',null,$rows));
+
+  $rows = array();
+  if (count($monthly_subtotals) > 0) {
+    $ttotal = 0;
+    ksort($monthly_subtotals);
+    foreach($monthly_subtotals as $m => $month) {
+//      $rows[] = array(
+//        array('data'=>$m),
+//        array('data'=>number_format($stotal, 2, $decml, $thsnd). $budget->currency_symbol,
+//          'class' =>'budget-items-number-total'),
+//      );
+      $mrows = array();
+      foreach($month as $s => $stotal) {
+        if ($s>1) {
+          $sup=budgets_supplier_load($s);
+          $ssup = l($s.'-'.$sup->title,'node/'.$s.'/budgets');
+        } else
+          $ssup = t('No supplier defined');
+
+        $mrows[] = array(
+          array('data'=>$ssup),
+          array('data'=>number_format($stotal, 2, $decml, $thsnd). $budget->currency_symbol,
+            'class' =>'budget-items-number-total'),
+        );
+        $ttotal += $stotal;
+      }
+      $rows[] = array(
+        array('data'=>theme('box',$m,theme('table',null,$mrows)))
+      );
+      $rows[] = array(array('data'=>null));
+    }
+    $mrows[] = array(
+      array('data'=>t('Total')),
+      array('data'=>number_format($ttotal, 2, $decml, $thsnd). $budget->currency_symbol,
+        'class' =>'budget-items-number-total'),
+    );
+
+
+  }
+  $output .= theme('box',t('Monthly totals by supplier'),theme('table',null,$rows));
 //  $output .= theme('page', NULL, $output);
 
   drupal_set_breadcrumb(guifi_zone_ariadna($zone->id,'node/%d/view/budgets'));
