@@ -1389,7 +1389,7 @@ function budgets_supplier_list_budgets_by_supplier($supplier,$params=null) {
     $where .= " AND b.budget_status in ('".implode("','",$vars['status'])."') ";
 
   $f = mktime(0,0,0,$vars['from']['month'],$vars['from']['day'],$vars['from']['year']);
-  $where .= sprintf(' AND IFNULL(b.accdate,b.expires) > %d',$f);
+  $where .= sprintf(' AND IFNULL(b.accdate,b.expires) >= %d',$f);
   $t = mktime(23,59,59,$vars['to']['month'],$vars['to']['day'],$vars['to']['year']);
   $where .= sprintf(' AND IFNULL(b.accdate,b.expires) <= %d ',$t);
 
