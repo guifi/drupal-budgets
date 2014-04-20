@@ -232,23 +232,6 @@ function budgets_menu() {
     'access arguments' => array('access content'),
     'type' => MENU_CALLBACK,
   );
-//  $items['node/%guifi_zone/view/budgets'] = array(
-//    'title' => 'budgets',
-//    'page callback' => 'budgets_page',
-//    'page arguments' => array(1),
-//    'access callback' => 'user_access',
-//    'access arguments' => array('access content'),
-//    'type' => MENU_LOCAL_TASK
-//  );
-//  $items['node/%guifi_zone/view/budgets/open'] = array(
-//    'title' => 'open budgets',
-//    'page callback' => 'budgets_page',
-//    'page arguments' => array(1,4),
-//    'access callback' => 'user_access',
-//    'access arguments' => array('access content'),
-//    'type' => MENU_LOCAL_TASK
-//  );
-
 
   $items['node/%budgets_supplier/quotes'] = array(
     'title' => 'Quotes',
@@ -379,19 +362,23 @@ function budgets_menu() {
     'access callback' => 'budgets_supplier_access',
     'access arguments' => array('create', arg(1)),
     );*/
+
+
+  $items['node/%budgets_supplier/budgets/view'] = array(
+    'title' => 'list',
+    'page callback' => 'budgets_supplier_list_budgets_by_supplier',
+    'page arguments' => array(1,4),
+    'access callback' => 'budgets_supplier_access',
+    'access arguments' => array('create', arg(1)),
+    'type' => MENU_LOCAL_TASK);
   $items['node/%guifi_zone/view/budgets'] = array(
     'title' => 'expenses',
     'page callback' => 'budgets_by_zone',
     'page arguments' => array(1,4),
+//    'access callback' => 'budgets_supplier_access',
     'access arguments' => array('access content'),
-    'type' => MENU_LOCAL_TASK);
-  $items['node/%budgets_supplier/budgets/view'] = array(
-    'title' => 'list',
-    'page callback' => 'budgets_supplier_list_budgets_by_supplier',
-    'page arguments' => array(1),
-    'access callback' => 'budgets_supplier_access',
-    'access arguments' => array('create', arg(1)),
-    'type' => MENU_LOCAL_TASK);
+    'type' => MENU_LOCAL_TASK
+  );
   $items['node/%budgets_supplier/budgets/add'] = array(
     'title' => 'create budget',
     'page callback' => 'budgets_add',
@@ -2390,8 +2377,104 @@ function budgets_validate_fund(&$fund) {
   }
 }
 
-function budgets_by_zone_form($parm,$zid,$keys=null) {
-  guifi_log(GUIFILOG_TRACE,'budgets_by_zone_form',$keys);
+function budgets_list_totals($subtotals) {
+  $rows = array();
+  if (count($subtotals) > 0) {
+    $ttotal = 0;
+    foreach($subtotals as $s => $stotal) {
+      if ($s>1) {
+        $sup=budgets_supplier_load($s);
+        $ssup = l($s.'-'.$sup->title,'node/'.$s.'/budgets');
+      } else
+        $ssup = t('No supplier defined');
+
+      $rows[] = array(
+        array('data'=>$ssup),
+        array('data'=>number_format($stotal, 2, $decml, $thsnd). $budget->currency_symbol,
+          'class' =>'budget-items-number-total'),
+      );
+      $ttotal += $stotal;
+    }
+    $rows[] = array(
+      array('data'=>t('Total')),
+      array('data'=>number_format($ttotal, 2, $decml, $thsnd). $budget->currency_symbol,
+        'class' =>'budget-items-number-total'),
+    );
+    return theme('box',t('Totals by supplier'),theme('table',null,$rows));
+  }
+  return '';
+}
+
+function budgets_list_monthly_totals($subtotals,$time_subtotals,$vars) {
+  guifi_log(GUIFILOG_TRACE,'budgets_list_monthly_totals',$vars);
+
+  // totals by year, month and supplier
+  $rows = array();
+  $output = '';
+  if (count($time_subtotals) > 0) {
+  	ksort($time_subtotals);
+  	foreach ($time_subtotals as $y => $year) {
+ 	  $mrows = array();
+  	  foreach ($subtotals as $s => $stotal) {
+        $ls='details='.$vars['details'][0].
+                  ',types='.implode('|',$vars['types']).
+                  ',status='.implode('|',$vars['status']).
+                  ',id='.$vars['id'][0];
+        $nd_url = 'node/'.$vars['id'][0].'/view/budgets/nd=1,'.$ls;
+        if ($s>1) {
+          $sup=budgets_supplier_load($s);
+          $v=$vars;
+          $ssup = l($s.'-'.$sup->title,'node/'.$s.'/budgets/'.$ls.
+            ',from='.$y.'|1|1,to='.$y.'|12|31,nd=0,url=budgets');
+        } else {
+          $ssup = l(t('No supplier defined'),$nd_url.
+            ',from='.$y.'|1|1,to='.$y.'|12|31,nd=1,url=view^budgets');
+          $v = null;
+        }
+        $mrow = array();
+        $mrow[] = array('data'=>$ssup);
+        $has_value = false;
+
+   	    $month = 1;
+    	do {
+          if (isset($time_subtotals[$y][$month]))
+            if (isset($time_subtotals[$y][$month][$s])) {
+              $t_url = ',from='.$y.'|'.$month.'|1'.
+                  ',to='.$y.'|'.$month.'|'.date('t',mktime(0,0,0,$month,1,$y));
+              if (is_null($v))
+                $mrow[]=array('data'=>
+                  l(number_format($time_subtotals[$y][$month][$s],2,$decml,$thsnd). $budget->currency_symbol,
+                  $nd_url . $t_url . ',url=view^budgets'),
+                  'class' =>'budget-items-number-data');
+              else {
+              	$ls .= $t_url;
+                 $mrow[]=array('data'=>
+                   l(number_format($time_subtotals[$y][$month][$s],2,$decml,$thsnd). $budget->currency_symbol,
+                     'node/'.$s.'/budgets/'.$ls. $t_url. ',url=budgets'),
+                  'class' =>'budget-items-number-data');
+              }
+              $has_value = true;
+            } else
+              $mrow[] = array('data'=>'-','class' =>'budget-items-number-data');
+          else
+            $mrow[] = array('data'=>'-','class' =>'budget-items-number-data');
+     	  $month++;
+    	} while ($month < 13);
+        if ($has_value)
+          $mrows[] = $mrow;
+  	  }
+      $mh = array(
+        array('data'=>'Supplier'),      );
+      foreach (array('Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec') as $monthstr)
+        $mh[] = array('data'=>t($monthstr),'class'=>'budget-items-number-header');
+      $output .= theme('box',t('Monthly totals for year %year',array('%year'=>$y)),theme('table',$mh,$mrows));
+  	} // foreach year
+  } // if there are time_sutotals
+  return $output;
+}
+
+function budgets_list_form($parm,$id,$keys=null) {
+  guifi_log(GUIFILOG_TRACE,'budgets_by_list_form',$keys);
 
   /*
    * Filter form
@@ -2438,9 +2521,21 @@ function budgets_by_zone_form($parm,$zid,$keys=null) {
     '#type'=>'date',
     '#title'=>t('To'),
     '#default_value'=>$keys['to'],
-    '#suffix'=> '</div>',
+//    '#suffix'=> '</div>',
   );
-  $form['filter']['zone_id'] = array('#type'=>hidden,'#value'=>$zid);
+
+  if ($keys['nd'][0]==1)
+    $form['filter']['nd'] = array(
+      '#type'=>'checkbox',
+      '#title'=>t('No supplier defined'),
+      '#default_value'=>$keys['nd'][0],
+      '#suffix'=> '</div>',
+    );
+  else
+    $form['filter']['nd'] = array('#type'=>hidden,'#value'=>$keys['nd'][0],'#suffix'=> '</div>');
+
+  $form['filter']['id'] = array('#type'=>hidden,'#value'=>$id);
+  $form['filter']['url'] = array('#type'=>hidden,'#value'=>str_replace("/","^",$keys['url'][0]));
   $form['filter']['submit'] = array(
     '#type'=>'submit',
     '#title'=>t('Press to proceed'),
@@ -2451,28 +2546,34 @@ function budgets_by_zone_form($parm,$zid,$keys=null) {
   return $form;
 }
 
-function budgets_by_zone_form_submit($form_id, &$form_values) {
+function budgets_list_form_submit($form_id, &$form_values) {
   $v=$form_values['values'];
-  guifi_log(GUIFILOG_TRACE,'SUBMIT',$params);
+  guifi_log(GUIFILOG_TRACE,'SUBMIT',$v);
 
   $s='details='.$v['details'].
     ',types='.implode('|',$v['types']).
     ',status='.implode('|',$v['status']).
     ',from='.$v['from']['year'].'|'.$v['from']['month'].'|'.$v['from']['day'].
-    ',to='.$v['to']['year'].'|'.$v['to']['month'].'|'.$v['to']['day'];
+    ',to='.$v['to']['year'].'|'.$v['to']['month'].'|'.$v['to']['day'].
+    ',nd='.$v['nd'].
+    ',id='.$v['id'].
+    ',url='.$v['url'];
 
-  drupal_goto('node/'.$v['zone_id'].'/view/budgets/'.$s);
+  drupal_goto('node/'.$v['id'].'/'.str_replace("^","/",$v['url']).'/'.$s);
 }
 
 function budgets_by_zone($zone,$params=null) {
+  guifi_log(GUIFILOG_TRACE,'budgets_by_zone',$params);
 
   $btypes=guifi_types('budget_type');
   $bstatus=guifi_types('budget_status');
 
   if (empty($params)) {
     $vars['details'][0]='detailed';
+    $vars['url'][0]='view/budgets';
     $vars['types']=array_keys($btypes);
     $vars['status']=array_keys($bstatus);
+    $vars['nd'][0]=false;
     $vars['from']=array_combine(array('year','month','day'),explode(' ',date('Y n j',time()-(60*60*24*30*12))));
     $vars['to']=array_combine(array('year','month','day'),explode(' ',date('Y n j')));
   } else {
@@ -2486,6 +2587,10 @@ function budgets_by_zone($zone,$params=null) {
     }
   }
 
+  guifi_log(GUIFILOG_TRACE,'budgets_by_zone (zone)',$vars);
+
+  $output = drupal_get_form('budgets_list_form',$zone->id,$vars);
+
   $zroot = guifi_bg_zone_root();
   if (($zone->id==0) or (empty($zone->id))) {
     $zone->id=$zroot;
@@ -2493,14 +2598,13 @@ function budgets_by_zone($zone,$params=null) {
 
   $zlist = guifi_zone_childs($zone->id);
 
-  guifi_log(GUIFILOG_TRACE,'budgets_by_zone (zone)',$vars);
-
-  $output = drupal_get_form('budgets_by_zone_form',$zone->id,$vars);
-
   if ($zone->id == $zroot)
     $where = ' ';
   else
     $where = ' AND (b.zone_id IN ('.implode(',',$zlist).')) ';
+
+  if ($vars['nd'][0]==1)
+    $where .= " AND b.supplier_id = 0 ";
 
   if ($vars['types'])
     $where .= " AND b.budget_type in ('".implode("','",$vars['types'])."') ";
@@ -2513,7 +2617,7 @@ function budgets_by_zone($zone,$params=null) {
   $where .= sprintf(' AND IFNULL(b.accdate,b.expires) <= %d ',$t);
 
   $qquery =
-    'SELECT b.id ' .
+    'SELECT b.id, b.accdate ' .
     'FROM {budgets} b, {node} n ' .
     'WHERE b.id=n.nid ' .
     ' AND n.status=1 '.
@@ -2527,87 +2631,27 @@ function budgets_by_zone($zone,$params=null) {
   $query = db_query($qquery);
 
   $subtotals = array();
-  $monthly_subtotals = array();
-  $time_subtotalsn = array();
+  $time_subtotals = array();
 
   while ($b = db_fetch_object($query)) {
     $budget = node_load(array('nid' => $b->id));
 
     $subtotals[$budget->supplier_id] += $budget->total;
-    $time_subtotals[date('Y',$budget->accdate)][date('n',$budget->accdate)] [$budget->supplier_id] += $budget->total;
-    $monthly_subtotals[date("Y - m",$budget->accdate)][$budget->supplier_id] += $budget->total;
+    if (is_null($b->accdate))
+      $tdate=$budget->expires;
+    else
+      $tdate=$budget->accdate;
+    $time_subtotals[date('Y',$tdate)][date('n',$tdate)] [$budget->supplier_id] += $budget->total;
 
 //    guifi_log(GUIFILOG_BASIC,'list_by_zone (var)',$var['details'][0]);
     if (budgets_access('view',$budget))
       if ($vars['details'][0]=='detailed')
-        $output .= node_view($budget, TRUE, FALSE, TRUE);
+        $doutput .= node_view($budget, TRUE, FALSE, TRUE);
   }
 
-  if (count($subtotals) > 0) {
-    $ttotal = 0;
-    foreach($subtotals as $s => $stotal) {
-      if ($s>1) {
-        $sup=budgets_supplier_load($s);
-        $ssup = l($s.'-'.$sup->title,'node/'.$s.'/budgets');
-      } else
-        $ssup = t('No supplier defined');
-
-      $rows[] = array(
-        array('data'=>$ssup),
-        array('data'=>number_format($stotal, 2, $decml, $thsnd). $budget->currency_symbol,
-          'class' =>'budget-items-number-total'),
-      );
-      $ttotal += $stotal;
-    }
-    $rows[] = array(
-      array('data'=>t('Total')),
-      array('data'=>number_format($ttotal, 2, $decml, $thsnd). $budget->currency_symbol,
-        'class' =>'budget-items-number-total'),
-    );
-  }
-  $output .= theme('box',t('Totals by supplier'),theme('table',null,$rows));
-
-  // totals by year, month and supplier
-  $rows = array();
-  if (count($time_subtotals) > 0) {
-  	ksort($time_subtotals);
-  	foreach ($time_subtotals as $y => $year) {
-  	  $mrows = array();
-  	  	$mrows = array();
-  	  	foreach ($subtotals as $s => $stotal) {
-          if ($s>1) {
-            $sup=budgets_supplier_load($s);
-            $ssup = l($s.'-'.$sup->title,'node/'.$s.'/budgets');
-          } else
-            $ssup = t('No supplier defined');
-
-          $mrow = array();
-          $mrow[] = array('data'=>$ssup);
-
-    	  $month = 1;
-    	  do {
-            if (isset($time_subtotals[$y][$month]))
-              if (isset($time_subtotals[$y][$month][$s]))
-                $mrow[]=array('data'=>number_format($time_subtotals[$y][$month][$s]	, 2, $decml, $thsnd). $budget->currency_symbol,
-                  'class' =>'budget-items-number-data');
-              else
-                $mrow[] = array('data'=>'-');
-            else
-              $mrow[] = array('data'=>'-');
-     	    $month++;
-    	  } while ($month < 13);
-          $mrows[] = $mrow;
-  	  	}
-      $mh = array(
-        array('data'=>' '),
-        array('data'=>t('Jan')), array('data'=>t('Feb')), array('data'=>t('Mar')), array('data'=>t('Apr')),
-        array('data'=>t('May')), array('data'=>t('Jun')), array('data'=>t('Jul')), array('data'=>t('Aug')),
-        array('data'=>t('Sep')), array('data'=>t('Oct')), array('data'=>t('Nov')), array('data'=>t('Dec')),
-      );
-      $output .= theme('box',t('Monthly totals for year %year',array('%year'=>$y)),theme('table',$mh,$mrows));
-  	} // foreach year
-  } // if there are time_sutotals
-
+  $output .= budgets_list_totals($subtotals).
+    budgets_list_monthly_totals($subtotals,$time_subtotals,$vars).
+    $doutput;
 
   drupal_set_breadcrumb(guifi_zone_ariadna($zone->id,'node/%d/view/budgets'));
 //  $output .= theme_pager(NULL, variable_get("guifi_pagelimit", 50));

@@ -1350,31 +1350,83 @@ function theme_budgets_supplier_footer($node, $teaser) {
     return $output;
   }
 
-function budgets_supplier_list_budgets_by_supplier($supplier) {
+function budgets_supplier_list_budgets_by_supplier($supplier,$params=null) {
 
 
   guifi_log(GUIFILOG_TRACE,'list_budgets_by_supplier (supplier)',$supplier);
 
+
+  $btypes=guifi_types('budget_type');
+  $bstatus=guifi_types('budget_status');
+
+  if (empty($params)) {
+    $vars['details'][0]='detailed';
+    $vars['url'][0]='budgets';
+    $vars['types']=array_keys($btypes);
+    $vars['status']=array_keys($bstatus);
+    $vars['from']=array_combine(array('year','month','day'),explode(' ',date('Y n j',time()-(60*60*24*30*12))));
+    $vars['to']=array_combine(array('year','month','day'),explode(' ',date('Y n j')));
+  } else {
+    $p=explode(',',$params);
+    foreach ($p as $v) {
+      $v=explode('=',$v);
+      if (($v[0]=='from') or ($v[0]=='to'))
+        $vars[$v[0]]=array_combine(array('year','month','day'),explode('|',$v[1]));
+      else
+        $vars[$v[0]]=explode('|',$v[1]);
+    }
+  }
+
+  guifi_log(GUIFILOG_TRACE,'budgets_by_supplier (zone)',$vars);
+
+  $output = drupal_get_form('budgets_list_form',$supplier->id,$vars);
+
+  $where = '';
+
+  if ($vars['types'])
+    $where .= " AND b.budget_type in ('".implode("','",$vars['types'])."') ";
+  if ($vars['status'])
+    $where .= " AND b.budget_status in ('".implode("','",$vars['status'])."') ";
+
+  $f = mktime(0,0,0,$vars['from']['month'],$vars['from']['day'],$vars['from']['year']);
+  $where .= sprintf(' AND IFNULL(b.accdate,b.expires) > %d',$f);
+  $t = mktime(23,59,59,$vars['to']['month'],$vars['to']['day'],$vars['to']['year']);
+  $where .= sprintf(' AND IFNULL(b.accdate,b.expires) <= %d ',$t);
+
+
   $qquery =
-    'SELECT b.id ' .
+    'SELECT b.id, b.accdate ' .
     'FROM {budgets} b ' .
     'WHERE b.supplier_id=' .$supplier->id.' '.
-    // $where.
+    $where.
     // Order by rating, creating a code for sort the trend:
     //  ''+''=0, ''=1, '-'=2
     'ORDER BY b.accdate desc ';
+
   guifi_log(GUIFILOG_TRACE,'list_budgets_by_supplier (budgets query)',$qquery);
 
-  $pager = pager_query($qquery,
-    variable_get('default_nodes_main', 10)
-  );
-  $output = '';
-  while ($s = db_fetch_object($pager)) {
+  $query = db_query($qquery);
+  $subtotals = array();
+  $time_subtotals = array();
+
+  while ($s = db_fetch_object($query)) {
     $budget = node_load(array('nid' => $s->id));
+    $subtotals[$budget->supplier_id] += $budget->total;
+    if (is_null($s->accdate))
+      $tdate=$budget->expires;
+    else
+      $tdate=$budget->accdate;
+    $time_subtotals[date('Y',$tdate)][date('n',$tdate)] [$budget->supplier_id] += $budget->total;
+
   	if (budgets_access('view',$budget))
-      $output .= node_view($budget, TRUE, FALSE, TRUE);
+  	  if ($vars['details'][0]=='detailed')
+        $doutput .= node_view($budget, TRUE, FALSE, TRUE);
   }
-  $output .= theme('pager', NULL, variable_get('default_nodes_main', 10));
+
+  $output .= budgets_list_totals($subtotals).
+    budgets_list_monthly_totals($subtotals,$time_subtotals,$vars).
+    $doutput;
+  //theme('pager', NULL, variable_get('default_nodes_main', 10));
 
 //  drupal_set_breadcrumb(guifi_zone_ariadna($zone->id,'node/%d/view/suppliers'));
 //  $output .= theme_pager(NULL, variable_get("guifi_pagelimit", 50));
