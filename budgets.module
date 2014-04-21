@@ -2650,7 +2650,7 @@ function budgets_by_node($node,$params=null) {
 
   if (empty($params)) {
     $vars['details'][0]='detailed';
-    $vars['url'][0]='view/budgets';
+    $vars['url'][0]='view/nodebudgets';
     $vars['types']=array_keys($btypes);
     $vars['status']=array_keys($bstatus);
     $vars['nd'][0]=false;
