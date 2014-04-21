@@ -2406,6 +2406,8 @@ function budgets_list_totals($subtotals) {
 }
 
 function budgets_list_monthly_totals($subtotals,$time_subtotals,$vars) {
+  $node = node_load($vars['id'][0]);
+
   guifi_log(GUIFILOG_TRACE,'budgets_list_monthly_totals',$vars);
 
   // totals by year, month and supplier
@@ -2420,6 +2422,11 @@ function budgets_list_monthly_totals($subtotals,$time_subtotals,$vars) {
                   ',types='.implode('|',$vars['types']).
                   ',status='.implode('|',$vars['status']).
                   ',id='.$vars['id'][0];
+        if ($node->type=='guifi_zone')
+          $ls .= ',zone_id='.$vars['id'][0];
+        else
+          if (isset($vars['zone_id'][0]))
+            $ls .= ',zone_id='.$vars['zone_id'][0];
         $nd_url = 'node/'.$vars['id'][0].'/view/budgets/nd=1,'.$ls;
         if ($s>1) {
           $sup=budgets_supplier_load($s);
@@ -2473,7 +2480,7 @@ function budgets_list_monthly_totals($subtotals,$time_subtotals,$vars) {
   return $output;
 }
 
-function budgets_list_form($parm,$id,$keys=null) {
+function budgets_list_form($parm,$keys=null) {
   guifi_log(GUIFILOG_TRACE,'budgets_by_list_form',$keys);
 
   /*
@@ -2524,6 +2531,16 @@ function budgets_list_form($parm,$id,$keys=null) {
 //    '#suffix'=> '</div>',
   );
 
+  if ($keys['zone_id'][0]>0){
+  	$opts = array(0=> t('All'),$keys['zone_id'][0]=>guifi_get_zone_name($keys['zone_id'][0]));
+    $form['filter']['zone_id'] = array(
+      '#type'=>'select',
+      '#title'=>t('Zone'),
+      '#options'=>$opts,
+      '#default_value'=>$keys['zone_id'][0],
+    );
+  }
+
   if ($keys['nd'][0]==1)
     $form['filter']['nd'] = array(
       '#type'=>'checkbox',
@@ -2534,7 +2551,7 @@ function budgets_list_form($parm,$id,$keys=null) {
   else
     $form['filter']['nd'] = array('#type'=>hidden,'#value'=>$keys['nd'][0],'#suffix'=> '</div>');
 
-  $form['filter']['id'] = array('#type'=>hidden,'#value'=>$id);
+  $form['filter']['id'] = array('#type'=>hidden,'#value'=>$keys['id'][0]);
   $form['filter']['url'] = array('#type'=>hidden,'#value'=>str_replace("/","^",$keys['url'][0]));
   $form['filter']['submit'] = array(
     '#type'=>'submit',
@@ -2550,14 +2567,22 @@ function budgets_list_form_submit($form_id, &$form_values) {
   $v=$form_values['values'];
   guifi_log(GUIFILOG_TRACE,'SUBMIT',$v);
 
-  $s='details='.$v['details'].
+  if (isset($v['zone_id'])) {
+    $s = 'zone_id='.$v['zone_id'].
+      ',id='.$v['id'];
+  } else
+    $s = 'id='.$v['id'];
+
+  $s.=',details='.$v['details'].
     ',types='.implode('|',$v['types']).
     ',status='.implode('|',$v['status']).
     ',from='.$v['from']['year'].'|'.$v['from']['month'].'|'.$v['from']['day'].
     ',to='.$v['to']['year'].'|'.$v['to']['month'].'|'.$v['to']['day'].
     ',nd='.$v['nd'].
-    ',id='.$v['id'].
     ',url='.$v['url'];
+
+  if (isset($v['zone_id']))
+    $s .= ',zone_id='.$v['zone_id'];
 
   drupal_goto('node/'.$v['id'].'/'.str_replace("^","/",$v['url']).'/'.$s);
 }
@@ -2574,6 +2599,7 @@ function budgets_by_zone($zone,$params=null) {
     $vars['types']=array_keys($btypes);
     $vars['status']=array_keys($bstatus);
     $vars['nd'][0]=false;
+    $vars['id'][0]=$zone->id;
     $vars['from']=array_combine(array('year','month','day'),explode(' ',date('Y n j',time()-(60*60*24*30*12))));
     $vars['to']=array_combine(array('year','month','day'),explode(' ',date('Y n j')));
   } else {
@@ -2589,7 +2615,7 @@ function budgets_by_zone($zone,$params=null) {
 
   guifi_log(GUIFILOG_TRACE,'budgets_by_zone (zone)',$vars);
 
-  $output = drupal_get_form('budgets_list_form',$zone->id,$vars);
+  $output = drupal_get_form('budgets_list_form',$vars);
 
   $zroot = guifi_bg_zone_root();
   if (($zone->id==0) or (empty($zone->id))) {

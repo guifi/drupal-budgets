@@ -1362,6 +1362,7 @@ function budgets_supplier_list_budgets_by_supplier($supplier,$params=null) {
   if (empty($params)) {
     $vars['details'][0]='detailed';
     $vars['url'][0]='budgets';
+    $vars['id'][0]=$supplier->id;
     $vars['types']=array_keys($btypes);
     $vars['status']=array_keys($bstatus);
     $vars['from']=array_combine(array('year','month','day'),explode(' ',date('Y n j',time()-(60*60*24*30*12))));
@@ -1375,13 +1376,19 @@ function budgets_supplier_list_budgets_by_supplier($supplier,$params=null) {
       else
         $vars[$v[0]]=explode('|',$v[1]);
     }
+    $vars['id'][0]=$supplier->id;
   }
 
   guifi_log(GUIFILOG_TRACE,'budgets_by_supplier (zone)',$vars);
 
-  $output = drupal_get_form('budgets_list_form',$supplier->id,$vars);
+  $output = drupal_get_form('budgets_list_form',$vars);
 
   $where = '';
+
+  if (isset($vars['zone_id'][0])) {
+    $zlist = guifi_zone_childs($vars['zone_id'][0]);
+    $where .= ' AND (b.zone_id IN ('.implode(',',$zlist).')) ';
+  }
 
   if ($vars['types'])
     $where .= " AND b.budget_type in ('".implode("','",$vars['types'])."') ";
