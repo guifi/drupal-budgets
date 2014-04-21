@@ -1808,7 +1808,7 @@ function budgets_items_clean(&$nitems) {
 * Implementation of hook_validate().
 */
 function budgets_validate(&$node) {
-  guifi_log(GUIFILOG_BASIC, 'function budgets_validate()', $node);
+  guifi_log(GUIFILOG_TRACE, 'function budgets_validate()', $node);
 
   if ($node->budget_type == 'none')
     form_set_error('budget_type',
