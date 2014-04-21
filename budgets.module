@@ -2457,6 +2457,7 @@ function budgets_list_monthly_totals($subtotals,$time_subtotals,$vars) {
   	ksort($time_subtotals);
   	foreach ($time_subtotals as $y => $year) {
  	  $mrows = array();
+ 	  $sT = 0;
   	  foreach ($subtotals as $s => $stotal) {
         $ls='details='.$vars['details'][0].
                   ',types='.implode('|',$vars['types']).
@@ -2484,6 +2485,8 @@ function budgets_list_monthly_totals($subtotals,$time_subtotals,$vars) {
         $has_value = false;
 
    	    $month = 1;
+
+        $st = 0;
     	do {
           if (isset($time_subtotals[$y][$month]))
             if (isset($time_subtotals[$y][$month][$s])) {
@@ -2502,18 +2505,28 @@ function budgets_list_monthly_totals($subtotals,$time_subtotals,$vars) {
                   'class' =>'budget-items-number-data');
               }
               $has_value = true;
+              $st += $time_subtotals[$y][$month][$s];
             } else
               $mrow[] = array('data'=>'-','class' =>'budget-items-number-data');
           else
             $mrow[] = array('data'=>'-','class' =>'budget-items-number-data');
      	  $month++;
     	} while ($month < 13);
-        if ($has_value)
+        if ($has_value) {
+          $sT += $st;
+          $mrow[] = array('data'=>number_format($st,2,$decml,$thsnd). $budget->currency_symbol,'class' =>'budget-items-number-data');
           $mrows[] = $mrow;
+        }
   	  }
+//  	  if (count($mrows) > 1) {
+  	    $mrows[] = array(
+  	       array('data'=>'','colspan'=>13),
+  	       array('data'=>number_format($sT,2,$decml,$thsnd). $budget->currency_symbol,'class' =>'budget-items-number-total')
+  	       );
+//  	  }
       $mh = array(
         array('data'=>'Supplier'),      );
-      foreach (array('Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec') as $monthstr)
+      foreach (array('Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec','Total') as $monthstr)
         $mh[] = array('data'=>t($monthstr),'class'=>'budget-items-number-header');
       $title = $title_app.t('Monthly totals for year %year',array('%year'=>$y));
       $title_app='';
