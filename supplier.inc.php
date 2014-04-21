@@ -1365,7 +1365,7 @@ function budgets_supplier_list_budgets_by_supplier($supplier,$params=null) {
     $vars['id'][0]=$supplier->id;
     $vars['types']=array_keys($btypes);
     $vars['status']=array_keys($bstatus);
-    $vars['from']=array_combine(array('year','month','day'),explode(' ',date('Y n j',time()-(60*60*24*30*12))));
+    $vars['from']=array_combine(array('year','month','day'),explode(' ',date('Y n j',time()-(60*60*24*365))));
     $vars['to']=array_combine(array('year','month','day'),explode(' ',date('Y n j')));
   } else {
     $p=explode(',',$params);
@@ -1385,9 +1385,13 @@ function budgets_supplier_list_budgets_by_supplier($supplier,$params=null) {
 
   $where = '';
 
-  if (isset($vars['zone_id'][0])) {
+  if (!empty($vars['zone_id'][0])) {
     $zlist = guifi_zone_childs($vars['zone_id'][0]);
     $where .= ' AND (b.zone_id IN ('.implode(',',$zlist).')) ';
+  }
+
+  if (!empty($vars['location_id'][0])) {
+    $where .= ' AND b.node_id ='.$vars['location_id'][0].' ';
   }
 
   if ($vars['types'])

@@ -375,10 +375,19 @@ function budgets_menu() {
     'title' => 'expenses',
     'page callback' => 'budgets_by_zone',
     'page arguments' => array(1,4),
-//    'access callback' => 'budgets_supplier_access',
+    'access callback' => 'user_access',
     'access arguments' => array('access content'),
     'type' => MENU_LOCAL_TASK
   );
+  $items['node/%guifi_node/view/nodebudgets'] = array(
+    'title' => 'expenses',
+    'page callback' => 'budgets_by_node',
+    'page arguments' => array(1,4),
+    'access callback' => 'user_access',
+    'access arguments' => array('access content'),
+    'type' => MENU_LOCAL_TASK
+  );
+
   $items['node/%budgets_supplier/budgets/add'] = array(
     'title' => 'create budget',
     'page callback' => 'budgets_add',
@@ -2381,14 +2390,18 @@ function budgets_list_totals($subtotals,$vars) {
   $rows = array();
 
   $node = node_load($vars['id'][0]);
-
   if ($node->type == 'guifi_zone')
-    $t_app = ' - '.guifi_get_zone_name($node->nid);
+    $vars['zone_id'][0] = $node->nid;
+
+  if (!empty($vars['zone_id'][0]))
+    $t_app .= ' - '.l(guifi_get_zone_name($vars['zone_id'][0]),
+      'node/'.$vars['zone_id'][0].'/view/budgets');
   else
-    if (!empty($vars['zone_id'][0]))
-      $t_app = ' - '.guifi_get_zone_name($vars['zone_id'][0]);
-    else
-      $t_app = '';
+    $t_app = '';
+
+  if (!empty($vars['location_id'][0]))
+    $t_app .= ' - '.l(guifi_get_nodename($vars['location_id'][0]),
+      'node/'.$vars['location_id'][0].'/view/nodebudgets');
 
   if (count($subtotals) > 0) {
     $ttotal = 0;
@@ -2400,20 +2413,21 @@ function budgets_list_totals($subtotals,$vars) {
         $ssup = t('No supplier defined');
 
       $rows[] = array(
-        array('data'=>$ssup),
+        array('data'=>$ssup,'class' =>'budget-items-number-data'),
         array('data'=>number_format($stotal, 2, $decml, $thsnd). $budget->currency_symbol,
-          'class' =>'budget-items-number-total'),
+          'class' =>'budget-items-number-data'),
       );
       $ttotal += $stotal;
     }
-    $rows[] = array(
-      array('data'=>t('Total')),
-      array('data'=>number_format($ttotal, 2, $decml, $thsnd). $budget->currency_symbol,
-        'class' =>'budget-items-number-total'),
-    );
+    if (count($subtotals) > 1)
+      $rows[] = array(
+        array('data'=>t('Total'),'class' =>'budget-items-text-total'),
+        array('data'=>number_format($ttotal, 2, $decml, $thsnd). $budget->currency_symbol,
+          'class' =>'budget-items-number-total'),
+      );
     return theme('box',t('Totals by supplier').$t_app,theme('table',null,$rows));
   }
-  return '';
+  return t('Nothing to list');
 }
 
 function budgets_list_monthly_totals($subtotals,$time_subtotals,$vars) {
@@ -2424,8 +2438,17 @@ function budgets_list_monthly_totals($subtotals,$time_subtotals,$vars) {
   $title_app = '';
   if (($vars['from']['year']==$vars['to']['year']) and
       ($vars['from']['month']==$vars['to']['month']))
-      $title_app = ' - ('.t(date('M',mktime(0,0,0,$vars['from']['month'],1,$vars['from']['year']))).')';
+    return '';
 
+  $title_app = t('History from: %from to %to<br><br>',
+     array(
+       '%from'=>$vars['from']['day'].' '.
+         t(date('M',mktime(0,0,0,$vars['from']['month'],1,2000))).' '.
+         $vars['from']['year'],
+       '%to'=>$vars['to']['day'].' '.
+         t(date('M',mktime(0,0,0,$vars['to']['month'],1,2000))).' '.
+         $vars['to']['year'])
+     );
 
   // totals by year, month and supplier
   $rows = array();
@@ -2439,11 +2462,12 @@ function budgets_list_monthly_totals($subtotals,$time_subtotals,$vars) {
                   ',types='.implode('|',$vars['types']).
                   ',status='.implode('|',$vars['status']).
                   ',id='.$vars['id'][0];
-        if ($node->type=='guifi_zone')
-          $ls .= ',zone_id='.$vars['id'][0];
-        else
-          if (isset($vars['zone_id'][0]))
-            $ls .= ',zone_id='.$vars['zone_id'][0];
+        if (($node->type=='guifi_zone') or (isset($vars['zone_id'][0])))
+          $ls .= ',zone_id='.$vars['zone_id'][0];
+
+        if (($node->type=='guifi_node') or (isset($vars['location_id'][0])))
+          $ls .= ',location_id='.$vars['location_id'][0];
+
         $nd_url = 'node/'.$vars['id'][0].'/view/budgets/nd=1,'.$ls;
         if ($s>1) {
           $sup=budgets_supplier_load($s);
@@ -2491,7 +2515,8 @@ function budgets_list_monthly_totals($subtotals,$time_subtotals,$vars) {
         array('data'=>'Supplier'),      );
       foreach (array('Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec') as $monthstr)
         $mh[] = array('data'=>t($monthstr),'class'=>'budget-items-number-header');
-      $title = t('Monthly totals for year %year',array('%year'=>$y)) . $title_app;
+      $title = $title_app.t('Monthly totals for year %year',array('%year'=>$y));
+      $title_app='';
       $output .= theme('box',$title,theme('table',$mh,$mrows));
   	} // foreach year
   } // if there are time_sutotals
@@ -2499,7 +2524,7 @@ function budgets_list_monthly_totals($subtotals,$time_subtotals,$vars) {
 }
 
 function budgets_list_form($parm,$keys=null) {
-  guifi_log(GUIFILOG_TRACE,'budgets_by_list_form',$keys);
+  guifi_log(GUIFILOG_TRACE,'budgets_list_form',$keys);
 
   /*
    * Filter form
@@ -2549,13 +2574,22 @@ function budgets_list_form($parm,$keys=null) {
 //    '#suffix'=> '</div>',
   );
 
-  if ($keys['zone_id'][0]>0){
+  if (!empty($keys['zone_id'][0])){
   	$opts = array(0=> t('All'),$keys['zone_id'][0]=>guifi_get_zone_name($keys['zone_id'][0]));
     $form['filter']['zone_id'] = array(
       '#type'=>'select',
       '#title'=>t('Zone'),
       '#options'=>$opts,
       '#default_value'=>$keys['zone_id'][0],
+    );
+  }
+  if (!empty($keys['location_id'][0])){
+  	$opts = array(0=> t('All'),$keys['location_id'][0]=>guifi_get_nodename($keys['location_id'][0]));
+    $form['filter']['location_id'] = array(
+      '#type'=>'select',
+      '#title'=>t('Location'),
+      '#options'=>$opts,
+      '#default_value'=>$keys['location_id'][0],
     );
   }
 
@@ -2591,6 +2625,9 @@ function budgets_list_form_submit($form_id, &$form_values) {
   } else
     $s = 'id='.$v['id'];
 
+  if (isset($v['location_id']))
+    $s .= ',location_id='.$v['location_id'];
+
   $s.=',details='.$v['details'].
     ',types='.implode('|',$v['types']).
     ',status='.implode('|',$v['status']).
@@ -2605,8 +2642,8 @@ function budgets_list_form_submit($form_id, &$form_values) {
   drupal_goto('node/'.$v['id'].'/'.str_replace("^","/",$v['url']).'/'.$s);
 }
 
-function budgets_by_zone($zone,$params=null) {
-  guifi_log(GUIFILOG_TRACE,'budgets_by_zone',$params);
+function budgets_by_node($node,$params=null) {
+  guifi_log(GUIFILOG_TRACE,'budgets_by_node',$params);
 
   $btypes=guifi_types('budget_type');
   $bstatus=guifi_types('budget_status');
@@ -2617,8 +2654,7 @@ function budgets_by_zone($zone,$params=null) {
     $vars['types']=array_keys($btypes);
     $vars['status']=array_keys($bstatus);
     $vars['nd'][0]=false;
-    $vars['id'][0]=$zone->id;
-    $vars['from']=array_combine(array('year','month','day'),explode(' ',date('Y n j',time()-(60*60*24*30*12))));
+    $vars['from']=array_combine(array('year','month','day'),explode(' ',date('Y n j',time()-(60*60*24*729))));
     $vars['to']=array_combine(array('year','month','day'),explode(' ',date('Y n j')));
   } else {
     $p=explode(',',$params);
@@ -2630,8 +2666,47 @@ function budgets_by_zone($zone,$params=null) {
         $vars[$v[0]]=explode('|',$v[1]);
     }
   }
+  $vars['id'][0]=$node->id;
+  $vars['location_id'][0]=$node->id;
+  $vars['zone_id'][0]=guifi_get_zone_of_node($node->id);
 
-  guifi_log(GUIFILOG_TRACE,'budgets_by_zone (zone)',$vars);
+  $zone = guifi_zone_load($vars['zone_id'][0]);
+
+  guifi_log(GUIFILOG_TRACE,'budgets_by_node (vars)',$vars);
+
+  return budgets_by_zone($zone,$vars);
+}
+
+
+function budgets_by_zone($zone,$params=null) {
+  guifi_log(GUIFILOG_TRACE,'budgets_by_zone',$zone->id);
+
+  $btypes=guifi_types('budget_type');
+  $bstatus=guifi_types('budget_status');
+
+  if (empty($params)) {
+    $vars['details'][0]='detailed';
+    $vars['url'][0]='view/budgets';
+    $vars['types']=array_keys($btypes);
+    $vars['status']=array_keys($bstatus);
+    $vars['nd'][0]=false;
+    $vars['id'][0]=$zone->id;
+    $vars['from']=array_combine(array('year','month','day'),explode(' ',date('Y n j',time()-(60*60*24*729))));
+    $vars['to']=array_combine(array('year','month','day'),explode(' ',date('Y n j')));
+  } else if (is_array($params)) {
+  	  $vars = $params;
+    } else {
+      $p=explode(',',$params);
+      foreach ($p as $v) {
+        $v=explode('=',$v);
+        if (($v[0]=='from') or ($v[0]=='to'))
+          $vars[$v[0]]=array_combine(array('year','month','day'),explode('|',$v[1]));
+        else
+          $vars[$v[0]]=explode('|',$v[1]);
+    }
+  }
+
+  guifi_log(GUIFILOG_TRACE,'budgets_by_zone (vars)',$vars);
 
   $output = drupal_get_form('budgets_list_form',$vars);
 
@@ -2644,6 +2719,12 @@ function budgets_by_zone($zone,$params=null) {
 
   if ($zone->id == $zroot)
     $where = ' ';
+  else
+    $where = ' AND (b.zone_id IN ('.implode(',',$zlist).')) ';
+
+  if (isset($vars['location_id'][0]))
+    $where = ' AND (b.node_id) = '.$vars['location_id'][0].' ';
+
   else
     $where = ' AND (b.zone_id IN ('.implode(',',$zlist).')) ';
 
@@ -2704,7 +2785,6 @@ function budgets_by_zone($zone,$params=null) {
   print theme('page',$output, FALSE);
   return;
 }
-
 
 function budgets_ahah_select_budget($string) {
   $matches = array();
@@ -2983,9 +3063,10 @@ function theme_budgets_header($node, $teaser) {
   $SBType   = t($TBType[$node->budget_type]);
 
   if (!empty($node->node_id)) {
-    $SLocation = t('Node').': '.l($node->node_id.'-'.guifi_get_nodename($node->node_id),'node/'.$node->node_id).', ';
+    $SLocation = t('Node').': '.l($node->node_id.'-'.guifi_get_nodename($node->node_id),
+      'node/'.$node->node_id.'/view/nodebudgets');
   }
-  $SLocation .= t('Zone').': '.guifi_zone_l($node->zone_id);
+  $SLocation .= ' - '.t('Zone').': '.l(guifi_get_zone_name($node->zone_id),'node/'.$node->zone_id.'/view/budgets');
     $SContact = '<a href="mailto:'.$node->notification.'">'.$node->notification.'</a>';
     if (isset($sup)) {
       $SContact .= ' - '.l($sup->id.'-'.$sup->title,'node/'.$sup->id);
@@ -3001,7 +3082,7 @@ function theme_budgets_header($node, $teaser) {
   if ($teaser) {
   	$output = '';
     if (isset($sup))
-      $output .= t('Supplier').': '.l($sup->title,'node/'.$sup->id).' - ';
+      $output .= t('Supplier').': '.l($sup->title,'node/'.$sup->id.'/budgets').' - ';
 
     $total = 0;
     $items = 0;
