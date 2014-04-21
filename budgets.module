@@ -2377,8 +2377,19 @@ function budgets_validate_fund(&$fund) {
   }
 }
 
-function budgets_list_totals($subtotals) {
+function budgets_list_totals($subtotals,$vars) {
   $rows = array();
+
+  $node = node_load($vars['id'][0]);
+
+  if ($node->type == 'guifi_zone')
+    $t_app = ' - '.guifi_get_zone_name($node->nid);
+  else
+    if (!empty($vars['zone_id'][0]))
+      $t_app = ' - '.guifi_get_zone_name($vars['zone_id'][0]);
+    else
+      $t_app = '';
+
   if (count($subtotals) > 0) {
     $ttotal = 0;
     foreach($subtotals as $s => $stotal) {
@@ -2400,7 +2411,7 @@ function budgets_list_totals($subtotals) {
       array('data'=>number_format($ttotal, 2, $decml, $thsnd). $budget->currency_symbol,
         'class' =>'budget-items-number-total'),
     );
-    return theme('box',t('Totals by supplier'),theme('table',null,$rows));
+    return theme('box',t('Totals by supplier').$t_app,theme('table',null,$rows));
   }
   return '';
 }
@@ -2409,6 +2420,12 @@ function budgets_list_monthly_totals($subtotals,$time_subtotals,$vars) {
   $node = node_load($vars['id'][0]);
 
   guifi_log(GUIFILOG_TRACE,'budgets_list_monthly_totals',$vars);
+
+  $title_app = '';
+  if (($vars['from']['year']==$vars['to']['year']) and
+      ($vars['from']['month']==$vars['to']['month']))
+      $title_app = ' - ('.t(date('M',mktime(0,0,0,$vars['from']['month'],1,$vars['from']['year']))).')';
+
 
   // totals by year, month and supplier
   $rows = array();
@@ -2474,7 +2491,8 @@ function budgets_list_monthly_totals($subtotals,$time_subtotals,$vars) {
         array('data'=>'Supplier'),      );
       foreach (array('Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec') as $monthstr)
         $mh[] = array('data'=>t($monthstr),'class'=>'budget-items-number-header');
-      $output .= theme('box',t('Monthly totals for year %year',array('%year'=>$y)),theme('table',$mh,$mrows));
+      $title = t('Monthly totals for year %year',array('%year'=>$y)) . $title_app;
+      $output .= theme('box',$title,theme('table',$mh,$mrows));
   	} // foreach year
   } // if there are time_sutotals
   return $output;
@@ -2675,7 +2693,7 @@ function budgets_by_zone($zone,$params=null) {
         $doutput .= node_view($budget, TRUE, FALSE, TRUE);
   }
 
-  $output .= budgets_list_totals($subtotals).
+  $output .= budgets_list_totals($subtotals,$vars).
     budgets_list_monthly_totals($subtotals,$time_subtotals,$vars).
     $doutput;
 

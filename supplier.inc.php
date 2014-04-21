@@ -1430,7 +1430,7 @@ function budgets_supplier_list_budgets_by_supplier($supplier,$params=null) {
         $doutput .= node_view($budget, TRUE, FALSE, TRUE);
   }
 
-  $output .= budgets_list_totals($subtotals).
+  $output .= budgets_list_totals($subtotals,$vars).
     budgets_list_monthly_totals($subtotals,$time_subtotals,$vars).
     $doutput;
   //theme('pager', NULL, variable_get('default_nodes_main', 10));
