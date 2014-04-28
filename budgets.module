@@ -1799,11 +1799,11 @@ function budgets_items_clean(&$nitems) {
   $items = $nitems;
   if (count($nitems))
   foreach ($items as $k => $i) {
-    if (empty($i['title']))
-    if (empty($i['quantity']))
-    if (empty($i['cost']))
-    if (empty($i['description']))
-    if (empty($i['comments'])) {
+    if (empty(ltrim($i['title'])))
+    if (empty(ltrim($i['quantity'])))
+    if (empty(ltrim($i['cost'])))
+    if (empty(ltrim($i['description'])))
+    if (empty(ltrim($i['comments']))) {
        unset($nitems[$k]);
     }
   }
