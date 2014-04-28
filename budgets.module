@@ -921,6 +921,11 @@ function budgets_form(&$node, &$param) {
 
   budgets_items_clean($node->items);
 
+  $node->supplier_id=current(explode('-',$node->supplier_id));
+  $node->node_id=current(explode('-',$node->node_id));
+  $node->zone_id=current(explode('-',$node->zone_id));
+
+
   if (isset($node->nid))
     $form['id'] = array('#type' => '#hidden', '#value' => $node->nid);
   else {
@@ -1020,8 +1025,8 @@ function budgets_form(&$node, &$param) {
     '#title'             => t('Supplier'),
     '#size'             => 25,
     '#maxlength'        => 1024,
-    '#default_value'     => ($node->supplier_id > 0) ?
-      $node->supplier_id.'-'.budgets_supplier_get_suppliername($node->supplier_id) : NULL,
+    '#default_value'     => (($node->supplier_id > 0) and (is_numeric($node->supplier_id))) ?
+      $node->supplier_id.'-'.budgets_supplier_get_suppliername($node->supplier_id) : $node->supplier_id,
     '#description'       =>  t('Supplier who provides the time & materials (optional)'),
     '#autocomplete_path' => 'budgets/js/select-supplier',
   );
@@ -1043,9 +1048,9 @@ function budgets_form(&$node, &$param) {
     '#maxlength'     => 256,
     '#description' =>  t('Affected guifi.net node'),
     '#autocomplete_path' => 'guifi/js/select-node',
-    '#default_value' => ($node->node_id > 0) ?
+    '#default_value' => (($node->node_id > 0) and (is_numeric($node->node_id))) ?
       $node->node_id.'-'.guifi_get_zone_nick(guifi_get_zone_of_node($node->node_id)).', '.
-         guifi_get_nodename($node->node_id) : NULL,
+         guifi_get_nodename($node->node_id) : $node->node_id,
   );
 
     $form['budgets_location']['zone_id'] = array (
@@ -1053,8 +1058,8 @@ function budgets_form(&$node, &$param) {
       '#title' => t('Zone'),
      '#description' => t('If left empty, will be filled with node zone'),
       '#size' => 80,
-      '#default_value'=> ($node->zone_id!='') ?
-         $node->zone_id.'-'.guifi_get_zone_name($node->zone_id) : NULL,
+      '#default_value'=> (($node->zone_id!='') and (is_numeric($node->zone_id))) ?
+         $node->zone_id.'-'.guifi_get_zone_name($node->zone_id) : $node->zone_id,
       '#maxsize'=> 256,
       '#autocomplete_path' => 'budgets/js/select-zone',
     );
@@ -2091,7 +2096,11 @@ function budgets_view($node, $teaser = FALSE, $page = FALSE) {
 
   $node->title = $node->nid .' '.$node->title;
 
-  guifi_log(GUIFILOG_TRACE, 'function budgets_view()');
+  $node->supplier_id=current(explode('-',$node->supplier_id));
+  $node->node_id=current(explode('-',$node->node_id));
+  $node->zone_id=current(explode('-',$node->zone_id));
+
+  guifi_log(GUIFILOG_BASIC, 'function budgets_view()',$node);
 
   node_prepare($node, $teaser);
 
