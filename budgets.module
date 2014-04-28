@@ -1796,14 +1796,19 @@ function budgets_fund_set_status($budget, $fund_id, $status) {
 }
 
 function budgets_items_clean(&$nitems) {
-  $items = $nitems;
   if (count($nitems))
+    $items = $nitems;
   foreach ($items as $k => $i) {
-    if (empty(ltrim($i['title'])))
-    if (empty(ltrim($i['quantity'])))
-    if (empty(ltrim($i['cost'])))
-    if (empty(ltrim($i['description'])))
-    if (empty(ltrim($i['comments']))) {
+    $title       = ltrim($i['title']);
+    $quantity    = ltrim($i['quantity']);
+    $cost        = ltrim($i['cost']);
+    $description = ltrim($i['description']);
+    $comments    = ltrim($i['comments']);
+    if (empty($title))
+    if (empty($quantity))
+    if (empty($cost))
+    if (empty($description))
+    if (empty($comments)) {
        unset($nitems[$k]);
     }
   }
