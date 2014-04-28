@@ -2100,7 +2100,7 @@ function budgets_view($node, $teaser = FALSE, $page = FALSE) {
   $node->node_id=current(explode('-',$node->node_id));
   $node->zone_id=current(explode('-',$node->zone_id));
 
-  guifi_log(GUIFILOG_BASIC, 'function budgets_view()',$node);
+  guifi_log(GUIFILOG_TRACE, 'function budgets_view()',$node);
 
   node_prepare($node, $teaser);
 
