@@ -2447,7 +2447,7 @@ function budgets_list_totals($subtotals,$vars) {
 function budgets_list_monthly_totals($subtotals,$time_subtotals,$vars) {
   $node = node_load($vars['id'][0]);
 
-  guifi_log(GUIFILOG_BASIC,'budgets_list_monthly_totals',$vars);
+  guifi_log(GUIFILOG_TRACE,'budgets_list_monthly_totals',$vars);
 
   $title_app = '';
   if (($vars['from']['year']==$vars['to']['year']) and
