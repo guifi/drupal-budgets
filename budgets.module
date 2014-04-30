@@ -2447,7 +2447,7 @@ function budgets_list_totals($subtotals,$vars) {
 function budgets_list_monthly_totals($subtotals,$time_subtotals,$vars) {
   $node = node_load($vars['id'][0]);
 
-  guifi_log(GUIFILOG_TRACE,'budgets_list_monthly_totals',$vars);
+  guifi_log(GUIFILOG_BASIC,'budgets_list_monthly_totals',$vars);
 
   $title_app = '';
   if (($vars['from']['year']==$vars['to']['year']) and
@@ -2477,8 +2477,10 @@ function budgets_list_monthly_totals($subtotals,$time_subtotals,$vars) {
                   ',types='.implode('|',$vars['types']).
                   ',status='.implode('|',$vars['status']).
                   ',id='.$vars['id'][0];
-        if (($node->type=='guifi_zone') or (isset($vars['zone_id'][0])))
-          $ls .= ',zone_id='.$vars['zone_id'][0];
+        if (($node->type=='guifi_zone') or (isset($vars['zone_id'][0]))) {
+          $z = (isset($vars['zone_id'][0])) ? $vars['zone_id'][0] : $vars['id'][0];
+          $ls .= ',zone_id='.$z;
+        }
 
         if (($node->type=='guifi_node') or (isset($vars['location_id'][0])))
           $ls .= ',location_id='.$vars['location_id'][0];
