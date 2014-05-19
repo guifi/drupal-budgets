@@ -925,6 +925,7 @@ function budgets_form(&$node, &$param) {
   $node->node_id=current(explode('-',$node->node_id));
   $node->zone_id=current(explode('-',$node->zone_id));
 
+  $form['#attributes'] = array('class'=>'budget-form');
 
   if (isset($node->nid))
     $form['id'] = array('#type' => '#hidden', '#value' => $node->nid);
@@ -1234,6 +1235,7 @@ function budgets_item_form($item, $ki, $fold = TRUE) {
 
   $f = array(
     '#type' => 'fieldset',
+    '#attributes' => array('class'=>'budget-item'),
     '#title' => $title,
 //    '#description' => t('TAX should be in %, zero value means tax included'),
     '#tree' => TRUE,
@@ -2558,7 +2560,9 @@ function budgets_list_form($parm,$keys=null) {
   /*
    * Filter form
    */
+
   $form['filter'] = array(
+    '#attributes' => array('class'=>"query-form"),
     '#title'=> t('Filters'),
     '#type'=>'fieldset',
     '#tree'=>false,

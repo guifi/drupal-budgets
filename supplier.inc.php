@@ -52,6 +52,7 @@ function budgets_supplier_form(&$node,&$param) {
    */
   $form['address'] = array(
     '#type'        => 'fieldset',
+    '#attributes'  => array('class'=>'supplier-fieldset'),
     '#title'       => t('Address'),
     '#collapsible' => TRUE,
     '#collapsed'   => TRUE,
@@ -59,7 +60,7 @@ function budgets_supplier_form(&$node,&$param) {
   if (empty($node->address1) or empty($node->postal_code) or empty($node->city) or
       empty($node->country)
   )
-    $form['address']['#collapsed']=FALSE;
+  $form['address']['#collapsed']=FALSE;
   $form['address']['address1'] = array(
     '#type'             => 'textfield',
     '#size'             => 256,
@@ -159,7 +160,7 @@ function budgets_supplier_form(&$node,&$param) {
       'Use "Preview" button if all nodes are filled, and you need more rows to fill.'),
     '#collapsible' => TRUE,
     '#collapsed'   => ($node->tax_code!='') ? TRUE : FALSE,
-    '#attributes'  => array('class'=>'tax'),
+    '#attributes'  => array('class'=>'tax supplier-fieldset', ),
   );
   $form['tax']['tax_code'] = array(
     '#type'             => 'textfield',
@@ -172,8 +173,8 @@ function budgets_supplier_form(&$node,&$param) {
   );
   $form['tax']['default_tax_rate'] = array(
     '#type'             => 'textfield',
-    '#size'             => 25,
-    '#maxlength'        => 50,
+    '#size'             => 10,
+    '#maxlength'        => 10,
     '#title'            => t('Default tax rate'),
     '#required'         => TRUE,
     '#default_value'    => $node->default_tax_rate,
@@ -187,6 +188,7 @@ function budgets_supplier_form(&$node,&$param) {
   $form['certs'] = array(
     '#type'        => 'fieldset',
     '#title'       => t('Enabling Certifications'),
+    '#attributes'  => array('class'=>'supplier-fieldset'),
     '#description' => t('Certificates held by the supplier for empowering activities.<br>'.
       "Leave blank if unknown/don't have or specify issue date in DD/MM/YYYY format. Note that the provider is required to send a copy of some of those certifications to the Foundation, and be available at any time upon request."),
     '#collapsible' => TRUE,
@@ -219,14 +221,14 @@ function budgets_supplier_form(&$node,&$param) {
   $count = 1; $totalv = count($options_guifi_certs);
   if (!empty($node->role))
     foreach ($options_guifi_certs as $key=>$cert) {
-    	$prefix = ''; $suffix = '';
+      $prefix = ''; $suffix = '';
   	  if ($count == 1)
   	    $prefix = '<div class=certs><table><tr><th>'.
           t('date').'</th><th>'.
           t('guifi.net certificate').'</th></tr>';
-    	if ($count == $totalv)
-  	  $suffix = '</table></div>';
-    	$form['certs']['guifi_certs'][$key] = array(
+      if ($count == $totalv)
+  	    $suffix = '</table></div>';
+      $form['certs']['guifi_certs'][$key] = array(
         '#type' => 'textfield',
         //'#title' => t($cert),
         '#size' => 10,
@@ -262,6 +264,7 @@ function budgets_supplier_form(&$node,&$param) {
   $form['caps'] = array(
     '#type'        => 'fieldset',
     '#title'       => t('Capabilities, services & offerings'),
+    '#attributes'  => array('class'=>'supplier-fieldset'),
     '#description' => t('Grid for selecting capabilities, offerings & services built for %role. Press "Preview" if you switched the role to rebuild this grid.',
       array('%role'=>$node->role)),
     '#collapsible' => TRUE,
@@ -374,6 +377,7 @@ function budgets_supplier_form(&$node,&$param) {
   $form['ratings']['self'] = array(
     '#type'        => 'fieldset',
     '#title'       => t('Self Ratings').' '.$node->self_rating,
+    '#attributes'  => array('class'=>'supplier-fieldset'),
     '#description' => t('Self evaluation'),
     '#collapsible' => TRUE,
     '#collapsed'   => FALSE,
@@ -396,6 +400,7 @@ function budgets_supplier_form(&$node,&$param) {
   $form['ratings']['official'] = array(
     '#type'        => 'fieldset',
     '#title'       => t('Official Ratings').' '.$node->official_rating,
+    '#attributes'  => array('class'=>'supplier-fieldset'),
     '#description' => t('Objective evaluation'),
     '#collapsible' => TRUE,
     '#collapsed'   => FALSE,
@@ -412,6 +417,7 @@ function budgets_supplier_form(&$node,&$param) {
   $form['ratings']['official']['or_experience'] = array(
     '#type'        => 'select',
     '#title'       => t('Experience'),
+    '#description' => t('Proven experience on executed projects'),
     '#default_value'=>($node->or_experience)?($node->or_experience):'~',
     '#options'     => guifi_types('experience_rate'),
     '#access'      => user_access('official rating'),
@@ -441,6 +447,7 @@ function budgets_supplier_form(&$node,&$param) {
     $form['accounting_urls'][$k] = array(
       '#type'        => 'fieldset',
       '#title'       => t('Link #').($k+1),
+      '#attributes'  => array('class'=>'supplier-fieldset'),
       '#collapsible' => FALSE,
       '#tree'        => TRUE,
       '#collapsed'   => FALSE,
@@ -480,6 +487,7 @@ function budgets_supplier_form(&$node,&$param) {
   $form['contact'] = array(
     '#type'        => 'fieldset',
     '#title'       => t('Contact'),
+    '#attributes'  => array('class'=>'supplier-fieldset'),
     '#collapsible' => TRUE,
     '#collapsed'   => TRUE,
   );
@@ -1110,7 +1118,7 @@ function budgets_supplier_list_by_zone($zone,$params = NULL) {
 }
 
 function budgets_supplier_view($node, $teaser = FALSE, $page = FALSE) {
-
+  global $user;
 
   if (!isset($node->nid))
     $node = node_load(array('nid' => $node->id));
@@ -1204,7 +1212,10 @@ function budgets_supplier_view($node, $teaser = FALSE, $page = FALSE) {
     variable_get('default_nodes_main', 10)
   );
   $output .= '<h3>'.t('Contact information:').'<h3 />'.
-    t('Phone').':'.$node->phone.' Email: '.l($node->notification);
+    t('Phone').':'.$node->phone.
+    t(' Email: '). ($user->uid) ?
+     l($node->notification) :
+     l('login to view email contact','user/login');
 
 
   if (!$teaser) {
@@ -1243,6 +1254,7 @@ function theme_budgets_supplier_header($node, $teaser) {
 }
 
 function theme_budgets_supplier_footer($node, $teaser) {
+  global $user;
   $output = '<br></hr><em>'.strtoupper(t($node->role)).'</em><br>';
 
   $max=0;
@@ -1317,7 +1329,10 @@ function theme_budgets_supplier_footer($node, $teaser) {
   	/*
   	 * Contact
   	 */
-  	$contact .= t('Email contact: ').'<a href="mailto:'. $node->notification .'">'. $node->notification .'</a>';
+  	if ($user->uid)
+  	  $contact .= t('Email contact: ').'<a href="mailto:'. $node->notification .'">'. $node->notification .'</a>';
+  	else
+      $contact .= l(t('Login to view email contact'),'user/login');
   	if (!empty($node->phone))
   	  $contact .= ' - '.t('Phone(s): ').$node->phone;
 

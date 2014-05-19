@@ -4,6 +4,20 @@
   margin-bottom: 0em;
 }
 
+.query-form > .fieldset-wrapper > div.form-item,
+.budget-container-inline > .fieldset-wrapper > .form-item,
+.budget-item > .fieldset-wrapper > .form-item,
+.budget-inline,
+.supplier-fieldset > .fieldset-wrapper > .form-item {
+float: left;
+margin-right: 1em;
+}
+
+.budget-form  {
+float: left;
+margin-right: 1em;
+}
+
 fieldset.budget-comment {
   float: left;
   width: 97%;
@@ -74,8 +88,7 @@ p.rating {
 
 div.budgets-zone-form,
 fieldset.quote > div.form-item,
-.fieldset-wrapper > div.certs,
-.fieldset-wrapper > div.form-item {
+.fieldset-wrapper > div.certs {
   float: left;
   margin-right: 1em;
 }
@@ -85,13 +98,13 @@ fieldset.quote > div.form-item,
   margin-bottom: 0em;
 }
 
+.certs td {
+  padding: 0em 0.5em;
+}
+
 .zones .form-item {
   margin-top: 0em;
   margin-bottom: 0em;
-}  
-
-.certs td {
-  padding: 0em 0.5em;
 }
 
 .budget-container-inline > div.form-item {
