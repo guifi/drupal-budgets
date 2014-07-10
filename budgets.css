@@ -40,6 +40,7 @@ div.suppliers-help-rating {
 
 img.supplier-logo {
   float: left;
+  clear: both;
 }
 
 div.capson {
