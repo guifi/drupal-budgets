@@ -2696,7 +2696,7 @@ function budgets_by_node($node,$params=null) {
     $vars['nd'][0]=false;
     $vars['from']=array_combine(array('year','month','day'),explode(' ',date('Y n j',time()-(60*60*24*729))));
     $vars['to']=array_combine(array('year','month','day'),explode(' ',date('Y n j')));
-  } else {
+    $vars['orderby'][0]='accdate';
     $p=explode(',',$params);
     foreach ($p as $v) {
       $v=explode('=',$v);
