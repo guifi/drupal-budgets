@@ -2606,6 +2606,12 @@ function budgets_list_form($parm,$keys=null) {
     '#default_value'=>$keys['to'],
 //    '#suffix'=> '</div>',
   );
+  $form['filter']['orderby'] = array(
+    '#type'=>'select',
+    '#title'=>t('Order by'),
+    '#default_value'=>$keys['orderby'],
+    '#options'=>array('accdate'=>t('Due date'),'created'=>t('Created'),'changed DESC'=>t('Updated (DESC)')),
+  );
 
   if (!empty($keys['zone_id'][0])){
   	$opts = array(0=> t('All'),$keys['zone_id'][0]=>guifi_get_zone_name($keys['zone_id'][0]));
@@ -2667,6 +2673,7 @@ function budgets_list_form_submit($form_id, &$form_values) {
     ',from='.$v['from']['year'].'|'.$v['from']['month'].'|'.$v['from']['day'].
     ',to='.$v['to']['year'].'|'.$v['to']['month'].'|'.$v['to']['day'].
     ',nd='.$v['nd'].
+    ',orderby='.$v['orderby'].
     ',url='.$v['url'];
 
   if (isset($v['zone_id']))
@@ -2726,6 +2733,7 @@ function budgets_by_zone($zone,$params=null) {
     $vars['id'][0]=$zone->id;
     $vars['from']=array_combine(array('year','month','day'),explode(' ',date('Y n j',time()-(60*60*24*729))));
     $vars['to']=array_combine(array('year','month','day'),explode(' ',date('Y n j')));
+    $vars['orderby'][0]='accdate';
   } else if (is_array($params)) {
   	  $vars = $params;
     } else {
@@ -2782,7 +2790,7 @@ function budgets_by_zone($zone,$params=null) {
     $where.
     // Order by rating, creating a code for sort the trend:
     //  ''+''=0, ''=1, '-'=2
-    'ORDER BY b.accdate';
+    'ORDER BY '.$vars[orderby][0];
 
   guifi_log(GUIFILOG_TRACE,'list_by_zone (budgets query)',$qquery);
 
@@ -3098,7 +3106,8 @@ function theme_budgets_header($node, $teaser) {
   if (!empty($node->node_id)) {
     $SLocation = t('Node').': '
       .l($node->node_id,'node/'.$node->node_id.'/view')
-      .'-'.l(guifi_get_nodename($node->node_id),'node/'.$node->node_id.'/view/nodebudgets');
+      .'-'.l(guifi_get_nodename($node->node_id),'node/'.$node->node_id.'/view/nodebudgets')
+      .' ('.l(t('devices'),$node->node_id.'/view/devices').')';
   }
   $SLocation .= ' - '.t('Zone').': '.l(guifi_get_zone_name($node->zone_id),'node/'.$node->zone_id.'/view/budgets');
     $SContact = '<a href="mailto:'.$node->notification.'">'.$node->notification.'</a>';
