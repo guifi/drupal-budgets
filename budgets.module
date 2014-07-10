@@ -3107,7 +3107,7 @@ function theme_budgets_header($node, $teaser) {
     $SLocation = t('Node').': '
       .l($node->node_id,'node/'.$node->node_id.'/view')
       .'-'.l(guifi_get_nodename($node->node_id),'node/'.$node->node_id.'/view/nodebudgets')
-      .' ('.l(t('devices'),$node->node_id.'/view/devices').')';
+      .' ('.l(t('devices'),'node/'.$node->node_id.'/view/devices').')';
   }
   $SLocation .= ' - '.t('Zone').': '.l(guifi_get_zone_name($node->zone_id),'node/'.$node->zone_id.'/view/budgets');
     $SContact = '<a href="mailto:'.$node->notification.'">'.$node->notification.'</a>';
