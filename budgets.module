@@ -3098,8 +3098,7 @@ function theme_budgets_header($node, $teaser) {
   if (!empty($node->node_id)) {
     $SLocation = t('Node').': '
       .l($node->node_id,'node/'.$node->node_id.'/view')
-      .'-'
-      .l(guifi_get_nodename($node->node_id),'node/'.$node->node_id.'/view/nodebudgets');
+      .'-'.l(guifi_get_nodename($node->node_id),'node/'.$node->node_id.'/view/nodebudgets');
   }
   $SLocation .= ' - '.t('Zone').': '.l(guifi_get_zone_name($node->zone_id),'node/'.$node->zone_id.'/view/budgets');
     $SContact = '<a href="mailto:'.$node->notification.'">'.$node->notification.'</a>';
