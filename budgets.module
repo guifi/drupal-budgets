@@ -488,13 +488,17 @@ function budgets_perm() {
   return array(
   // for create & manage budgets & funds in general, registered users should
   // be able to create their own budgets, and edit their owns,
-  // but anly admin could edit others
+  // but only admin could edit others
+  // suppliers can manage/update their quotes/budgets until they get into compensate
+  // or closed status, then will no longer be able to make. Only reviewer will
+  // be ablte.
     'administer budgets',
     'create budgets',
   // for create & manage suppliers
     'administer suppliers',
     'create suppliers',
     'view budgets in preparation',
+    'review budgets',
     'official rating',
    );
 }
@@ -513,23 +517,20 @@ function budgets_access($op, $node) {
       return user_access('create budgets');
     case 'update':
       if ($node->type == 'budgets') {
-        if ((user_access('administer budgets')) || ($node->uid == $user->uid)) {
+        if ((user_access('administer budgets')) or
+            (user_access('review budgets')))
           return TRUE;
-        }
-        else {
-          return FALSE;
-        }
+        if (($node->uid == $user->uid) and
+            (!in_array($node->budget_status,array('Approved','Closed','Abandoned','Compensated'))))
+          return TRUE;
       }
-      else {
-        return user_access('create budgets');
-      }
+      return FALSE;
     case 'view':
       if ($node->uid == $user->uid)
         return TRUE;
       if (($node->budget_status == 'Preparation') or ($node->budget_status=='Review'))
         return user_access('view budgets in preparation');
-      else
-        return TRUE;
+      return TRUE;
   }
 }
 
@@ -956,14 +957,25 @@ function budgets_form(&$node, &$param) {
     		"Use <em>Crowdfunding</em> for donations or make public open calls for crowdfundings.<br>".
     		"Use <em>CAPEX/OPEX</em> type options if you plan to get compensated or reimbursed.<br>".
     		"Expiration date (open crowdfundings) and due/execution date."),
- );
+  );
+
+  $budgetStatusOpt = guifi_types('budget_status');
+  if (!user_access('review budgets'))
+    $budgetStatusOpt = array_diff_key($budgetStatusOpt,array('Approved'=>''));
   $form['general']['budget_status'] = array(
     '#type'          => 'select',
     '#title'         => t('Status'),
     '#default_value' => $node->budget_status,
     '#description'   => t("Current situation"),
-    '#options' =>  guifi_types('budget_status'),
+    '#options' =>  $budgetStatusOpt,
   );
+
+  // only reviewers/admins can change status on closed or under review budgets
+  if (in_array($node->budget_status,array('Review','Closed','Approved','Abandoned','Compensated'))) {
+    if ((!user_access('review budgets')) or (!user_access('administer budgets')))
+      $form['general']['budget_status']['#disabled'] = TRUE;
+    $form['general']['budget_status']['#description'] = t("Contact reviewer to change this");
+  }
 
   $form['general']['budget_type'] = array(
     '#type'          => 'select',
@@ -996,7 +1008,7 @@ function budgets_form(&$node, &$param) {
     '#maxlength'     => 100,
     '#title'         => t('Ticket linked'),
     '#default_value' => $node->ticket_link,
-    '#description'   =>  t('URL which links with the corresponding ticket causing the expense (if any)'),
+    '#description'   =>  t('URL which links with the corresponding ticket, email, etc. causing the expense (if any)'),
   );
 
 
@@ -1380,7 +1392,7 @@ function budgets_item_form($item, $ki, $fold = TRUE) {
   // Description
   $f['txt']['description'] = array(
     '#type' => 'textarea',
-    '#description' => t('Description'),
+    '#description' => t('Describe the item.<br>On items to compensate, when adds or replaces a device, specify the url or id of the device at the web (could be rejected if not properly described).'),
     '#parents'=> array('items', $ki, 'description'),
     '#default_value' => $item['description'],
     '#prefix' => '<div>',
@@ -1390,7 +1402,7 @@ function budgets_item_form($item, $ki, $fold = TRUE) {
   $f['txt']['comments'] = array(
     '#type' => 'textarea',
     '#parents'=> array('items', $ki, 'comments'),
-    '#description' => t('Comments'),
+    '#description' => t('Additional comments, like purpose of the change, motivation for choosing this device...'),
     '#default_value' => $item['comments'],
     '#prefix' => '<div>',
     '#suffix' => '</div>'
@@ -1411,7 +1423,7 @@ function budgets_items_form($items) {
     '#tree' => TRUE,
     '#collapsible' => TRUE,
     '#collapsed' => FALSE,
-//    '#description' => $txtmore
+    '#description' => $txtmore
 //    '#prefix'=> '<table>'
   );
 
@@ -1798,21 +1810,36 @@ function budgets_fund_set_status($budget, $fund_id, $status) {
 }
 
 function budgets_items_clean(&$nitems) {
+  guifi_log(GUIFILOG_TRACE, 'function budgets_items_clean(ENTER)', NULL);
+
   if (count($nitems))
-    $items = $nitems;
-  foreach ($items as $k => $i) {
-    $title       = ltrim($i['title']);
-    $quantity    = ltrim($i['quantity']);
-    $cost        = ltrim($i['cost']);
-    $description = ltrim($i['description']);
-    $comments    = ltrim($i['comments']);
-    if (empty($title))
-    if (empty($quantity))
-    if (empty($cost))
-    if (empty($description))
-    if (empty($comments)) {
-       unset($nitems[$k]);
-    }
+    $bItems = $nitems;
+
+  foreach ($nitems as $k => $bItem) {
+    $bItem[comments]    = $bItem[comments]=='&nbsp;' ?
+                          NULL : ltrim($bItem[comments]);
+    $bItem[description] = $bItem[description]=='&nbsp;' ?
+                          NULL : ltrim($bItem[description]);
+    $bItem[title]       = ltrim($bItem['title']);
+    $bItem[quantity]    = ltrim($bItem['quantity']);
+    (float) $bItem[cost]        = ltrim($bItem['cost']);
+
+    if (empty($bItem[title]) and
+        empty($bItem[quantity]) and
+        empty(floatval($bItem[cost])) and
+        empty($bItem[description]) and
+        empty($bItem[comments]))
+      {
+
+      if (isset($bItem['new']))
+        unset($nitems[$k]);
+      else
+        $nitems[$k]['deleted']=TRUE;
+
+      guifi_log(GUIFILOG_TRACE, 'function budgets_items_clean(EMPTY)', $bItem);
+    } else
+      guifi_log(GUIFILOG_TRACE, 'function budgets_items_clean(NOT empty)', $bItem);
+
   }
 
 }
@@ -1931,10 +1958,10 @@ function budgets_validate(&$node) {
     if (empty($item['description']))
       form_set_error('items][' . $item_id . '][description', t('Item description is mandatory'));
     $item['quantity'] = str_replace(',', '.', $item['quantity']);
-    if (!is_numeric($item['quantity']))
+    if (!empty($item['quantity']) and (!is_numeric($item['quantity'])))
       form_set_error('items][' . $item_id . '][quantity', t('Quantity must be numeric'));
     $item['cost'] = str_replace(',', '.', $item['cost']);
-    if (!is_numeric($item['cost']))
+    if (!empty($item['cost']) and (!is_numeric($item['cost'])))
       form_set_error('items][' . $item_id . '][cost', t('Cost must be numeric'));
   }
 
@@ -1949,6 +1976,7 @@ function budgets_save(&$node) {
     $node->zone_id = guifi_get_zone_of_node($node->node_id);
 
   budgets_items_clean($node->items);
+
   $node->expires = mktime(0, 0, 0,
     $node->arrexpires['month'],
     $node->arrexpires['day'],
