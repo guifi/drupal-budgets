@@ -1812,7 +1812,7 @@ function budgets_fund_set_status($budget, $fund_id, $status) {
 function budgets_items_clean(&$bItems) {
   guifi_log(GUIFILOG_TRACE, 'function budgets_items_clean(ENTER)', NULL);
 
-  if (empty($bItems))
+  if (count($bItems)==0)
     return;
 
   foreach ($bItems as $k => $bItem) {
@@ -1832,9 +1832,9 @@ function budgets_items_clean(&$bItems) {
       {
 
       if (isset($bItem['new']))
-        unset($nitems[$k]);
+        unset($bItems[$k]);
       else
-        $nitems[$k]['deleted']=TRUE;
+        $bItems[$k]['deleted']=TRUE;
 
       guifi_log(GUIFILOG_TRACE, 'function budgets_items_clean(EMPTY)', $bItem);
     } else
