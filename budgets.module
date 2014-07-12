@@ -2209,7 +2209,8 @@ function theme_budgets_items($node, $links = FALSE) {
        $totaltax = $totaltax + ($subtotal * ($item['tax']/100));
     }
     $total = $total + $subtotal;
-    if (!$subtotal)
+
+    if (!$subtotal and empty($item['title']))
       continue;
 
     $thsnd = variable_get('guifi_thousand','.');
