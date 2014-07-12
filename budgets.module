@@ -1809,11 +1809,11 @@ function budgets_fund_set_status($budget, $fund_id, $status) {
   drupal_goto('node/' . $budget->id . '/view/funds');
 }
 
-function budgets_items_clean(&$nitems) {
+function budgets_items_clean(&$bItems) {
   guifi_log(GUIFILOG_TRACE, 'function budgets_items_clean(ENTER)', NULL);
 
-  if (count($nitems))
-    $bItems = $nitems;
+  if (empty($bItems))
+    return;
 
   foreach ($bItems as $k => $bItem) {
     $bItem[comments]    = $bItem[comments]=='&nbsp;' ?
