@@ -1822,7 +1822,7 @@ function budgets_items_clean(&$nitems) {
                           NULL : ltrim($bItem[description]);
     $bItem[title]       = ltrim($bItem['title']);
     $bItem[quantity]    = ltrim($bItem['quantity']);
-    (float) $bItem[cost]        = ltrim($bItem['cost']);
+    $bItem[cost]        = floatval(ltrim($bItem['cost']));
 
     if (empty($bItem[title]) and
         empty($bItem[quantity]) and
