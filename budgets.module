@@ -1826,7 +1826,7 @@ function budgets_items_clean(&$nitems) {
 
     if (empty($bItem[title]) and
         empty($bItem[quantity]) and
-        empty(floatval($bItem[cost])) and
+        empty($bItem[cost]) and
         empty($bItem[description]) and
         empty($bItem[comments]))
       {
