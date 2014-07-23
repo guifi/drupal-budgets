@@ -128,6 +128,7 @@ function budgets_install() {
   db_query("INSERT INTO {guifi_types} (id, type, text, description, relations) VALUES ('4', 'budget_type', 'w-opex', 'Wireless-OPEX', NULL)");
   db_query("INSERT INTO {guifi_types} (id, type, text, description, relations) VALUES ('5', 'budget_type', 'f-capex', 'Fiber-CAPEX', NULL)");
   db_query("INSERT INTO {guifi_types} (id, type, text, description, relations) VALUES ('6', 'budget_type', 'f-opex', 'Fiber-OPEX', NULL)");
+  db_query("INSERT INTO {guifi_types} (id, type, text, description, relations) VALUES ('7', 'budget_type', 'f-conn', 'Fiber Conn financed', NULL)");
 
   /*
    * 3th part certs (tp_certs)
@@ -572,4 +573,15 @@ function budgets_update_547	() {
     }
   };
 }
+
+function budgets_update_548	() {
+
+  $items = array();
+
+  $items[] = update_sql("INSERT INTO {guifi_types} (id, type, text, description, relations) VALUES ('7', 'budget_type', 'f-conn', 'Fiber Conn financed', NULL)");
+
+  return $items;
+}
+
+
 ?>
