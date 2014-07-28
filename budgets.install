@@ -10,7 +10,8 @@ function budgets_schema() {
     'fields' => array(
       'id' => array('type' => 'int', 'size' => 'medium', 'not null' => TRUE, 'default' => 0),
       'budget_status' => array('type' => 'varchar', 'length' => '15', 'not null'  => TRUE),
-      'budget_type' => array('type' => 'varchar', 'length' => '15', 'not null'  => TRUE, 'default' => 'croudfunding', 'comment' => 'CAPEX/OPEX-crowdfunding'),
+      'budget_type' => array('type' => 'varchar', 'length' => '15', 'not null'  => TRUE, 'default' => 'crowdfunding', 'comment' => 'CAPEX/OPEX-crowdfunding'),
+      'priority' =>	array('type' => 'varchar', 'length' => '15', 'not null'  => TRUE, 'default' => 'unknown', 'comment' => 'Priority (None/Urgent/Normal/Minor)'),
       'supplier_id' => array('type' => 'int', 'size' => 'medium', 'unsigned' => TRUE, 'not null'  => TRUE, 'default' => 0, 'comment' => 'Foreign key to supplier'),
       'ticket_link' => array('type' => 'varchar', 'length' => '100', 'comment' => 'If exists, link to whatever causes the expense, i.e. ticket maintenance...'),
       'notification' => array('type' => 'varchar', 'length' => '1024', 'not null'  => FALSE),
@@ -122,6 +123,7 @@ function budgets_install() {
   /*
    *  budget_type
    */
+  db_query("INSERT INTO {guifi_types} (id, type, text, description, relations) VALUES ('0', 'budget_type', 'other', 'Other expenses', NULL)");
   db_query("INSERT INTO {guifi_types} (id, type, text, description, relations) VALUES ('1', 'budget_type', 'none', 'None', NULL)");
   db_query("INSERT INTO {guifi_types} (id, type, text, description, relations) VALUES ('2', 'budget_type', 'crowdfunding', 'Crowdfunding', NULL)");
   db_query("INSERT INTO {guifi_types} (id, type, text, description, relations) VALUES ('3', 'budget_type', 'w-capex', 'Wireless-CAPEX', NULL)");
@@ -203,6 +205,12 @@ function budgets_install() {
   db_query("INSERT INTO {guifi_types} (id, type, text, description, relations) VALUES ('2', 'experience_rate', 'B','B-Some experience or up to the average', NULL)");
   db_query("INSERT INTO {guifi_types} (id, type, text, description, relations) VALUES ('3', 'experience_rate', 'C','C-None or few experience, willing to start', NULL)");
   db_query("INSERT INTO {guifi_types} (id, type, text, description, relations) VALUES ('4', 'experience_rate', '~','Not rated', NULL)");
+
+  db_query("INSERT INTO {guifi_types} (id, type, text, description, relations) VALUES ('1', 'budget_priority', 'unknown' , 'Unknown', 'YES')");
+  db_query("INSERT INTO {guifi_types} (id, type, text, description, relations) VALUES ('2', 'budget_priority', 'urgent', 'Urgent', 'YES')");
+  db_query("INSERT INTO {guifi_types} (id, type, text, description, relations) VALUES ('3', 'budget_priority', 'normal', 'Normal', 'YES')");
+  db_query("INSERT INTO {guifi_types} (id, type, text, description, relations) VALUES ('4', 'budget_priority', 'minor', 'Minor', NULL)");
+
 
 }
 
@@ -579,6 +587,22 @@ function budgets_update_548	() {
   $items = array();
 
   $items[] = update_sql("INSERT INTO {guifi_types} (id, type, text, description, relations) VALUES ('7', 'budget_type', 'f-conn', 'Fiber Conn financed', NULL)");
+
+  return $items;
+}
+
+function budgets_update_551	() {
+
+  $items = array();
+
+  $items[] = update_sql("INSERT INTO {guifi_types} (id, type, text, description, relations) VALUES ('0', 'budget_type', 'other', 'Other expenses', NULL)");
+
+  $items[] = update_sql("INSERT INTO {guifi_types} (id, type, text, description, relations) VALUES ('1', 'budget_priority', 'unknown' , 'Unknown', 'YES')");
+  $items[] = update_sql("INSERT INTO {guifi_types} (id, type, text, description, relations) VALUES ('2', 'budget_priority', 'urgent', 'Urgent', 'YES')");
+  $items[] = update_sql("INSERT INTO {guifi_types} (id, type, text, description, relations) VALUES ('3', 'budget_priority', 'normal', 'Normal', 'YES')");
+  $items[] = update_sql("INSERT INTO {guifi_types} (id, type, text, description, relations) VALUES ('4', 'budget_priority', 'minor', 'Minor', NULL)");
+  db_add_field($items,'budgets','priority',
+  	array('type' => 'varchar', 'length' => '15', 'not null'  => TRUE, 'default' => 'unknown', 'comment' => 'Priority (Unknown/Urgent/Normal/Minor)'));
 
   return $items;
 }
