@@ -1001,7 +1001,8 @@ function budgets_form(&$node, &$param) {
 
   $budgetStatusOpt = guifi_types('budget_status');
   if (!user_access('review budgets'))
-    $budgetStatusOpt = array_diff_key($budgetStatusOpt,array('Approved'=>''));
+    $budgetStatusOpt = array_diff_key($budgetStatusOpt,
+        array('Approved'=>'','Review'=>'','Compensated'));
   $form['general']['budget_status'] = array(
     '#type'          => 'select',
     '#title'         => t('Status'),
@@ -1124,7 +1125,7 @@ function budgets_form(&$node, &$param) {
   $form['budgets_location']['node_id'] = array(
     '#type' => 'textfield',
     '#title' => t('Node'),
-    '#size'          => 25,
+    '#size'          => 80,
     '#maxlength'     => 256,
     '#description' =>  t('Affected guifi.net node'),
     '#autocomplete_path' => 'guifi/js/select-node',
@@ -1135,11 +1136,13 @@ function budgets_form(&$node, &$param) {
     '#type' => 'textfield',
     '#title' => t('Zone'),
    '#description' => t('If left empty, will be filled with node zone'),
-    '#size' => 80,
+    '#size' => 50,
     '#default_value'=> (($node->zone_id!='') and (is_numeric($node->zone_id))) ?
        $node->zone_id.'-'.guifi_get_zone_name($node->zone_id) : $node->zone_id,
     '#maxsize'=> 256,
     '#autocomplete_path' => 'budgets/js/select-zone',
+    '#disabled' => in_array($node->budget_type,array('none','other','crowdfunding'))?
+      FALSE : TRUE,
   );
 
   /*
@@ -1367,6 +1370,7 @@ function budgets_item_form($item, $ki, $fold = TRUE) {
   $f['title'] = array(
     '#type' => 'textfield',
     '#title' => t('Title'),
+    '#size'  => 90,
     '#maxlength' => 1024,
     '#required' => FALSE,
     '#default_value' => !empty($item['title']) ? $item['title'] : NULL,
@@ -1571,7 +1575,7 @@ function budgets_form_load_elements($form, &$form_state) {
 
   // query existing budget/proposal
 
-  guifi_log(GUIFILOG_TRACEC, 'function budgets_form_load_elements(OUT)', $node[items]);
+  guifi_log(GUIFILOG_TRACE, 'function budgets_form_load_elements(OUT)', $node[items]);
 
   $form_state['#redirect'] = FALSE;
   $form_state['rebuild'] = TRUE;
@@ -1625,6 +1629,8 @@ function budgets_form_load_quote($loadQuote, &$items, &$cw) {
   if ($quote->type != 'supplier_quote')
     return;
 
+  guifi_log(GUIFILOG_TRACE, 'function budgets_form_load_quote()', $quote);
+
   $cw++;
 
   $newI = array();
@@ -1635,12 +1641,16 @@ function budgets_form_load_quote($loadQuote, &$items, &$cw) {
   $newI['tax'] = $quote->tax;
   $newI['cost'] = $quote->cost;
 
-  $newI['description'] = (empty($quote->teaser))?'-':
-    $quote->teaser;
+  $newI['description'] = $quote->body.'<br>'.t('Edit & replace this text with a brief description, what it does, etc.<br>
+      For expense recognition purposes do also provide:
+      </ul><li>When applicable, specify the device number, name or url of the device, i.e.:
+        <a href="http://guifi.net/ca/guifi/device/2829" alt="GurbElSerratST" title="GurbElSerratST">GurbElSerratST - http://guifi.net/ca/guifi/device/2829</a></li>
+      <li>Explain if adds a new component, or replaces an existing one</li>
+      <li>Is recommended to provide a small resolution picture (i.e. 480px)</li></ul>');
 
   $supplier = node_load(array('nid' => $quote->supplier_id));
 
-  $newI['comments'] = theme_refquote($quote, $supplier);
+  $newI['comments'] = theme_refquote($quote, $supplier).'<br>.';
 
   $items[] = $newI;
 
@@ -2009,6 +2019,11 @@ function budgets_validate(&$node) {
     form_set_error('budget_type',
           t('You must specify the budget type'));
 
+  if ((!in_array($node->budget_type,array('none','other','crowdfunding'))) and
+      (empty($node->node_id)))
+    form_set_error('node_id',
+          t('Affected node is mandatory'));
+
 
   if (empty($node->nid)) {
     // Fill default values
@@ -2128,7 +2143,7 @@ function budgets_save(&$node) {
 
   guifi_log(GUIFILOG_TRACE,'function budgets_save()',$node);
 
-  if ((empty($node->zone_id)) and ($node->node_id>0))
+  if ($node->node_id>0)
     $node->zone_id = guifi_get_zone_of_node($node->node_id);
 
   budgets_items_clean($node->items);
@@ -3066,15 +3081,17 @@ function budgets_ahah_select_supplier($string){
 function budgets_ahah_select_quote($string) {
   $matches = array();
 
-  $string = strtoupper(arg(3));
+  $strings = str_word_count(strtoupper(arg(3)),1,'0123456789ÀÁÈÉÍÓÒÚÑÇÏÄËÜ');
+  foreach ($strings as $k => $v) {
+    $strings[$k] = '(CONCAT(upper(s.title), " ",q.id, "-", q.partno, ", ", upper(q.title)) LIKE "%'.$v.'%") ';
+  }
 
   $qry = db_query(
     'SELECT ' .
     '  CONCAT(q.id,"-",s.title, "-", q.partno, ", ", q.title) str '.
     'FROM {supplier_quote} q, {supplier} s ' .
-    'WHERE q.supplier_id = s.id ' .
-    '  AND (CONCAT(upper(s.title), " ",q.id, "-", q.partno, ", ", upper(q.title)) ' .
-    '    LIKE "%'. $string .'%") ' .
+    'WHERE q.supplier_id = s.id AND ' .
+    implode(' AND ',$strings).
     'ORDER BY s.title, q.title, q.partno');
 
   $c = 0;
@@ -3247,24 +3264,17 @@ function budgets_cnml_budget(&$CNML, $bid, $format = 'short') {
 }
 
 function theme_refquote($quote, $supplier, $teaser = FALSE) {
-  $tax = t('Tax').': ';
-  $tax .=  ($quote->tax) ? number_format($quote->tax, 0, ',', '.').'% ' : t('incl.').' ';
+  $refquote = t('Ref.') .': '. l($quote->partno, 'node/'. $quote->nid) .' ('.
+     l($supplier->title, 'node/'. $supplier->nid) .'), '.
+     t('Tax').': ';
+  ($quote->tax) ? $refquote.= number_format($quote->tax, 0, ',', '.').'% ' :
+     $refquote.= t('incl.');
   if ($teaser)
-    return t('Ref.') .': '. l($quote->partno, 'node/'. $quote->nid) .'-'.
-      l($supplier->title, 'node/'. $supplier->nid) .', '.
-      $tax.
+    return $refquote.
       '<h2>'.t('Cost') .': <bold><em>'. number_format($quote->cost, 2, ',', '.').'</bold></em></h2>';
 
-  return
-    $tax.' <br>'.
-    t('Cost') .': '. number_format($quote->cost, 2, ',', '.') .'<br>'.
-    t('Reference') .': <ul><li>'.
-    t('Supplied by') .': '. $quote->supplier_id .
-    '-'. l($supplier->title, 'node/'. $supplier->nid) .
-    '</li><li>'.
-    t('Part#') .': '. $quote->nid .'-'.
-    l($quote->partno, 'node/'. $quote->nid) .
-    '</li></ul>';
+  return $refquote.
+      t('Cost') .': <bold><em>'. number_format($quote->cost, 2, ',', '.').'</bold></em>';
 }
 
 function theme_budgets_header($node, $teaser) {
@@ -3287,6 +3297,10 @@ function theme_budgets_header($node, $teaser) {
   $TBType   = guifi_types('budget_type');
   $SBStatus = t($TBStatus[$node->budget_status]);
   $SBType   = t($TBType[$node->budget_type]);
+  $SBPLink  = t($node->priority);
+  if (!empty($node->ticket_link))
+    $SBPLink .= ' '.$node->ticket_link;
+  $SBPLink = l($SBPLink,$node->ticket_link);
 
   if (!empty($node->node_id)) {
     $SLocation = t('Node').': '
@@ -3324,7 +3338,7 @@ function theme_budgets_header($node, $teaser) {
       $total += $subtotal;
       $items++;
     }
-    $output .= $SBStatus.' - '.$SBType.' - '.$SDate.' - '.$SLocation;
+    $output .= $SBStatus.' - '.t($node->priority).' - '.$SBType.' - '.$SDate.' - '.$SLocation;
     $output .= ', '. format_plural($items, t('1 item'), '@count items');
     $rows[] = array(
       array('data'=>$output),
@@ -3338,14 +3352,14 @@ function theme_budgets_header($node, $teaser) {
   	  array('data'=>t('Date & Status')),
   	  array('data'=>$SBType.', '.$SDate. ' - '.t('Status').': '.$SBStatus),
   	);
+  	$rows[] = array(
+  	  array('data'=>t('Priority & ticket')),
+  	  array('data'=>$SBPLink),
+  	);
     if (isset($sup))
-//  	$rows[] = array (
-//  	  array('data'=>t('Supplier')),
-//  	  array('data'=>l($sup->title,'node/'.$sup->id)),
-//  	);
-  	$rows[] = array (
-  	  array('data'=>t('Location')),
-  	  array('data'=>$SLocation),
+      $rows[] = array (
+  	    array('data'=>t('Location')),
+  	    array('data'=>$SLocation),
   	);
   	$rows[] = array (
   	  array('data'=>t('Contact')),
