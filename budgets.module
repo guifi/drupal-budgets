@@ -399,10 +399,10 @@ function budgets_menu() {
     'type' => MENU_LOCAL_TASK);
 
   $items['guifi/menu/main/browse_suppliers'] = array(
-    'title' => 'Service providers & Commercial suppliers',
+    'title' => 'Service providers, Suppliers & Volunteers',
     'description' => 'Find out shops where you can buy equipment and can understand what you require or hire professional services to help you in building infrastructure',
     'page callback' => 'drupal_goto',
-    'page arguments' => array('node/' . guifi_bg_zone_root() . '/view/suppliers'),
+    'page arguments' => array('node/' . guifi_bg_zone_root() . '/suppliers'),
     'weight' => 100,
     'access arguments' => array('access content'),
   );
@@ -3298,9 +3298,13 @@ function theme_budgets_header($node, $teaser) {
   $SBStatus = t($TBStatus[$node->budget_status]);
   $SBType   = t($TBType[$node->budget_type]);
   $SBPLink  = t($node->priority);
+  if ($SBPLink==t('unknown'))
+    $SBPLink = t('n/d');
   if (!empty($node->ticket_link))
-    $SBPLink .= ' '.$node->ticket_link;
-  $SBPLink = l($SBPLink,$node->ticket_link);
+    $SBPLink = l($SBPLink,$node->ticket_link,
+      array('attributes'=>array('target'=>'_blank')));
+  else
+    $SBPLink = $SBPLink.' ('.t('no ticket').')';
 
   if (!empty($node->node_id)) {
     $SLocation = t('Node').': '
@@ -3338,7 +3342,7 @@ function theme_budgets_header($node, $teaser) {
       $total += $subtotal;
       $items++;
     }
-    $output .= $SBStatus.' - '.t($node->priority).' - '.$SBType.' - '.$SDate.' - '.$SLocation;
+    $output .= $SBStatus.' - '.$SBPLink.' - '.$SBType.' - '.$SDate.' - '.$SLocation;
     $output .= ', '. format_plural($items, t('1 item'), '@count items');
     $rows[] = array(
       array('data'=>$output),
