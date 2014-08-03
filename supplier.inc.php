@@ -925,6 +925,7 @@ function budgets_supplier_list_by_zone_filter($parm,$zid,$keys=NULL) {
     '#tree'=>false,
     '#collapsed'=>empty($keys) ? true : false,
     '#collapsible'=>true,
+    '#attributes'=>array('class'=>'supplier-fieldset'),
   );
   $form['filter']['tp_certs'] = array(
     '#type'=>'checkboxes',
@@ -986,6 +987,7 @@ function budgets_supplier_list_by_zone_filter($parm,$zid,$keys=NULL) {
     '#title'=>t('Keyword'),
     '#description'=>t('Name contains (use single keyword)'),
     '#default_value'=>$keys['title'][0],
+    '#autocomplete_path' => 'budgets/js/select-supplier',
     '#prefix'=> '<table><td>',
   );
   $form['filter']['submit'] = array(
@@ -1069,9 +1071,13 @@ function budgets_supplier_list_by_zone($zone,$params = NULL) {
   foreach ($vars as $k => $v) {
     foreach ($v as $p)
       if (!empty($p))
-        if ($k == 'title')
-          $svars[] = "upper(s.title) like '%".strtoupper($p)."%' ";
-        else
+        if ($k == 'title') {
+          $par = explode('-',$p);
+          if ((count($par)>1) and (is_numeric($par[0]))) {
+            $svars[] = " s.id = ".$par[0];
+          } else
+            $svars[] = "upper(s.title) like '%".strtoupper($p)."%' ";
+        } else
           $svars[] = $k." LIKE '%".$p."%' ";
   }
   if (count($svars)>0)
@@ -1109,7 +1115,7 @@ function budgets_supplier_list_by_zone($zone,$params = NULL) {
   }
   $output .= theme('pager', NULL, variable_get('default_nodes_main', 10));
 
-  drupal_set_breadcrumb(guifi_zone_ariadna($zone->id,'node/%d/view/suppliers'));
+  drupal_set_breadcrumb(guifi_zone_ariadna($zone->id,'node/%d/suppliers'));
 //  $output .= theme_pager(NULL, variable_get("guifi_pagelimit", 50));
 //  $node = node_load(array('nid' => $zone->id));
 //  $output .= theme_links(module_invoke_all('link', 'node', $node, FALSE));

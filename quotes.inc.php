@@ -611,7 +611,9 @@ function budgets_quote_list_by_supplier_filter($parm,$supplier,$keyword) {
     '#description'=>t('Title contains (use single keyword)'),
     '#prefix'=> '<table><td>',
   );
+
   $form['filter']['supplier'] = array('#type'=>hidden,'#value'=>$supplier);
+
   $form['filter']['submit'] = array(
     '#type'=>'submit',
     '#title'=>t('Press to proceed'),
@@ -673,55 +675,100 @@ function budgets_quote_list_by_supplier($supplier,$params=NULL) {
   print theme('page',$output, FALSE);
 
   return;
+}
 
-  // antic
+function budgets_quote_list_filter($parm,$keyword) {
+   guifi_log(GUIFILOG_TRACE,'budgets_quote_list_form',$parm);
 
-  $zroot = guifi_bg_zone_root();
-  if (($zone->id==0) or (empty($zone->id))) {
-    $zone->id=$zroot;
+  /*
+   * Filter form
+   */
+  $form['filter'] = array(
+    '#title'=> t('Filter').' '.$keyword,
+    '#type'=>'fieldset',
+    '#tree'=>false,
+    '#collapsed'=>false,
+    '#collapsible'=>true,
+//    '#attributes'=>array('class'=>'supplier-fieldset'),
+  );
+  $form['filter']['keyword'] = array(
+    '#type'=>'textfield',
+    '#size'=>120,
+    '#title'=>t('Keyword'),
+    '#default_value'=>$keyword,
+    '#description'=>t('You can use multiple words separated by spaces'),
+    '#autocomplete_path' => 'budgets/js/select-quote',
+  );
+
+  $form['filter']['submit'] = array(
+    '#type'=>'submit',
+    '#title'=>t('Press to proceed'),
+    '#value'=>t('Search'),
+  );
+
+  return $form;
+}
+
+function budgets_quote_list_filter_submit($form_id, &$form_values) {
+   $sup = $form_values['values'];
+   guifi_log(GUIFILOG_TRACE,'SUBMIT',$sup);
+   drupal_goto('guifi/menu/budgets/browse_quotes/'.$form_values['values']['keyword']);
   }
 
-  $parents = array();
+function budgets_quote_list($params=NULL) {
 
-  if ($zone->id==$zroot) {
-    // listing root zone: don't have to list the parents or childs'
-    $where = ''; //list all
-  } else {
- 	guifi_log(GUIFILOG_TRACE,'list_by_zone (zones)',guifi_zone_get_parents($zone->id));
-  	// other zones, parents and childs should be included, but
-  	// excluding root
-    $zlist = array_diff(guifi_zone_childs_and_parents($zone->id),
-       array(0,$zroot));
-    $where = 'AND (s.zone_id IN ('.implode(',',$zlist).') ';
-    foreach ($zlist as $z)
-      $where .= "OR CONCAT(','||s.zones||',') LIKE '%,".$z."%,' ";
-    $where.=') ';
-  }
+   guifi_log(GUIFILOG_TRACE,'quote_list (params)',$params);
 
-  $qquery =
-    'SELECT s.id ' .
-    'FROM {supplier} s, {node} n ' .
-    'WHERE s.id=n.nid ' .
-    ' AND n.status=1 '.
-    $where.
-    'ORDER BY s.official_rating,role ';
-  guifi_log(GUIFILOG_TRACE,'list_by_zone (suppliers query)',$qquery);
+   $output = drupal_get_form('budgets_quote_list_filter',$params);
 
-  $pager = pager_query($qquery,
+   if (!empty($params)) {
+     $vs = explode('-',$params);
+     if (count($vs)>1 and is_numeric($vs[0]))
+       $where = ' q.id = '.$vs[0];
+     else {
+       $strings = str_word_count(strtoupper(arg(4)),1,'0123456789ÀÁÈÉÍÓÒÚÑÇÏÄËÜ');
+       foreach ($strings as $k => $v)
+         $strings[$k] = '(CONCAT(upper(s.title), " ",q.id, "-", q.partno, ", ", upper(q.title)) LIKE "%'.$v.'%") ';
+       $where = implode(' AND ',$strings);
+     }
+   } else
+     $where = ' 1=1 ';
+
+   $qsql =  'SELECT q.id ' .
+    'FROM {supplier} s, {supplier_quote} q ' .
+    'WHERE q.supplier_id=s.id AND '.$where.
+    ' ORDER BY q.title, q.partno, q.id';
+
+   guifi_log(GUIFILOG_TRACE,'quote_list (query)',$qsql);
+
+
+   $qquotes = pager_query(
+    $qsql,
     variable_get('default_nodes_main', 10)
   );
-  $output = '';
-  while ($s = db_fetch_object($pager)) {
-    $supplier = node_load(array('nid' => $s->id));
-    $output .= node_view($supplier, TRUE, FALSE, TRUE);
+
+  if (!$teaser) {
+    $output .= '<br<br><hr><h2>'.t('Quotes from').': <em>'.$supplier->title.'</em></h2>';
+    $q=0;
+    while ($quote = db_fetch_object($qquotes)) {
+      guifi_log(GUIFILOG_TRACE,'quote_list (supplier)',$quote);
+      $output .= node_view(node_load(array('nid' => $quote->id)), TRUE, FALSE);
+      $q++;
+    }
+    ($q==0) ? $output .= t('No quotes available') : NULL;
+
+    $node->content['quotes'] = array(
+      '#value'=> $output.
+         theme('pager', NULL, variable_get('default_nodes_main', 10)),
+      '#weight' => 1,
+    );
   }
+
   $output .= theme('pager', NULL, variable_get('default_nodes_main', 10));
 
-  drupal_set_breadcrumb(guifi_zone_ariadna($zone->id,'node/%d/view/suppliers'));
-//  $output .= theme_pager(NULL, variable_get("guifi_pagelimit", 50));
-//  $node = node_load(array('nid' => $zone->id));
-//  $output .= theme_links(module_invoke_all('link', 'node', $node, FALSE));
+  //drupal_set_breadcrumb(guifi_zone_ariadna($zone->id,'node/%d/view/suppliers'));
   print theme('page',$output, FALSE);
+
   return;
 }
 

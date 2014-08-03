@@ -5,6 +5,14 @@
   margin-bottom: 0em;
 }
 
+.th-center {
+  text-align: center;
+}
+
+.table-csv {
+  border-width: 1px;
+}
+
 .query-form > .fieldset-wrapper > div.form-item,
 .budget-container-inline > .fieldset-wrapper > .form-item,
 .budget-item > .fieldset-wrapper > .form-item,

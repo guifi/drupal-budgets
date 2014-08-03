@@ -389,29 +389,63 @@ function budgets_menu() {
   );
 
   $items['node/%budgets_supplier/budgets/add'] = array(
-    'title' => 'create budget',
+    'title' => 'create budget/expense',
     'page callback' => 'budgets_add',
     'page arguments' => array(1),
     'access callback' => 'budgets_supplier_access',
     'access arguments' => array('create', arg(1)),
     'file' => 'node.pages.inc',
     'file path' => drupal_get_path('module', 'node'),
-    'type' => MENU_LOCAL_TASK);
+    'type' => MENU_LOCAL_TASK,
+  );
+  $items['node/%budgets_supplier/budgets/batch'] = array(
+    'title' => 'batch upload',
+    'page callback' => 'budgets_add_batch',
+    'page arguments' => array(1),
+    'access callback' => 'budgets_supplier_access',
+    'access arguments' => array('create', arg(1)),
+    'file' => 'node.pages.inc',
+    'file path' => drupal_get_path('module', 'node'),
+    'type' => MENU_LOCAL_TASK,
+  );
+  $items['node/%budgets_supplier/budgets/batch/review'] = array(
+    'title' => 'review upload',
+    'page callback' => 'budgets_add_batch_review',
+    'page arguments' => array(1,5),
+    'access callback' => 'budgets_supplier_access',
+    'access arguments' => array('create', arg(1)),
+    'file' => 'node.pages.inc',
+    'file path' => drupal_get_path('module', 'node'),
+    'type' => MENU_LOCAL_TASK,
+  );
 
-  $items['guifi/menu/main/browse_suppliers'] = array(
+  //
+  $items['guifi/menu/budgets'] = array(
+    'title' => 'Providers & accounting',
+    'description' => 'Browse information related to providers, volunteers, funding, proposals, expenses, quotes...',
+    'page callback' => 'guifi_menu_block_page',
+    'access arguments' => array('access content'),
+    'weight' => 0,
+  );
+  $items['guifi/menu/budgets/browse_suppliers'] = array(
     'title' => 'Service providers, Suppliers & Volunteers',
     'description' => 'Find out shops where you can buy equipment and can understand what you require or hire professional services to help you in building infrastructure',
     'page callback' => 'drupal_goto',
     'page arguments' => array('node/' . guifi_bg_zone_root() . '/suppliers'),
-    'weight' => 100,
     'access arguments' => array('access content'),
   );
-  $items['guifi/menu/main/browse_budgets'] = array(
+  $items['guifi/menu/budgets/browse_budgets'] = array(
     'title' => 'Proposals, Budgets & Fundings',
     'description' => 'Browse the proposals/budgets, find out the costs and help by funding them',
     'page callback' => 'drupal_goto',
     'page arguments' => array('budgets/' . guifi_bg_zone_root() . '/list'),
-    'weight' => 101,
+    'access arguments' => array('access content'),
+  );
+  $items['guifi/menu/budgets/browse_quotes'] = array(
+    'title' => 'Browse Quotes database',
+    'description' => 'Find out quotes present in the database, from any supplier',
+    'page callback' => 'budgets_quote_list',
+    'page arguments' => array(4),
     'access arguments' => array('access content'),
   );
 
@@ -426,6 +460,27 @@ function budgets_menu() {
 
 
   return $items;
+}
+
+/**
+ * Provide a single block from the administration menu as a page.
+ * This function is often a destination for these blocks.
+ * For example, 'admin/content/types' needs to have a destination to be valid
+ * in the Drupal menu system, but too much information there might be
+ * hidden, so we supply the contents of the block.
+ *
+ * @return
+ *   The output HTML.
+ */
+function budgets_menu_block_page() {
+  $item = menu_get_item();
+  if ($content = system_admin_menu_block($item)) {
+    $output = theme_guifi_menu_block_content($content);
+  }
+  else {
+    $output = t('You do not have any active items.');
+  }
+  return $output;
 }
 
 /**
@@ -1106,6 +1161,7 @@ function budgets_form(&$node, &$param) {
       $node->supplier_id.'-'.budgets_supplier_get_suppliername($node->supplier_id) : $node->supplier_id,
     '#description'       =>  t('Supplier who provides the time & materials (optional)'),
     '#autocomplete_path' => 'budgets/js/select-supplier',
+
   );
 
   /*
@@ -1125,7 +1181,7 @@ function budgets_form(&$node, &$param) {
   $form['budgets_location']['node_id'] = array(
     '#type' => 'textfield',
     '#title' => t('Node'),
-    '#size'          => 80,
+    '#size'          => 60,
     '#maxlength'     => 256,
     '#description' =>  t('Affected guifi.net node'),
     '#autocomplete_path' => 'guifi/js/select-node',
@@ -1370,7 +1426,7 @@ function budgets_item_form($item, $ki, $fold = TRUE) {
   $f['title'] = array(
     '#type' => 'textfield',
     '#title' => t('Title'),
-    '#size'  => 90,
+    '#size'  => 60,
     '#maxlength' => 1024,
     '#required' => FALSE,
     '#default_value' => !empty($item['title']) ? $item['title'] : NULL,
@@ -1779,7 +1835,7 @@ function budgets_fund_delete_confirm_submit($form, &$form_state) {
   drupal_set_message($subject);
   drupal_set_message($log);
 
-  $form_state['redirect'] = 'node/' . $node->id . '/view/funds';
+  $form_state['redirect'] = 'node/' . $node->id . '/fundings';
 }
 
 
@@ -2917,7 +2973,6 @@ function budgets_by_node($node,$params=null) {
   return budgets_by_zone($zone,$vars);
 }
 
-
 function budgets_by_zone($zone,$params=null) {
   guifi_log(GUIFILOG_TRACE,'budgets_by_zone',$zone->id);
 
@@ -3027,6 +3082,513 @@ function budgets_by_zone($zone,$params=null) {
   return;
 }
 
+function budgets_add_batch($provider) {
+
+  guifi_log(GUIFILOG_TRACE, 'function budgets_add_batch(provider)',$provider);
+
+  $output = drupal_get_form('budgets_batch_form','batch_budgets',$provider);
+
+  return $output;
+}
+
+function budgets_add_batch_review($provider,$tmpId) {
+
+  guifi_log(GUIFILOG_TRACE, 'function budgets_add_batch_review(provider)',$provider);
+  guifi_log(GUIFILOG_TRACE, 'function budgets_add_batch_review(tmpId)',$tmpId);
+
+  $output = drupal_get_form('budgets_batch_form_review','batch_review',$provider,$tmpId);
+
+  return $output;
+}
+
+function budgets_batch_form_review(&$form_state, $from = NULL, $provider, $tmpId) {
+  guifi_log(GUIFILOG_TRACE, 'function budgets_batch_form_review(tmpId)',$tmpId);
+  guifi_log(GUIFILOG_TRACE, 'function budgets_batch_form_review(from)',$from);
+  guifi_log(GUIFILOG_TRACE, 'function budgets_batch_form_review(foem_state)',$form_state);
+
+  $fname=file_directory_temp().'/'.$tmpId.'.tmp';
+  $fp = fopen($fname,"r");
+  $strBudgets = fread($fp, filesize($fname));
+  fclose($fp);
+
+  $budgets = unserialize($strBudgets);
+
+  if (empty($budgets)) {
+    drupal_set_message(t('Budgets to be loaded not found.'),'error');
+    drupal_goto('node/'.arg(1).'/budgets/batch');
+  }
+
+  if (!isset($form_state[post][Upload]))
+    drupal_set_message(t('Review the %budgets budgets to be loaded<br>'.
+      'Once reviewed, to confirm the load, click to the button below',array('%budgets'=>count($budgets))),'info');
+
+  $minAccdate = time();
+  $maxAccdate = 0;
+  foreach ($budgets as $key => $budget) {
+    if (!isset($form_state[post][Upload]))
+      drupal_set_message(theme_budgets_batch($budget),'info');
+    list($y,$m,$d) = explode('-',$budget[accdate]);
+    $accdate = mktime(0,0,0,$m,$d,$y);
+    if ($accdate > $maxAccdate)
+      $maxAccdate = $accdate;
+    if ($accdate < $minAccdate)
+      $minAccdate = $accdate;
+  }
+
+  $form['upload'] = array('#type' => 'submit', '#value' => t('Confirm'),'#name'=>'Upload',
+    '#executes_submit_callback' => TRUE,
+    '#submit' => array('budgets_batch_form_confirm'),
+    );
+
+  $form['tmpId'] = array('#type'=>'hidden','#value'=>$tmpId);
+
+  $form['#attributes']['enctype'] = 'multipart/form-data';
+
+  $btypes=guifi_types('budget_type');
+  $kbtypes = array_keys($btypes);
+  $parms='details=detailed,types='.implode('|',$kbtypes).',status=Preparation,from='.
+    date("Y|m|d",$minAccdate).',to='.date("Y|m|d",$maxAccdate).
+    ',orderby=accdate,url=budgets';
+
+  $form['#redirect'] = 'node/'.$provider->id.'/budgets/'.$parms;
+
+  return $form;
+}
+
+function budgets_batch_form_confirm($form_id, &$form_values) {
+
+  guifi_log(GUIFILOG_TRACE, 'function budgets_batch_form_confirm(values)',$form_values['values']);
+
+  $tmpId = $form_values[values][tmpId];
+
+  $fname=file_directory_temp().'/'.$tmpId.'.tmp';
+  $fp = fopen($fname,"r");
+  $strBudgets = fread($fp, filesize($fname));
+  fclose($fp);
+
+  $budgets = unserialize($strBudgets);
+
+  if (empty($budgets)) {
+    drupal_set_message(t('Budgets to be loaded not found.'),'error');
+    drupal_goto('node/'.arg(1).'/budgets/batch');
+  }
+
+  drupal_set_message(t('%budgets budgets loaded',
+    array('%budgets'=>count($budgets))),'info');
+
+  // Saving into the database
+  foreach ($budgets as $key => $budgetArr) {
+    $budget = array2object($budgetArr);
+    $info = '*** Loaded from CSV';
+    if (!empty($budget->key))
+      $info .= ', key: '.$budget->key;
+    $budget->new = true;
+    list($budget->arraccdate['year'],
+      $budget->arraccdate['month'],
+      $budget->arraccdate['day']) = explode('-',$budget->accdate);
+    $budget->arrexpires = $budget->arraccdate;
+    if (empty($budget->budget_type))
+      $budget->budget_type = 'none';
+    $budget->body = $info.'<br>'.$budget->body;
+    foreach ($budget->items as $k => $item)
+      $budget->items[$k]['new'] = true;
+
+    node_save($budget);
+  }
+  return $form;
+}
+
+function budgets_batch_form_validate($form_id, $form) {
+  $values = $form['values'];
+  guifi_log(GUIFILOG_TRACE, 'function budgets_batch_form_validate(var1)',$_FILES['files']['size']['csv_file_header']);
+  guifi_log(GUIFILOG_TRACE, 'function budgets_batch_form_validate(var2)',$values);
+  if (empty($_FILES['files']['size']['csv_file_header']))
+    form_set_error('csv_file_header',t('Header file can\'t be empty'));
+  if ($values['headertitle']=='')
+    form_set_error('headertitle',t('Title at header is mandatory'));
+  if ($values['headerbody']=='')
+    form_set_error('headerbody',t('Body at header is mandatory'));
+  if ($values['headerdate']=='')
+    form_set_error('headerdate',t('Date at header is mandatory'));
+
+  if (!empty($_FILES['files']['size']['csv_file_items'])) {
+    if ($values['headerkey']=='')
+      form_set_error('headerkey',t('Key must exist at header file for loading items'));
+    if ($values['itemkey']=='')
+      form_set_error('itemkey',t('Key must exist at items file for loading items'));
+    if ($values['itemtitle']=='')
+      form_set_error('itemtitle',t('Title at items is mandatory'));
+  }
+}
+
+function budgets_batch_form(&$form_state, $from = NULL, $provider) {
+  guifi_log(GUIFILOG_TRACE, 'function budgets_batch_form(provider)',$provider);
+  /*
+   * Provider
+   */
+  $form['provider'] = array(
+    '#type' => 'item',
+    '#title' => t('Supplier'),
+    '#disabled' => true,
+    '#description' => t('Quotes will be loaded to this provider'),
+    '#value' => l($provider->id.'-'.$provider->title,'node/'.$provider->id),
+    '#prefix' => '<table><td>',
+  );
+  $form['supplier'] = array(
+    '#type' => 'hidden',
+    '#value' => $provider->id.'-'.$provider->title,
+  );
+
+  /*
+   * File format
+   */
+  $form['format'] = array(
+    '#type'=>'fieldset',
+    '#title'=>t('File format'),
+    '#description'=>t('Describe the mcapping between the source file and target fields'),
+    '#collapsible'=>true,
+    '#collapsed'=>false,
+    '#tree'=>false,
+    '#attributes'=>array('class'=>'budget-item'),
+  );
+
+  $form['format']['delimiter'] = array(
+    '#type'=> 'select',
+    '#title'=>t('Delimiter'),
+    '#description'=>t('Field delimiter character'),
+    '#default_value'=>chr(9),
+    '#options'=> array(
+      ';'=>'semi-colon (;)',
+      ','=>'comma (,))',
+      ':'=>'colon (:)',
+      '.'=>'dot (,)',
+      '|'=>'pipe (|)',
+      '·'=>'middle-dot (·)',
+      chr(9)=>'tab',
+    ),
+  );
+  $form['format']['skip'] = array(
+    '#type'=> 'textfield',
+    '#size'=>4,
+    '#maxlength'=>10,
+    '#title'=>t('Skip'),
+    '#description'=>t('Lines from the beginning'),
+    '#default_value'=>'0',
+  );
+  $form['format']['inBody'] = array(
+    '#type'=> 'checkbox',
+    '#title'=>t('Items in Bdoy'),
+    '#description'=>t('Load items at the budget body instead of items'),
+    '#default_value'=> true,
+  );
+
+  /*
+   * Field mapping
+   */
+  $fieldsHeader=array(
+    'key'=>t('Key'),
+    'title'=>t('Title'),
+    'body'=>t('Body'),
+    'date'=>t('Date'),
+    'node_id'=>t('Node'),
+    'budget_type'=>t('Type'),
+    'priority'=>t('Priority'),
+    'tiquet_link'=>t('Ticket'),
+  );
+  $fieldsItem=array(
+    'key'=>t('Key'),
+    'title'=>t('Title'),
+    'description'=>t('Description'),
+    'comments'=>t('Comments'),
+    'quantity'=>t('Quantity'),
+    'cost'=>t('Cost'),
+    'tax'=>t('Tax'),
+  );
+  $title=t('Source');
+  $options=array(
+    ''=>t('Not present'),
+    0=>t('First (1st)'),
+    1=>t('Second (2nd)'),
+    2=>t('Third (3rd)'),
+    3=>t('Fourth (4th)'),
+    4=>t('Fiveth (5th)'),
+    5=>t('Sexth (6th)'),
+    6=>t('Seventh (7th)'),
+    7=>t('Eighth (8th)'),
+    8=>t('Nineth (9th)'),
+    9=>t('Tenth (10th)'),
+    10=>('eleventh (11th)'),
+    11=>('twelfth (12th)'),
+    12=>('thirteenth (13th)'),
+    13=>('fourteenth (14th)'),
+    14=>('fifteenth (15th)')
+  );
+  $count = 0;
+  $totalv = count($fieldsHeader);
+
+  $currItem = reset($fieldsItem);
+  $currHeader = reset($fieldsHeader);
+
+  do {
+    $prefix = ''; $suffix = '';
+  	if ($count == 0) {
+  	  $prefix = '<div class=certs><table class="table-csv"><tr><th colspan="2" class="th-center">'.
+  	    t('Headers').'</th><th colspan="2" class="th-center">'.t('Items').'</th></tr></tr><th width="10%">'.
+        $title.'</th><th width="50%">'.t('Targets to').'</th><th width="10%">'.$title.'</th><th width="50%">'.t('Targets to').'</th></tr>';
+  	}
+  	if ($count == ($totalv - 1))
+	  $suffix = '</table></div>';
+
+  	if ($currHeader)
+  	  $form['format']['header'.key($fieldsHeader)] = array(
+        '#type' => 'select',
+        '#options'=>$options,
+        '#default_value' => $count,
+        '#attributes'=>array('class'=>"cert-field"),
+        '#prefix' => $prefix.'<tr><td>',
+        '#suffix' =>  '</td><td>'.$currHeader.'</td>',
+      );
+    else
+       $form['format']['dummy'] = array(
+  	     '#type'=>'hidden',
+  	     '#value'=> null,
+         '#prefix' => $prefix.'<tr><td>',
+         '#suffix' =>  '</td><td>&nbsp;</td>',
+  	   );
+  	if ($currItem) {
+  	  $form['format']['item'.key($fieldsItem)] = array(
+        '#type' => 'select',
+  	    '#options'=>$options,
+        '#default_value' => $count,
+        '#attributes'=>array('class'=>"cert-field"),
+        '#prefix' =>  '<td>',
+        '#suffix' =>  '</td><td>'.$currItem.'</td></tr>',
+      );
+  	} else
+  	   $form['format']['dummy'] = array(
+  	     '#type'=>'hidden',
+  	     '#value'=> null,
+         '#prefix' => $prefix.'<td>',
+         '#suffix' =>  '</td><td>&nbsp;</td></tr>',
+  	   );
+
+     $count++;
+  	$currItem = next($fieldsItem);
+  	$currHeader = next($fieldsHeader);
+  } while (($currItem) or ($currHeader));
+
+  /*
+   * Files to upload
+   */
+  $form['format']['csv_file_header'] = array(
+    '#type' => 'file',
+    '#title' => t('Header CSV File'),
+    '#description' => t('CSV format to be uploaded'),
+ //   '#default_value'   => null,
+ //   '#required' => true,
+    '#prefix' => '<tr><td colspan="2">',
+    '#suffix' =>  '</td>',
+  );
+  $form['format']['csv_file_items'] = array(
+    '#type' => 'file',
+    '#title' => t('Items CSV File'),
+    '#description' => t('CSV format to be uploaded'),
+ //   '#default_value' => null,
+    '#prefix' => '<td colspan="2">',
+    '#suffix' => '</td></tr></table>',
+  );
+  $form['upload'] = array('#type' => 'submit', '#value' => t('Upload'),'#name'=>'Upload',
+    '#executes_submit_callback' => TRUE,
+    '#submit' => array('budgets_batch_upload'),
+    );
+
+  $tmpId = time();
+  $form['tmpId'] = array('#type'=>'hidden','#value'=>$tmpId);
+
+  $form['#attributes']['enctype'] = 'multipart/form-data';
+
+  $form['#redirect'] = 'node/'.$provider->id.'/budgets/batch/review/'.$tmpId;
+
+  return $form;
+}
+
+function budgets_batch_upload($form_id, &$form_values) {
+  global $user;
+
+  $fupload = &$form_values['values'];
+
+  guifi_log(GUIFILOG_TRACE, 'function budgets_batch_upload(_FILES)',$_FILES);
+  guifi_log(GUIFILOG_TRACE, 'function budgets_batch_upload(form_id)',$form_id['form_build_id']['#value']);
+  guifi_log(GUIFILOG_TRACE, 'function budgets_batch_upload(fupload)',$fupload['tmpId']);
+
+  #this leads us to sites/mysite.example.com/files/
+  $dir = file_directory_path();
+
+  $sup = explode('-',$fupload['supplier']);
+
+  // Processing headers file
+  # unlike form submissions, multipart form submissions are not in
+  # $form_state, but rather in $FILES, which requires more checking
+  if (isset($_FILES) && !empty($_FILES) && $_FILES['files']['size']['csv_file_header'] != 0) {
+
+    #this structure is kind of wacky
+    $name = $_FILES['files']['name']['csv_file_header'];
+    $size = $_FILES['files']['size']['csv_file_header'];
+    $type = $_FILES['files']['type']['csv_file_header'];
+
+    #this is the actual place where we store the file
+    $file = file_save_upload('csv_file_header', array() , $dir);
+    if($file){
+      drupal_set_message(t('Uploading headers from %name',array('%name'=>$name)));
+      guifi_log(GUIFILOG_TRACE, 'file',$file->filepath);
+
+      /*
+       * Parsing the uploaded file
+       */
+      $errors = 0;
+      $loaded = 0;
+
+      $fcsv = fopen($file->filepath, "r");
+      $row=0;
+      while (($data = fgetcsv($fcsv,4096,$fupload['delimiter'])) !== FALSE) {
+
+        guifi_log(GUIFILOG_TRACE, 'data',$data);
+        $row++;
+        if ($row <= $fupload['skip'])
+          continue;
+
+        $budget['created'] = time();
+        $budget['changed'] = time();
+        $budget['status'] = 1;
+        $budget['promote'] = 0;
+        $budget['sticky'] = 0;
+        $budget['uid']=$user->uid;
+        $budget['notification']=$user->mail;
+        $budget['type'] = 'budgets';
+        $budget['budget_status'] = 'Preparation';
+        $budget['comment']=1;
+        $budget['supplier_id'] = $fupload['supplier'];
+        $budget['key'] = $data[$fupload['headerkey']];
+        $budget['title'] = $data[$fupload['headertitle']];
+        $budget['body'] = $data[$fupload['headerbody']];
+        $budget['accdate'] = $data[$fupload['headerdate']];
+        $budget['node_id'] = $data[$fupload['headernode_id']];
+        $budget['budget_type'] = $data[$fupload['headertype']];
+        $budget['priority'] = $data[$fupload['headerpriority']];
+        $budget['ticket_link'] = $data[$fupload['headerticket']];
+
+        guifi_log(GUIFILOG_TRACE, 'budget', $budget);
+
+        if ($budget['key'])
+          $budgets[$budget['key']] = $budget;
+        else
+          $budgets[] = $budget;
+
+//        node_save($budget);
+
+//        if (!$budget->nid) {
+//          drupal_set_message(t('Budget was NOT saved'));
+//        }
+      }
+      fclose($fcsv);
+
+      file_delete($file->filepath);
+    }
+    else{
+        drupal_set_message("Something went wrong saving your file.");
+    }
+  }
+  else {
+    drupal_set_message("Your file doesn't appear to be here.");
+  }
+
+  // Processing items file
+  # unlike form submissions, multipart form submissions are not in
+  # $form_state, but rather in $FILES, which requires more checking
+  if (isset($_FILES) && !empty($_FILES) && $_FILES['files']['size']['csv_file_items'] != 0) {
+
+    #this structure is kind of wacky
+    $name = $_FILES['files']['name']['csv_file_items'];
+    $size = $_FILES['files']['size']['csv_file_items'];
+    $type = $_FILES['files']['type']['csv_file_items'];
+
+    #this is the actual place where we store the file
+    $file = file_save_upload('csv_file_items', array() , $dir);
+    if($file){
+      drupal_set_message(t('Uploading items from %name',array('%name'=>$name)));
+      guifi_log(GUIFILOG_TRACE, 'file',$file->filepath);
+
+      /*
+       * Parsing the uploaded file
+       */
+      $errors = 0;
+      $loaded = 0;
+
+      $fcsv = fopen($file->filepath, "r");
+      $row=0;
+      while (($data = fgetcsv($fcsv,4096,$fupload['delimiter'])) !== FALSE) {
+
+        guifi_log(GUIFILOG_TRACE, 'data',$data);
+        $row++;
+        if ($row <= $fupload['skip'])
+          continue;
+
+        $item['key'] = $data[$fupload['itemkey']];
+        $item['title'] = $data[$fupload['itemtitle']];
+        $item['description'] = $data[$fupload['itemdescription']];
+        $item['comments'] = $data[$fupload['itemcomments']];
+        $item['quantity'] = $data[$fupload['itemquantity']];
+        $item['cost'] = $data[$fupload['itemcost']];
+        $item['tax'] = $data[$fupload['itemtax']];
+
+        guifi_log(GUIFILOG_TRACE, 'item', $item);
+
+        if (!isset($budgets[$item['key']])) {
+          drupal_set_message(t('Loading item with key %key but has no header',
+              array('%key'=>$item['key'])),'error');
+          if (!isset($budgets[$item['key']]['items']))
+            $budgets[$item['key']]['items'] = array();
+        }
+        if ($fupload[inBody]) {
+          $budgets[$item[key]][body] .= '<br>'.$item[title].' ('.
+            $item['quantity'].'x'.$item['cost'].' '.t('Tax').': '.$item['tax'].')<br>';
+          if ($item[description])
+            $budgets[$item[key]][body] .= '<br>'.$item[description];
+          if ($item[comments])
+            $budgets[$item[key]][body] .= '<br>'.$item[comments];
+        } else
+          $budgets[$item['key']]['items'][] = $item;
+
+      }
+      fclose($fcsv);
+
+      file_delete($file->filepath);
+    }
+    else{
+        drupal_set_message("Something went wrong saving your file.");
+    }
+  }
+  else {
+    drupal_set_message("Your file doesn't appear to be here.");
+  }
+
+  // done. saving the results (if there are) for user validation
+  if (empty($budgets)) {
+    drupal_set_message(t('Nothing to load with this parameters'));
+    drupal_goto('node/'.arg(1).'/budgets/batch');
+  }
+
+  $fp = fopen(file_directory_temp().'/'.$fupload['tmpId'].'.tmp',"w");
+  $ret = fwrite($fp,serialize($budgets));
+  fclose($fp);
+
+  if ($ret)
+    drupal_set_message(t('Going to load %budgets budgets with %bytes bytes',
+        array('%budgets'=>count($budgets),'%bytes'=>$ret)));
+
+}
+
+
 function budgets_ahah_select_budget($string) {
   $matches = array();
 
@@ -3088,7 +3650,7 @@ function budgets_ahah_select_quote($string) {
 
   $qry = db_query(
     'SELECT ' .
-    '  CONCAT(q.id,"-",s.title, "-", q.partno, ", ", q.title) str '.
+    '  CONCAT(q.id,"-",s.title, "-", q.partno, ", ", q.title, " - Cost: ", format(q.cost,2) ) str '.
     'FROM {supplier_quote} q, {supplier} s ' .
     'WHERE q.supplier_id = s.id AND ' .
     implode(' AND ',$strings).
@@ -3400,6 +3962,40 @@ function theme_budgets_footer($node) {
   }
   return $output;
 }
+
+function theme_budgets_batch($budget) {
+  $output = '<hr>';
+
+  $output .= $budget['key'].' '.t('Date').': '.$budget[accdate].' '.t('Title').': <em>'.$budget[title].'</em><br>';
+  if (($budget[node_id]) or ($budget[budget_type]) or ($budget[priority]) or ($budget[ticket_link]))
+    $output .= t('Optional fields').': '.
+      t('Type').': '.$budget[budget_type].' '.
+      t('Node').': '.$budget[node_id].' '.
+      t('Priority').': '.$budget[priority].' '.
+      t('Ticket').': '.$budget[ticket_link].'<br>';
+
+  $output .= '<small>'.$budget[body].'</small><br>';
+
+  if (empty($budget[items]))
+    return $output;
+
+  $output .= t('Items').' ('.count($budget[items]).')<br>';
+
+  foreach ($budget[items] as $item) {
+    $output .= $item[title].' ('.
+      t('Quantity').': '.$item[quantity].' '.
+      t('Cost').': '.$item[cost].' '.
+      t('Tax').': '.$item[tax].')<br>';
+
+    if ($item[description])
+      $output .= '<small>'.$item[description].'</small><br>';
+
+    if ($item[comments])
+      $output .= t('Comments').':<br><small>'.$item[comments].'</small><br>';
+  }
+  return $output;
+}
+
 
 function theme_budgets_page_header($zone) {
   $output = t('<h1><br>Report of all proposals/budgets defined in the database<br></h1>');
