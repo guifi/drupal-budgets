@@ -1353,9 +1353,7 @@ function budgets_form(&$node, &$param) {
 function budgets_form_status_dialog($btype,$bstatus) {
   global $user;
 
-  $node = array2object($budget);
-
-  guifi_log(GUIFILOG_TRACE,sprintf('budgets_ahah_status_dialog (%s)',$node->budget_type),$node);
+  guifi_log(GUIFILOG_BASIC,sprintf('budgets_form_status_dialog (%s)',$btype));
 
   $budgetStatusOpt = guifi_types('budget_status',null,null,$btype);
   if (!user_access('review budgets'))
@@ -3763,24 +3761,21 @@ function budgets_ahah_status_dialog() {
 
   $btype = $_POST['budget_type'];
   $bstatus = $_POST['budget_status'];
-  $arraccdate = $_POST['arraccdate'];
-  $arrexpires = $_POST['arrexpires'];
-  if (is_string($arrexpires))
-    $arrexpires = unserialize($arrexpires);
-  if (is_string($arraccdate))
-    $arraccdate = unserialize($arraccdate);
 
-  $bStatusOptions=guifi_types('budget_status',null,null,$btype);
+//  $bStatusOptions=guifi_types('budget_status',null,null,$btype);
+
+  guifi_log(GUIFILOG_BASIC,sprintf('budgets_ahah_status_dialog (%s)',$btype));
+
   if ($cache) {
     $form = $cache->data;
 
     //$choice_form = $form[general][status_dialog];
     $choice_form = budgets_form_status_dialog($btype,$bstatus);
     unset($choice_form['#prefix'], $choice_form['#suffix']); // Prevent duplicate wrappers.
-    if (!user_access('review budgets'))
-      $bStatusOptions = array_diff_key($bStatusOptions,
-        array('Approved'=>'','Review'=>'','Compensate'=>'','Compensated'=>''));
-    $choice_form[budget_status]['#options'] = $bStatusOptions;
+//    if (!user_access('review budgets'))
+//      $bStatusOptions = array_diff_key($bStatusOptions,
+//        array('Approved'=>'','Review'=>'','Compensate'=>'','Compensated'=>''));
+//    $choice_form[budget_status]['#options'] = $bStatusOptions;
     $output = theme('status_messages') . drupal_render($choice_form);
     drupal_json(array('status' => TRUE, 'data' => $output));
   } else {
