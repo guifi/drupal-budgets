@@ -1069,16 +1069,31 @@ function budgets_form(&$node, &$param) {
             "<li><em>CAPEX</em>: NEW deployments in new areas</li>" .
     		"<li><em>OPEX</em>: MAINTENANCE and UPGRADES</li></ul>"),
     '#default_value' => $node->budget_type,
-    '#ahah'              => array(
+/*    '#ahah'              => array(
       'event'            => 'blur',
       'path'             => 'budgets/js/status-dialog',
       'wrapper'          => 'status-dialog',
       'method'           => 'replace',
       'effect'           => 'fade',
-    ),
+    ),*/
     //'
     '#options' => guifi_types('budget_type'),
   );
+  $form['general']['bstatus_refresh'] = array(
+    '#type'          => 'image_button',
+    '#src'=> drupal_get_path('module', 'budgets').'/icons/refresh.png',
+    '#prefix'            => '<div class="form-item"><label>&nbsp</label>',
+    '#suffix'            => '</div>',
+    '#attributes' => array('title' => t('Refresh values for status select list depending on budget type')),
+    '#ahah'              => array(
+      'event'            => 'click',
+      'path'             => 'budgets/js/status-dialog',
+      'wrapper'          => 'status-dialog',
+      'method'           => 'replace',
+      'effect'           => 'fade',
+    ),
+  );
+
 
   $form['general']['status_dialog'] =
     budgets_form_status_dialog($node->budget_type,$node->budget_status);
@@ -1353,7 +1368,7 @@ function budgets_form(&$node, &$param) {
 function budgets_form_status_dialog($btype,$bstatus) {
   global $user;
 
-  guifi_log(GUIFILOG_BASIC,sprintf('budgets_form_status_dialog (%s)',$btype));
+  guifi_log(GUIFILOG_TRACE,sprintf('budgets_form_status_dialog (%s)',$bstatus));
 
   $budgetStatusOpt = guifi_types('budget_status',null,null,$btype);
   if (!user_access('review budgets'))
@@ -3762,20 +3777,23 @@ function budgets_ahah_status_dialog() {
   $btype = $_POST['budget_type'];
   $bstatus = $_POST['budget_status'];
 
-//  $bStatusOptions=guifi_types('budget_status',null,null,$btype);
+  //$bStatusOptions=guifi_types('budget_status',null,null,$btype);
 
-  guifi_log(GUIFILOG_BASIC,sprintf('budgets_ahah_status_dialog (%s)',$btype));
+  guifi_log(GUIFILOG_TRACE,sprintf('budgets_ahah_status_dialog (%s)',$btype));
 
   if ($cache) {
     $form = $cache->data;
 
+    guifi_log(GUIFILOG_TRACE,sprintf('budgets_ahah_status_dialog (%s)',$btype),$_POST);
+
     //$choice_form = $form[general][status_dialog];
     $choice_form = budgets_form_status_dialog($btype,$bstatus);
     unset($choice_form['#prefix'], $choice_form['#suffix']); // Prevent duplicate wrappers.
-//    if (!user_access('review budgets'))
-//      $bStatusOptions = array_diff_key($bStatusOptions,
-//        array('Approved'=>'','Review'=>'','Compensate'=>'','Compensated'=>''));
-//    $choice_form[budget_status]['#options'] = $bStatusOptions;
+    //if (!user_access('review budgets'))
+    //  $bStatusOptions = array_diff_key($bStatusOptions,
+    //    array('Approved'=>'','Review'=>'','Reviewed'=>'','Compensated'=>''));
+    // $choice_form[budget_status]['#options'] = $bStatusOptions;
+    //$choice_form[budget_status]['#default_value'] = $bstatus;
     $output = theme('status_messages') . drupal_render($choice_form);
     drupal_json(array('status' => TRUE, 'data' => $output));
   } else {
