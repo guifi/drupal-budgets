@@ -111,14 +111,16 @@ function budgets_install() {
   /*
    *  budget_status
    */
-  db_query("INSERT INTO {guifi_types} (id, type, text, description, relations) VALUES ('1', 'budget_status', 'Preparation', 'Preparation', NULL)");
-  db_query("INSERT INTO {guifi_types} (id, type, text, description, relations) VALUES ('2', 'budget_status', 'Review', 'Under review', NULL)");
-  db_query("INSERT INTO {guifi_types} (id, type, text, description, relations) VALUES ('3', 'budget_status', 'Approved', 'Approved', NULL)");
-  db_query("INSERT INTO {guifi_types} (id, type, text, description, relations) VALUES ('4', 'budget_status', 'Executed', 'Executed', NULL)");
-  db_query("INSERT INTO {guifi_types} (id, type, text, description, relations) VALUES ('5', 'budget_status', 'Open', 'Crowdfunding open', NULL)");
-  db_query("INSERT INTO {guifi_types} (id, type, text, description, relations) VALUES ('6', 'budget_status', 'Closed', 'Closed', NULL)");
-  db_query("INSERT INTO {guifi_types} (id, type, text, description, relations) VALUES ('7', 'budget_status', 'Abandoned', 'Abandoned', NULL)");
-  db_query("INSERT INTO {guifi_types} (id, type, text, description, relations) VALUES ('8', 'budget_status', 'Compensated', 'Compensated', NULL)");
+  db_query("INSERT INTO {guifi_types} (id, type, text, description, relations) VALUES ('1', 'budget_status', 'Preparation', 'Preparation', 'crowdfunding|f-capex|f-opex|f-conn|w-opex|w-capex|none|other')");
+  db_query("INSERT INTO {guifi_types} (id, type, text, description, relations) VALUES ('2', 'budget_status', 'Planned', 'Planned', 'crowdfunding|f-capex|f-opex|f-conn|w-opex|w-capex|none|other')");
+  db_query("INSERT INTO {guifi_types} (id, type, text, description, relations) VALUES ('3', 'budget_status', 'Approved', 'Approved', 'crowdfunding|none|other')");
+  db_query("INSERT INTO {guifi_types} (id, type, text, description, relations) VALUES ('4', 'budget_status', 'Executed', 'Executed', 'f-capex|f-opex|f-conn|w-opex|w-capex|other')");
+  db_query("INSERT INTO {guifi_types} (id, type, text, description, relations) VALUES ('5', 'budget_status', 'Review', 'Under review', 'f-capex|f-opex|f-conn|w-opex|w-capex|other')");
+  db_query("INSERT INTO {guifi_types} (id, type, text, description, relations) VALUES ('6', 'budget_status', 'Reviewed', 'Reviewed - To be Compensated', 'f-capex|f-opex|f-conn|w-opex|w-capex|other')");
+  db_query("INSERT INTO {guifi_types} (id, type, text, description, relations) VALUES ('7', 'budget_status', 'Compensated', 'Compensated', 'f-capex|f-opex|f-conn|w-opex|w-capex|other')");
+  db_query("INSERT INTO {guifi_types} (id, type, text, description, relations) VALUES ('8', 'budget_status', 'Open', 'Crowdfunding open', 'crowdfunding|none|other')");
+  db_query("INSERT INTO {guifi_types} (id, type, text, description, relations) VALUES ('9', 'budget_status', 'Closed', 'Closed', 'crowdfunding|f-capex|f-opex|f-conn|w-opex|w-capex|none|other')");
+  db_query("INSERT INTO {guifi_types} (id, type, text, description, relations) VALUES ('10', 'budget_status', 'Abandoned', 'Abandoned', 'crowdfunding|f-capex|f-opex|f-conn|w-opex|w-capex|none|other')");
 
   /*
    *  budget_type
@@ -603,6 +605,25 @@ function budgets_update_551	() {
   $items[] = update_sql("INSERT INTO {guifi_types} (id, type, text, description, relations) VALUES ('4', 'budget_priority', 'minor', 'Minor', NULL)");
   db_add_field($items,'budgets','priority',
   	array('type' => 'varchar', 'length' => '15', 'not null'  => TRUE, 'default' => 'unknown', 'comment' => 'Priority (Unknown/Urgent/Normal/Minor)'));
+
+  return $items;
+}
+
+function budgets_update_553() {
+  $items = array();
+
+  $items[] = update_sql("DELETE FROM {guifi_types} WHERE type = 'budget_status'");
+
+  db_query("INSERT INTO {guifi_types} (id, type, text, description, relations) VALUES ('1', 'budget_status', 'Preparation', 'Preparation', 'crowdfunding|f-capex|f-opex|f-conn|w-opex|w-capex|none|other')");
+  db_query("INSERT INTO {guifi_types} (id, type, text, description, relations) VALUES ('2', 'budget_status', 'Planned', 'Planned', 'crowdfunding|f-capex|f-opex|f-conn|w-opex|w-capex|none|other')");
+  db_query("INSERT INTO {guifi_types} (id, type, text, description, relations) VALUES ('3', 'budget_status', 'Approved', 'Approved', 'crowdfunding|none|other')");
+  db_query("INSERT INTO {guifi_types} (id, type, text, description, relations) VALUES ('4', 'budget_status', 'Executed', 'Executed', 'f-capex|f-opex|f-conn|w-opex|w-capex|other')");
+  db_query("INSERT INTO {guifi_types} (id, type, text, description, relations) VALUES ('5', 'budget_status', 'Review', 'Under review', 'f-capex|f-opex|f-conn|w-opex|w-capex|other')");
+  db_query("INSERT INTO {guifi_types} (id, type, text, description, relations) VALUES ('6', 'budget_status', 'Reviewed', 'Reviewed - To be Compensated', 'f-capex|f-opex|f-conn|w-opex|w-capex|other')");
+  db_query("INSERT INTO {guifi_types} (id, type, text, description, relations) VALUES ('7', 'budget_status', 'Compensated', 'Compensated', 'f-capex|f-opex|f-conn|w-opex|w-capex|other')");
+  db_query("INSERT INTO {guifi_types} (id, type, text, description, relations) VALUES ('8', 'budget_status', 'Open', 'Crowdfunding open', 'crowdfunding|none|other')");
+  db_query("INSERT INTO {guifi_types} (id, type, text, description, relations) VALUES ('9', 'budget_status', 'Closed', 'Closed', 'crowdfunding|f-capex|f-opex|f-conn|w-opex|w-capex|none|other')");
+  db_query("INSERT INTO {guifi_types} (id, type, text, description, relations) VALUES ('10', 'budget_status', 'Abandoned', 'Abandoned', 'crowdfunding|f-capex|f-opex|f-conn|w-opex|w-capex|none|other')");
 
   return $items;
 }

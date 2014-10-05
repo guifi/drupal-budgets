@@ -194,9 +194,15 @@ function budgets_menu() {
     'access arguments' => array('access content'),
     'type' => MENU_CALLBACK,
   );
-    $items['budgets/js/select-quote'] = array(
+  $items['budgets/js/select-quote'] = array(
     'title' => 'Javascript/autocomplete find Quote',
     'page callback' => 'budgets_quote_ahah_select_quote',
+    'access arguments' => array('access content'),
+    'type' => MENU_CALLBACK,
+  );
+  $items['budgets/js/status-dialog'] = array(
+    'title' => 'Dynamic AHAH for status dialog based on budget type',
+    'page callback' => 'budgets_ahah_status_dialog',
     'access arguments' => array('access content'),
     'type' => MENU_CALLBACK,
   );
@@ -237,8 +243,8 @@ function budgets_menu() {
     'title' => 'Quotes',
     'page callback' => 'budgets_quote_list_by_supplier',
     'page arguments' => array(1),
-    'access callback' => 'budgets_supplier_access',
-    'access arguments' => array('create', arg(1)),
+    'access callback' => 'budgets_access',
+    'access arguments' => array('view', arg(1)),
     'type' => MENU_LOCAL_TASK);
   $items['node/%budgets_supplier/quotes/add'] = array(
     'title' => 'Add quote',
@@ -261,15 +267,15 @@ function budgets_menu() {
     'title' => 'Fundings',
     'page callback' => 'budgets_supplier_fundings',
     'page arguments' => array(1,'all'),
-    'access callback' => 'budgets_supplier_access',
-    'access arguments' => array('create', arg(1)),
+    'access callback' => 'budgets_access',
+    'access arguments' => array('view', arg(1)),
     'type' => MENU_LOCAL_TASK);
   $items['node/%budgets_supplier/fundings/all'] = array(
     'title' => 'all',
     'page callback' => 'budgets_supplier_fundings',
     'page arguments' => array(1,'all'),
-    'access callback' => 'budgets_supplier_access',
-    'access arguments' => array('create', arg(1)),
+    'access callback' => 'budgets_access',
+    'access arguments' => array('view', arg(1)),
     'file' => 'node.pages.inc',
     'file path' => drupal_get_path('module', 'node'),
     'type' => MENU_LOCAL_TASK);
@@ -277,8 +283,8 @@ function budgets_menu() {
     'title' => 'locations',
     'page callback' => 'budgets_supplier_fundings',
     'page arguments' => array(1,'location'),
-    'access callback' => 'budgets_supplier_access',
-    'access arguments' => array('create', arg(1)),
+    'access callback' => 'budgets_access',
+    'access arguments' => array('view', arg(1)),
     'file' => 'node.pages.inc',
     'file path' => drupal_get_path('module', 'node'),
     'type' => MENU_LOCAL_TASK);
@@ -286,23 +292,23 @@ function budgets_menu() {
     'title' => 'devices',
     'page callback' => 'budgets_supplier_fundings',
     'page arguments' => array(1,'device'),
-    'access callback' => 'budgets_supplier_access',
-    'access arguments' => array('create', arg(1)),
+    'access callback' => 'budgets_access',
+    'access arguments' => array('view', arg(1)),
     'type' => MENU_LOCAL_TASK);
 
   $items['node/%budgets_supplier/sla'] = array(
     'title' => 'SLAs',
     'page callback' => 'budgets_supplier_sla',
     'page arguments' => array(1,'all'),
-    'access callback' => 'budgets_supplier_access',
-    'access arguments' => array('create', arg(1)),
+    'access callback' => 'budgets_access',
+    'access arguments' => array('view', arg(1)),
     'type' => MENU_LOCAL_TASK);
   $items['node/%budgets_supplier/sla/all'] = array(
     'title' => 'all',
     'page callback' => 'budgets_supplier_sla',
     'page arguments' => array(1,'all'),
-    'access callback' => 'budgets_supplier_access',
-    'access arguments' => array('create', arg(1)),
+    'access callback' => 'budgets_access',
+    'access arguments' => array('view', arg(1)),
     'file' => 'node.pages.inc',
     'file path' => drupal_get_path('module', 'node'),
     'type' => MENU_LOCAL_TASK);
@@ -310,8 +316,8 @@ function budgets_menu() {
     'title' => 'zone',
     'page callback' => 'budgets_supplier_sla',
     'page arguments' => array(1,'zone'),
-    'access callback' => 'budgets_supplier_access',
-    'access arguments' => array('create', arg(1)),
+    'access callback' => 'budgets_access',
+    'access arguments' => array('view', arg(1)),
     'file' => 'node.pages.inc',
     'file path' => drupal_get_path('module', 'node'),
     'type' => MENU_LOCAL_TASK);
@@ -319,8 +325,8 @@ function budgets_menu() {
     'title' => 'locations',
     'page callback' => 'budgets_supplier_sla',
     'page arguments' => array(1,'location'),
-    'access callback' => 'budgets_supplier_access',
-    'access arguments' => array('create', arg(1)),
+    'access callback' => 'budgets_access',
+    'access arguments' => array('view', arg(1)),
     'file' => 'node.pages.inc',
     'file path' => drupal_get_path('module', 'node'),
     'type' => MENU_LOCAL_TASK);
@@ -328,8 +334,8 @@ function budgets_menu() {
     'title' => 'devices',
     'page callback' => 'budgets_supplier_sla',
     'page arguments' => array(1,'device'),
-    'access callback' => 'budgets_supplier_access',
-    'access arguments' => array('create', arg(1)),
+    'access callback' => 'budgets_access',
+    'access arguments' => array('view', arg(1)),
     'type' => MENU_LOCAL_TASK);
 
 
@@ -337,8 +343,8 @@ function budgets_menu() {
     'title' => 'Budgets',
     'page callback' => 'budgets_supplier_list_budgets_by_supplier',
     'page arguments' => array(1),
-    'access callback' => 'budgets_supplier_access',
-    'access arguments' => array('create', arg(1)),
+    'access callback' => 'budgets_access',
+    'access arguments' => array('view', arg(1)),
     'type' => MENU_LOCAL_TASK);
 /*  $items['node/%budgets_supplier/budgets'] = array(
     'title' => 'Budgets',
@@ -1045,58 +1051,55 @@ function budgets_form(&$node, &$param) {
     '#attributes'  => array('class'=>"budget-container-inline"),
     '#collapsible' => TRUE,
     '#collapsed'   => FALSE,
-    '#description'   => t(
-    		"Budgets in <em>preparation</em> or <em>review</em> status are not publicly visible.<br>" .
-    		"Use <em>Crowdfunding</em> for donations or make public open calls for crowdfundings.<br>".
-    		"Use <em>CAPEX/OPEX</em> type options if you plan to get compensated or reimbursed.<br>".
-    		"Expiration date (open crowdfundings) and due/execution date."),
+//    '#description'   => t(
+//    		"Budgets in <em>preparation</em> or <em>review</em> status are not publicly visible.<br>" .
+//    		"Use <em>Crowdfunding</em> for donations or make public open calls for crowdfundings.<br>".
+//    		"Use <em>CAPEX/OPEX</em> type options if you plan to get compensated or reimbursed.<br>".
+//    		"Expiration date (open crowdfundings) and due/execution date."),
     '#weight' => $weight++,
   );
-
-
-  $budgetStatusOpt = guifi_types('budget_status');
-  if (!user_access('review budgets'))
-    $budgetStatusOpt = array_diff_key($budgetStatusOpt,
-        array('Approved'=>'','Review'=>'','Compensated'));
-  $form['general']['budget_status'] = array(
-    '#type'          => 'select',
-    '#title'         => t('Status'),
-    '#default_value' => $node->budget_status,
-    '#description'   => t("Current situation"),
-    '#options' =>  $budgetStatusOpt,
-  );
-
-  // only reviewers/admins can change status on closed or under review budgets
-  if (in_array($node->budget_status,array('Review','Closed','Approved','Abandoned','Compensated'))) {
-    if ((!user_access('review budgets')) or (!user_access('administer budgets')))
-      $form['general']['budget_status']['#disabled'] = TRUE;
-    $form['general']['budget_status']['#description'] = t("Contact reviewer to change this");
-  }
 
   $form['general']['budget_type'] = array(
     '#type'          => 'select',
     '#title'         => t('Type'),
-//    '#description'   => t("Type of investment:<ul>" .
-//    		"<li><em>Crowdfunding</em>: Donations, or open call for crowdfunding.</li>" .
-//    		"<li><em>CAPEX</em>: <u>New</u> network infraestructure</li>" .
-//    		"<li><em>OPEX</em>: <u>Maintenance or upgrades</u> of existing infraestructure</li></ul>" .
-//    		"Use CAPEX/OPEX options if you plan to get compensated or reimbursed."),
+    '#description'   => t(
+            "For revenue recognition and compensation processes.<br>" .
+            "Select the type of budget or expense:<ul>" .
+    		"<li><em>Crowdfunding</em>: For donations, crodfunding open calls...</li>" .
+            "<li><em>CAPEX</em>: NEW deployments in new areas</li>" .
+    		"<li><em>OPEX</em>: MAINTENANCE and UPGRADES</li></ul>"),
     '#default_value' => $node->budget_type,
+    '#ahah'              => array(
+      'event'            => 'blur',
+      'path'             => 'budgets/js/status-dialog',
+      'wrapper'          => 'status-dialog',
+      'method'           => 'replace',
+      'effect'           => 'fade',
+    ),
+    //'
     '#options' => guifi_types('budget_type'),
   );
-  $form['general']['arrexpires'] = array(
+
+  $form['general']['status_dialog'] =
+    budgets_form_status_dialog($node->budget_type,$node->budget_status);
+
+  $form[general][dates] = array(
+    '#type'=>'fieldset',
+    '#attributes'  => array('class'=>"budget-container-inline"),
+    '#prefix'        => '<div style="clear: both"></div>',
+  );
+  $form[general][dates]['arrexpires'] = array(
     '#type'          => 'date',
     '#title'         => t('Expiration'),
     '#default_value' => $node->arrexpires,
-    '#description'   => t("Expiration date (for proposals)"),
-    '#required'      => TRUE,
+    '#description'   => t("Proposals/Opens calls for crowdfunding:<br>
+       Period for accepting contributions/comments"),
   );
-  $form['general']['arraccdate'] = array(
+  $form[general][dates]['arraccdate'] = array(
     '#type'          => 'date',
     '#title'         => t('Accounting date'),
     '#default_value' => $node->arraccdate,
-    '#description'   => t("Usually when it was done (or will be)"),
-    '#required'      => TRUE,
+    '#description'   => t("Execution date (or planned)"),
   );
 
   // Related task tiket
@@ -1106,10 +1109,10 @@ function budgets_form(&$node, &$param) {
     '#attributes'  => array('class'=>'budget-container-inline'),
     '#collapsible' => TRUE,
     '#collapsed' => ($node->budget_type!='crowdfunding' and
-       (empty($node->ticket_link) or $node->priority=='unkown')) ?
+       (empty($node->ticket_link) or $node->priority=='unknown')) ?
       FALSE : TRUE,
     '#description'   =>  t('Note that this fields can be mandatory for expense recognition purposes according to applicable policies.'),
-      '#weight' => $weight++,
+    '#weight' => $weight++,
   );
   $form['ticket']['priority'] = array(
     '#type'          => 'select',
@@ -1344,6 +1347,44 @@ function budgets_form(&$node, &$param) {
     '#suffix' => '</td></tr></table>'
   );
 
+  return $form;
+}
+
+function budgets_form_status_dialog($btype,$bstatus) {
+  global $user;
+
+  $node = array2object($budget);
+
+  guifi_log(GUIFILOG_TRACE,sprintf('budgets_ahah_status_dialog (%s)',$node->budget_type),$node);
+
+  $budgetStatusOpt = guifi_types('budget_status',null,null,$btype);
+  if (!user_access('review budgets'))
+    $budgetStatusOpt = array_diff_key($budgetStatusOpt,
+        array('Approved'=>'','Review'=>'','Reviewed'=>'','Compensated'=>''));
+  $form['budget_status'] = array(
+    '#type'          => 'select',
+    '#title'         => t('Status'),
+    '#default_value' => $bstatus,
+    '#description'   => t("Current situation."),
+    '#options'       =>  $budgetStatusOpt,
+    '#prefix' => '<div id="status-dialog">',
+    '#suffix' => '</div>',
+    '#weight'        => 1,
+  );
+  // only reviewers/admins can change status on closed or under review budgets
+  if (in_array($node->budget_status,array('Review','Closed','Approved','Abandoned','Compensate','Compensated'))) {
+    if ((!user_access('review budgets')) or (!user_access('administer budgets')))
+      $form['general']['budget_status']['#disabled'] = TRUE;
+    $form['budget_status']['#description'] .= '<br>'.
+      t("Contact reviewer to change this status");
+  }
+  $form['budget_status']['#description'] .= '<br>'.
+    t('While under preparation, not seen by others.');
+
+  if (array_key_exists('Executed',$budgetStatusOpt)) {
+    $form['budget_status']['#description'] .= '<br>'.
+       t('Status at the compensation workflow.');
+  }
   return $form;
 }
 
@@ -2080,6 +2121,12 @@ function budgets_validate(&$node) {
     form_set_error('node_id',
           t('Affected node is mandatory'));
 
+  $bStatusOpt = guifi_types('budget_status',null,null,$node->budget_type);
+  if (!array_key_exists($node->budget_status,$bStatusOpt))
+    form_set_error('budget_status',
+      t('Status %status not allowed for %type',
+       array('%status'=>$node->budget_statyu,
+         '%type'=>$node->budget_type)));
 
   if (empty($node->nid)) {
     // Fill default values
@@ -3708,6 +3755,38 @@ function budgets_ahah_select_zone2($string){
   }
   print drupal_to_js($matches);
   exit();
+}
+
+function budgets_ahah_status_dialog() {
+  $cid = 'form_'. $_POST['form_build_id'];
+  $cache = cache_get($cid, 'cache_form');
+
+  $btype = $_POST['budget_type'];
+  $bstatus = $_POST['budget_status'];
+  $arraccdate = $_POST['arraccdate'];
+  $arrexpires = $_POST['arrexpires'];
+  if (is_string($arrexpires))
+    $arrexpires = unserialize($arrexpires);
+  if (is_string($arraccdate))
+    $arraccdate = unserialize($arraccdate);
+
+  $bStatusOptions=guifi_types('budget_status',null,null,$btype);
+  if ($cache) {
+    $form = $cache->data;
+
+    //$choice_form = $form[general][status_dialog];
+    $choice_form = budgets_form_status_dialog($btype,$bstatus);
+    unset($choice_form['#prefix'], $choice_form['#suffix']); // Prevent duplicate wrappers.
+    if (!user_access('review budgets'))
+      $bStatusOptions = array_diff_key($bStatusOptions,
+        array('Approved'=>'','Review'=>'','Compensate'=>'','Compensated'=>''));
+    $choice_form[budget_status]['#options'] = $bStatusOptions;
+    $output = theme('status_messages') . drupal_render($choice_form);
+    drupal_json(array('status' => TRUE, 'data' => $output));
+  } else {
+    drupal_json(array('status' => FALSE, 'data' => ''));
+  }
+  exit;
 }
 
 function budgets_cnml($node = NULL, $format = NULL, $status = NULL) {
