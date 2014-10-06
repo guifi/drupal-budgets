@@ -1391,8 +1391,8 @@ function budgets_form_status_dialog($btype,$bstatus) {
     $form['budget_status']['#description'] .= '<br>'.
       t("Contact reviewer to change this status");
   }
-  $form['budget_status']['#description'] .= '<br>'.
-    t('While under preparation, not seen by others.');
+  //$form['budget_status']['#description'] .= '<br>'.
+  //  t('While under preparation, not seen by others.');
 
   if (array_key_exists('Executed',$budgetStatusOpt)) {
     $form['budget_status']['#description'] .= '<br>'.
