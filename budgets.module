@@ -577,12 +577,13 @@ function budgets_access($op, $node) {
     case 'create':
       return user_access('create budgets');
     case 'update':
+    case 'delete':
       if ($node->type == 'budgets') {
         if ((user_access('administer budgets')) or
             (user_access('review budgets')))
           return TRUE;
         if (($node->uid == $user->uid) and
-            (!in_array($node->budget_status,array('Approved','Closed','Abandoned','Compensated'))))
+            (!in_array($node->budget_status,array('Approved','Closed','Abandoned','Reviewed','Compensated'))))
           return TRUE;
       }
       return FALSE;
@@ -593,6 +594,7 @@ function budgets_access($op, $node) {
         return user_access('view budgets in preparation');
       return TRUE;
   }
+  return FALSE;
 }
 
 /**
