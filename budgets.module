@@ -2264,8 +2264,6 @@ function budgets_validate(&$node) {
     if ($item['deleted'])
       continue;
     $iDescr = str_replace('&nbsp;','',$item['description']);
-    guifi_log(GUIFILOG_BASIC,"function budgets_validate($iDescr)");
-    //    if (empty(html_entity_decode($item['description'])) or ($item['description'] == '&nbsp;'))
     if (empty($iDescr))
       form_set_error('items][' . $item_id . '][description', t('Item description is mandatory'));
     else {
