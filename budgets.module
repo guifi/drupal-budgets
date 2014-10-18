@@ -1081,6 +1081,14 @@ function budgets_form(&$node, &$param) {
     //'
     '#options' => guifi_types('budget_type'),
   );
+
+  if (($node->budget_status == 'Review') and !(user_access('review budgets'))) {
+    $form['general']['budget_type']['#options'] = array_intersect_key(
+  	    $form['general']['budget_type']['#options'],
+        array($node->budget_type=>1)
+      );
+    $form['general']['budget_type']['#description'] = t("Cannot change budget type on budgets under review");
+  } else
   $form['general']['bstatus_refresh'] = array(
     '#type'          => 'image_button',
     '#src'=> drupal_get_path('module', 'budgets').'/icons/refresh.png',
@@ -1373,9 +1381,20 @@ function budgets_form_status_dialog($btype,$bstatus) {
   guifi_log(GUIFILOG_TRACE,sprintf('budgets_form_status_dialog (%s)',$bstatus));
 
   $budgetStatusOpt = guifi_types('budget_status',null,null,$btype);
-  if (!user_access('review budgets'))
-    $budgetStatusOpt = array_diff_key($budgetStatusOpt,
+
+  // Set the available options according to the role & status
+  switch ($bstatus) {
+    // if budget status is under review, only reviewers can change the status
+    case 'Review':
+      if (!user_access('review budgets'))
+        $budgetStatusOpt = array_intersect_key($budgetStatusOpt,array('Review'=>''));
+  	  break;
+  	// all other status, set available options according to the rola
+    if (!user_access('review budgets'))
+      $budgetStatusOpt = array_diff_key($budgetStatusOpt,
         array('Approved'=>'','Review'=>'','Reviewed'=>'','Compensated'=>''));
+  }
+
   $form['budget_status'] = array(
     '#type'          => 'select',
     '#title'         => t('Status'),
@@ -1386,12 +1405,17 @@ function budgets_form_status_dialog($btype,$bstatus) {
     '#suffix' => '</div>',
     '#weight'        => 1,
   );
+
   // only reviewers/admins can change status on closed or under review budgets
-  if (in_array($node->budget_status,array('Review','Closed','Approved','Abandoned','Compensate','Compensated'))) {
+  if (in_array($bstatus,array('Review','Closed','Approved','Abandoned','Compensate','Compensated'))) {
     if ((!user_access('review budgets')) or (!user_access('administer budgets')))
       $form['general']['budget_status']['#disabled'] = TRUE;
     $form['budget_status']['#description'] .= '<br>'.
       t("Contact reviewer to change this status");
+  }
+
+  if ($bstatus == 'Review') {
+    $form['budget_status']['#description'] .= '<br>'.t('Once corrected, add a comment and contact the reviewer');
   }
   //$form['budget_status']['#description'] .= '<br>'.
   //  t('While under preparation, not seen by others.');
@@ -1724,8 +1748,16 @@ function budgets_form_load_budget($loadBudget, &$items, &$cw) {
   guifi_log(GUIFILOG_TRACE, 'function budgets_form_load_budget(OUT)', $node);
 }
 
+define('QUOTEHELP','Edit & replace this text with a brief description, what it does, etc.<br>
+      For expense recognition purposes do also provide:
+      </ul><li>When applicable, specify the device number, name or url of the device, i.e.:
+        <a href="http://guifi.net/ca/guifi/device/2829" alt="GurbElSerratST" title="GurbElSerratST">GurbElSerratST - http://guifi.net/ca/guifi/device/2829</a></li>
+      <li>Explain if adds a new component, or replaces an existing one</li>
+      <li>Is recommended to provide a small resolution picture (i.e. 480px)</li></ul>');
+
 
 function budgets_form_load_quote($loadQuote, &$items, &$cw) {
+
   guifi_log(GUIFILOG_TRACE, 'function budgets_form_load_quote()', $loadQuote);
 
   if ((empty($loadQuote)) or ($loadQuote == t('None')))
@@ -1753,12 +1785,7 @@ function budgets_form_load_quote($loadQuote, &$items, &$cw) {
   $newI['tax'] = $quote->tax;
   $newI['cost'] = $quote->cost;
 
-  $newI['description'] = $quote->body.'<br>'.t('Edit & replace this text with a brief description, what it does, etc.<br>
-      For expense recognition purposes do also provide:
-      </ul><li>When applicable, specify the device number, name or url of the device, i.e.:
-        <a href="http://guifi.net/ca/guifi/device/2829" alt="GurbElSerratST" title="GurbElSerratST">GurbElSerratST - http://guifi.net/ca/guifi/device/2829</a></li>
-      <li>Explain if adds a new component, or replaces an existing one</li>
-      <li>Is recommended to provide a small resolution picture (i.e. 480px)</li></ul>');
+  $newI['description'] = $quote->body.'<br>'.t(QUOTEHELP);
 
   $supplier = node_load(array('nid' => $quote->supplier_id));
 
@@ -2139,8 +2166,8 @@ function budgets_validate(&$node) {
   $bStatusOpt = guifi_types('budget_status',null,null,$node->budget_type);
   if (!array_key_exists($node->budget_status,$bStatusOpt))
     form_set_error('budget_status',
-      t('Status %status not allowed for %type',
-       array('%status'=>$node->budget_statyu,
+      t('Status (%status) not allowed for %type',
+       array('%status'=>$node->budget_status,
          '%type'=>$node->budget_type)));
 
   if (empty($node->nid)) {
@@ -2236,8 +2263,18 @@ function budgets_validate(&$node) {
     guifi_log(GUIFILOG_TRACE,'function budgets_validate(4)',$item);
     if ($item['deleted'])
       continue;
-    if (empty($item['description']))
+    if (empty(html_entity_decode($item['description'])) or ($item['description'] == '&nbsp;'))
       form_set_error('items][' . $item_id . '][description', t('Item description is mandatory'));
+    else {
+      // Checking if the current text is too similar to the default help text provided
+      if ($wpct = budgets_similar_text($item['description'],t(QUOTEHELP),7))
+      {
+        form_set_error('items][' . $item_id . '][description',
+           t('Item description is too similar to the default help text at "...%pct...".
+              Please ensure you are replacing the text by following the tips provided',
+            array('%pct'=>$wpct)));
+      }
+    }
     $item['quantity'] = str_replace(',', '.', $item['quantity']);
     if (!empty($item['quantity']) and (!is_numeric($item['quantity'])))
       form_set_error('items][' . $item_id . '][quantity', t('Quantity must be numeric'));
@@ -2340,6 +2377,35 @@ function budgets_delete(&$node) {
            $log);
   return;
 }
+
+function budgets_similar_text($str1, $str2, $wc = 5) {
+  //  guifi_log(GUIFILOG_BASIC,"function guifi_similar_text()");
+
+  $w1 = str_word_count(iconv('UTF-8','ASCII//TRANSLIT',html_entity_decode( preg_replace('/<[^>]*>/', '', $str1))),1);
+  $w2 = str_word_count(iconv('UTF-8','ASCII//TRANSLIT',html_entity_decode( preg_replace('/<[^>]*>/', '', $str2))),1);
+  if (count($w1) < count($w2)) {
+    $s1 = $w1; $s2 = $w2;
+  } else {
+    $s1 = $w2; $s2 = $w1;
+  }
+ // guifi_log(GUIFILOG_BASIC,"function guifi_similar_text()",$s1);
+  $strdest = implode(' ',$s2);
+  $i = 0;
+  do {
+    $substr = implode(' ',array_slice($s1,$i,$wc));
+    if (strpos($strdest,$substr))
+      return $substr;
+    $i++;
+  } while ($i < (count($s1)-$wc));
+
+  return FALSE;
+}
+
+function guifi_img_icon($i) {
+  global $base_url;
+  return '<img src="'.$base_url.'/'.drupal_get_path('module', 'guifi').'/icons/'.$i.'" >';
+}
+
 
 /**
 * Implementation of hook_page().
