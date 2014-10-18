@@ -1383,17 +1383,14 @@ function budgets_form_status_dialog($btype,$bstatus) {
   $budgetStatusOpt = guifi_types('budget_status',null,null,$btype);
 
   // Set the available options according to the role & status
-  switch ($bstatus) {
-    // if budget status is under review, only reviewers can change the status
-    case 'Review':
-      if (!user_access('review budgets'))
-        $budgetStatusOpt = array_intersect_key($budgetStatusOpt,array('Review'=>''));
-  	  break;
-  	// all other status, set available options according to the rola
+  // if budget status is under review, only reviewers can change the status
+  if ($bstatus == 'Review') {
     if (!user_access('review budgets'))
-      $budgetStatusOpt = array_diff_key($budgetStatusOpt,
-        array('Approved'=>'','Review'=>'','Reviewed'=>'','Compensated'=>''));
-  }
+        $budgetStatusOpt = array_intersect_key($budgetStatusOpt,array('Review'=>''));
+  // all other status, set available options according to the rola
+  }  else if (!user_access('review budgets'))
+    $budgetStatusOpt = array_diff_key($budgetStatusOpt,
+      array('Approved'=>'','Review'=>'','Reviewed'=>'','Compensated'=>''));
 
   $form['budget_status'] = array(
     '#type'          => 'select',
