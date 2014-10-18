@@ -2263,7 +2263,10 @@ function budgets_validate(&$node) {
     guifi_log(GUIFILOG_TRACE,'function budgets_validate(4)',$item);
     if ($item['deleted'])
       continue;
-    if (empty(html_entity_decode($item['description'])) or ($item['description'] == '&nbsp;'))
+    $iDescr = str_replace('&nbsp;','',$item['description']);
+    guifi_log(GUIFILOG_BASIC,"function budgets_validate($iDescr)");
+    //    if (empty(html_entity_decode($item['description'])) or ($item['description'] == '&nbsp;'))
+    if (empty($iDescr))
       form_set_error('items][' . $item_id . '][description', t('Item description is mandatory'));
     else {
       // Checking if the current text is too similar to the default help text provided
