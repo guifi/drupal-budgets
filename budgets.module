@@ -2404,12 +2404,6 @@ function budgets_similar_text($str1, $str2, $wc = 5) {
   return FALSE;
 }
 
-function guifi_img_icon($i) {
-  global $base_url;
-  return '<img src="'.$base_url.'/'.drupal_get_path('module', 'guifi').'/icons/'.$i.'" >';
-}
-
-
 /**
 * Implementation of hook_page().
 */
