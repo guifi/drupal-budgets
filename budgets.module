@@ -590,7 +590,7 @@ function budgets_access($op, $node) {
     case 'view':
       if ($node->uid == $user->uid)
         return TRUE;
-      if (($node->budget_status == 'Preparation') or ($node->budget_status=='Review'))
+      if (($node->budget_status == 'Preparation'))
         return user_access('view budgets in preparation');
       return TRUE;
   }
