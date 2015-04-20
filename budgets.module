@@ -194,12 +194,6 @@ function budgets_menu() {
     'access arguments' => array('access content'),
     'type' => MENU_CALLBACK,
   );
-  $items['budgets/js/select-quote'] = array(
-    'title' => 'Javascript/autocomplete find Quote',
-    'page callback' => 'budgets_quote_ahah_select_quote',
-    'access arguments' => array('access content'),
-    'type' => MENU_CALLBACK,
-  );
   $items['budgets/js/status-dialog'] = array(
     'title' => 'Dynamic AHAH for status dialog based on budget type',
     'page callback' => 'budgets_ahah_status_dialog',
