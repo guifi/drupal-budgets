@@ -188,12 +188,6 @@ function budgets_menu() {
     'access arguments' => array('access content'),
     'type' => MENU_CALLBACK,
   );
-  $items['budgets/js/select-zone'] = array(
-    'title' => 'Javascript/autocomplete find Zone',
-    'page callback' => 'budgets_ahah_select_zone',
-    'access arguments' => array('access content'),
-    'type' => MENU_CALLBACK,
-  );
   $items['budgets/js/status-dialog'] = array(
     'title' => 'Dynamic AHAH for status dialog based on budget type',
     'page callback' => 'budgets_ahah_status_dialog',
@@ -1218,7 +1212,7 @@ function budgets_form(&$node, &$param) {
     '#default_value'=> (($node->zone_id!='') and (is_numeric($node->zone_id))) ?
        $node->zone_id.'-'.guifi_get_zone_name($node->zone_id) : $node->zone_id,
     '#maxsize'=> 256,
-    '#autocomplete_path' => 'budgets/js/select-zone',
+    '#autocomplete_path' => 'guifi/js/select-zone',
     '#disabled' => in_array($node->budget_type,array('none','other','crowdfunding'))?
       FALSE : TRUE,
   );
@@ -3780,49 +3774,6 @@ function budgets_ahah_select_quote($string) {
   exit();
 }
 
-function budgets_ahah_select_zone($string) {
-  $matches = array();
-
-  $string = strtoupper(arg(3));
-
-  $query =
-    'SELECT ' .
-    '  CONCAT(z.id,"-",z.title) str, m.title master '.
-    'FROM {guifi_zone} z, {guifi_zone} m ' .
-    'WHERE z.master=m.id '.
-    '  AND CONCAT(z.id,"-",upper(z.title)) LIKE "%'. $string .'%"';
-
-  $qry = db_query($query);
-
-  $c = 0;
-  $matches = array();
-  while (($value = db_fetch_array($qry)) and ($c < 50)) {
-    $c++;
-    $matches[$value['str']] = $value['str'].' ('.$value['master'].')';
-  }
-  print drupal_to_js($matches);
-  exit();
-}
-
-function budgets_ahah_select_zone2($string){
-  $matches = array();
-
-  $string = strtoupper(arg(3));
-
-  $qry = db_query('SELECT ' .
-                  '  CONCAT(z.id,"-",z.title) str '.
-                  'FROM {guifi_zone} z ' .
-                  'WHERE z.title like "%'.$string.'%"'
-                 );
-  $c = 0;
-  $matches = array();
-  while (($value = db_fetch_array($qry)) and ($c < 50)) {
-    $c++;
-    $matches[$value['str']] = $value['str'];
-  }
-  print drupal_to_js($matches);
-  exit();
-}
 
 function budgets_ahah_status_dialog() {
   $cid = 'form_'. $_POST['form_build_id'];

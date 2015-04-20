@@ -135,7 +135,7 @@ function budgets_supplier_form(&$node,&$param) {
       '#default_value'=> ($node->zones[$zone_id]!='') ?
          $node->zones[$zone_id].'-'.guifi_get_zone_name($node->zones[$zone_id]) : NULL,
       '#maxsize'=> 256,
-      '#autocomplete_path' => 'budgets/js/select-zone',
+      '#autocomplete_path' => 'guifi/js/select-zone',
     );
     $zone_id++;
   } while ($zone_id < ($nzones + 3));
