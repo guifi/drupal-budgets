@@ -3,20 +3,9 @@
 	<name>budgets</name>
 	<comment></comment>
 	<projects>
-		<project>guifi</project>
 	</projects>
 	<buildSpec>
 	</buildSpec>
 	<natures>
 	</natures>
-	<filteredResources>
-		<filter>
-			<id>1405060426487</id>
-			<name></name>
-			<type>29</type>
-			<matcher>
-				<id>org.eclipse.ui.ide.andFilterMatcher</id>
-			</matcher>
-		</filter>
-	</filteredResources>
 </projectDescription>
