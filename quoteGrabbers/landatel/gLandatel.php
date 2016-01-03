@@ -1,6 +1,15 @@
 <?php
 
 // Latest grabber as from Nov 28 2015
+/* to use:
+ * within a shell:
+ * php gLandatel.php > landatel.txt
+ * within a browser, goto address for supplier quotes batch upload and
+ * select landatel.txt as the csv file, with | as a delimiter
+ *
+ */
+
+
 
 include '../includes/simple_html_dom.php';
 include '../includes/utils.php';
