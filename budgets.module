@@ -571,7 +571,7 @@ function budgets_access($op, $node) {
             (user_access('review budgets')))
           return TRUE;
         if (($node->uid == $user->uid) and
-            (!in_array($node->budget_status,array('Approved','Closed','Abandoned','Reviewed','Compensated'))))
+            (!in_array($node->budget_status,array('Approved','Closed','Abandoned','Reviewed','Compensated', 'Reviewed_BAD', 'Invoiced_BAD'))))
           return TRUE;
       }
       return FALSE;
@@ -1070,7 +1070,7 @@ function budgets_form(&$node, &$param) {
     '#options' => guifi_types('budget_type'),
   );
 
-  if (($node->budget_status == 'Review') and !(user_access('review budgets'))) {
+  if (($node->budget_status == 'Review' || $node->budget_status == 'Review_BAD') and !(user_access('review budgets'))) {
     $form['general']['budget_type']['#options'] = array_intersect_key(
   	    $form['general']['budget_type']['#options'],
         array($node->budget_type=>1)
@@ -1372,13 +1372,13 @@ function budgets_form_status_dialog($btype,$bstatus) {
 
   // Set the available options according to the role & status
   // if budget status is under review, only reviewers can change the status
-  if ($bstatus == 'Review') {
+  if ($bstatus == 'Review' || $bstatus == 'Review_BAD') {
     if (!user_access('review budgets'))
-        $budgetStatusOpt = array_intersect_key($budgetStatusOpt,array('Review'=>''));
+        $budgetStatusOpt = array_intersect_key($budgetStatusOpt,array('Review' => '', 'Review_BAD' => ''));
   // all other status, set available options according to the rola
   }  else if (!user_access('review budgets'))
     $budgetStatusOpt = array_diff_key($budgetStatusOpt,
-      array('Approved'=>'','Review'=>'','Reviewed'=>'','Compensated'=>''));
+      array('Approved'=>'','Review'=>'','Reviewed'=>'','Compensated'=>'','Review_BAD'=>'','Reviewed_BAD'=>'','Invoiced_BAD'=>''));
 
   $form['budget_status'] = array(
     '#type'          => 'select',
@@ -1392,14 +1392,14 @@ function budgets_form_status_dialog($btype,$bstatus) {
   );
 
   // only reviewers/admins can change status on closed or under review budgets
-  if (in_array($bstatus,array('Review','Closed','Approved','Abandoned','Compensate','Compensated'))) {
+  if (in_array($bstatus,array('Review','Closed','Approved','Abandoned','Compensate','Compensated','Review_BAD','Invoiced_BAD'))) {
     if ((!user_access('review budgets')) or (!user_access('administer budgets')))
       $form['general']['budget_status']['#disabled'] = TRUE;
     $form['budget_status']['#description'] .= '<br>'.
       t("Contact reviewer to change this status");
   }
 
-  if ($bstatus == 'Review') {
+  if ($bstatus == 'Review' || $bstatus == 'Review_BAD') {
     $form['budget_status']['#description'] .= '<br>'.t('Once corrected, add a comment and contact the reviewer');
   }
   //$form['budget_status']['#description'] .= '<br>'.

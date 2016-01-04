@@ -124,7 +124,11 @@ function budgets_install() {
     ('7', 'budget_status', 'Compensated', 'Compensated', 'f-capex|f-opex|f-conn|w-opex|w-capex|other'),
     ('8', 'budget_status', 'Open', 'Crowdfunding open', 'crowdfunding|none|other'),
     ('9', 'budget_status', 'Closed', 'Closed', 'crowdfunding|f-capex|f-opex|f-conn|w-opex|w-capex|none|other'),
-    ('10', 'budget_status', 'Abandoned', 'Abandoned', 'crowdfunding|f-capex|f-opex|f-conn|w-opex|w-capex|none|other')
+    ('10', 'budget_status', 'Abandoned', 'Abandoned', 'crowdfunding|f-capex|f-opex|f-conn|w-opex|w-capex|none|other'),
+    ('11', 'budget_status', 'Executed_BAD', 'Executed - Bad practice', 'f-capex|f-opex|f-conn|w-opex|w-capex|other'),
+    ('12', 'budget_status', 'Review_BAD', 'Reviewed - Bad practice', 'f-capex|f-opex|f-conn|w-opex|w-capex|other'),
+    ('13', 'budget_status', 'Reviewed_BAD', 'Under review - Bad practice', 'f-capex|f-opex|f-conn|w-opex|w-capex|other'),
+    ('14', 'budget_status', 'Invoiced_BAD', 'Invoiced - Bad practice', 'f-capex|f-opex|f-conn|w-opex|w-capex|other')
     ");
 
   /*
@@ -635,5 +639,17 @@ function budgets_update_555() {
   return $items;
 }
 
+function budgets_update_6555() {
+  $items = array();
+
+  $items[] = update_sql("INSERT INTO {guifi_types} (id, type, text, description, relations) VALUES
+    ('11', 'budget_status', 'Executed_BAD', 'Executed - Bad practice', 'f-capex|f-opex|f-conn|w-opex|w-capex|other'),
+    ('12', 'budget_status', 'Review_BAD', 'Reviewed - Bad practice', 'f-capex|f-opex|f-conn|w-opex|w-capex|other'),
+    ('13', 'budget_status', 'Reviewed_BAD', 'Under review - Bad practice', 'f-capex|f-opex|f-conn|w-opex|w-capex|other'),
+    ('14', 'budget_status', 'Invoiced_BAD', 'Invoiced - Bad practice', 'f-capex|f-opex|f-conn|w-opex|w-capex|other')
+  ");
+
+  return $items;
+}
 
 ?>
