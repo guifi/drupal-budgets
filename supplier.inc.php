@@ -919,15 +919,27 @@ function budgets_supplier_list_by_zone_filter($parm,$zid,$keys=NULL) {
   /*
    * Filter form
    */
+  $k = $keys;
+  unset($k['role']);
+  unset($k['title']);
+
   $form['filter'] = array(
     '#title'=> t('Filter').' '.$keyword,
     '#type'=>'fieldset',
     '#tree'=>false,
-    '#collapsed'=>empty($keys) ? true : false,
+    '#collapsed'=>false,
     '#collapsible'=>true,
     '#attributes'=>array('class'=>'supplier-fieldset'),
   );
-  $form['filter']['tp_certs'] = array(
+  $form['filter']['certscaps'] = array(
+    '#title'=> t('Certifications & capabilities').' '.$keyword,
+    '#type'=>'fieldset',
+    '#tree'=>false,
+    '#collapsed'=>empty($k) ? true : false,
+    '#collapsible'=>true,
+    '#attributes'=>array('class'=>'supplier-fieldset'),
+  );
+  $form['filter']['certscaps']['tp_certs'] = array(
     '#type'=>'checkboxes',
     '#title'=>t('Professional certificate'),
     '#options'=> guifi_types('tp_certs'),
@@ -936,7 +948,7 @@ function budgets_supplier_list_by_zone_filter($parm,$zid,$keys=NULL) {
     '#default_value'=> (is_array($keys['tp_certs'])) ? $keys['tp_certs'] : array(),
 //    '#attributes'=> array('class'=>"budgets-zone-form"),
   );
-  $form['filter']['guifi_certs'] = array(
+  $form['filter']['certscaps']['guifi_certs'] = array(
     '#type'=>'checkboxes',
     '#title'=>t('guifi.net certificate'),
     '#options'=> guifi_types('guifi_certs'),
@@ -945,7 +957,7 @@ function budgets_supplier_list_by_zone_filter($parm,$zid,$keys=NULL) {
     '#default_value'=> (is_array($keys['guifi_certs'])) ? $keys['guifi_certs'] : array(),
 //    '#attributes'=> array('class'=>"budgets-zone-form"),
   );
-  $form['filter']['caps_services'] = array(
+  $form['filter']['certscaps']['caps_services'] = array(
     '#type'=>'checkboxes',
     '#title'=>t('services & content providers'),
     '#options'=> guifi_types('caps_services'),
@@ -954,7 +966,7 @@ function budgets_supplier_list_by_zone_filter($parm,$zid,$keys=NULL) {
     '#default_value'=> (is_array($keys['caps_services'])) ? $keys['caps_services'] : array(),
 //    '#attributes'=> array('class'=>"budgets-zone-form"),
   );
-  $form['filter']['caps_network'] = array(
+  $form['filter']['certscaps']['caps_network'] = array(
     '#type'=>'checkboxes',
     '#title'=>t('network dev. & mgmt.'),
     '#options'=> guifi_types('caps_network'),
@@ -962,7 +974,7 @@ function budgets_supplier_list_by_zone_filter($parm,$zid,$keys=NULL) {
     '#default_value'=> (is_array($keys['caps_network'])) ? $keys['caps_network'] : array(),
 //    '#attributes'=> array('class'=>"budgets-zone-form"),
   );
-  $form['filter']['caps_project'] = array(
+  $form['filter']['certscaps']['caps_project'] = array(
     '#type'=>'checkboxes',
     '#title'=>t('project development'),
     '#options'=> guifi_types('caps_project'),
@@ -971,15 +983,15 @@ function budgets_supplier_list_by_zone_filter($parm,$zid,$keys=NULL) {
     '#default_value'=> (is_array($keys['caps_project'])) ? $keys['caps_project'] : array(),
 //    '#attributes'=> array('class'=>"budgets-zone-form"),
   );
-  $form['filter']['role'] = array(
-    '#type'=>'radios',
-    '#title'=>t('Role'),
-    '#options'=> array('volunteer'=>t('Volunteer'),'professional'=>t('Professional')),
-    '#multiple'=>true,
-    '#size'=>2,
-    '#default_value'=>$keys['role'][0],
-//    '#attributes'=> array('class'=>"budgets-zone-form"),
-  );
+//   $form['filter']['role'] = array(
+//     '#type'=>'radios',
+//     '#title'=>t('Role'),
+//     '#options'=> array('volunteer'=>t('Volunteer'),'professional'=>t('Professional')),
+//     '#multiple'=>true,
+//     '#size'=>2,
+//     '#default_value'=>$keys['role'][0],
+// //    '#attributes'=> array('class'=>"budgets-zone-form"),
+//   );
   $form['filter']['zone_id'] = array('#type'=>hidden,'#value'=>$zid);
   $form['filter']['title'] = array(
     '#type'=>'textfield',
@@ -988,13 +1000,15 @@ function budgets_supplier_list_by_zone_filter($parm,$zid,$keys=NULL) {
     '#description'=>t('Name contains (use single keyword)'),
     '#default_value'=>$keys['title'][0],
     '#autocomplete_path' => 'budgets/js/select-supplier',
-    '#prefix'=> '<table><td>',
+//    '#prefix'=> '<table><td>',
   );
   $form['filter']['submit'] = array(
     '#type'=>'submit',
     '#title'=>t('Press to proceed'),
     '#value'=>t('Search'),
-    '#suffix'=> '</td></table>',
+    '#prefix'=>'<div class="form-item id="edit-title-wrapper"><label for="edit-title">&nbsp;</label>',
+    '#suffix'=>'</div>',
+//    '#suffix'=> '</td></table>',
   );
 
   return $form;
@@ -1013,11 +1027,11 @@ function budgets_supplier_list_by_zone_filter_submit($form_id, &$form_values) {
   $v['caps_project']=array_diff($v['caps_project'],array(0));
   if (!empty($v['title']))         $sv[] = 'title='.$v['title'];
   if (!empty($v['role']))          $sv[] = 'role='.$v['role'];
-  if (!empty($v['tp_certs']))      $sv[] = 'tp_certs='.implode(',',$v['tp_certs']);
-  if (!empty($v['guifi_certs']))   $sv[] = 'guifi_certs='.implode(',',$v['guifi_certs']);
-  if (!empty($v['caps_services'])) $sv[] = 'caps_services='.implode(',',$v['caps_services']);
-  if (!empty($v['caps_network']))  $sv[] = 'caps_network='.implode(',',$v['caps_network']);
-  if (!empty($v['caps_project']))  $sv[] = 'caps_project='.implode(',',$v['caps_project']);
+  if (!empty($v['tp_certs']))      $sv[] = 'tp_certs='.implode('|',$v['tp_certs']);
+  if (!empty($v['guifi_certs']))   $sv[] = 'guifi_certs='.implode('|',$v['guifi_certs']);
+  if (!empty($v['caps_services'])) $sv[] = 'caps_services='.implode('|',$v['caps_services']);
+  if (!empty($v['caps_network']))  $sv[] = 'caps_network='.implode('|',$v['caps_network']);
+  if (!empty($v['caps_project']))  $sv[] = 'caps_project='.implode('|',$v['caps_project']);
 
   $s = implode(',',$sv);
 
@@ -1028,13 +1042,34 @@ function budgets_supplier_list_by_zone_filter_submit($form_id, &$form_values) {
 
 function budgets_supplier_list_by_zone($zone,$params = NULL) {
 
-  guifi_log(GUIFILOG_TRACE,'budgets_supplier_list_by_zone (PARAMS)',$params);
+  /*
+   * List suppliers by the following criteria:
+   *  0: Zone base (zbase): If zone base or its childs has no suppliers, move zbase up until there
+   *     are suppliers.
+   *     List zone base & zone childs suppliers.
+   *     If zone base has no suppliers, move zbase up until it has.
+   *  1: Zone parent (zparent): If zone parent has no suppliers, move zparent up until it has.
+   *  2: All parents (zallparents). List all suppliers present at the parents.
+   *
+   *
+   *  */
+
+  guifi_log(GUIFILOG_TRACE,'budgets_supplier_list_by_zone (function)',$params);
 
   $zroot = guifi_bg_zone_root();
   $vars = array();
 
   if (($zone->id==0) or (empty($zone->id))) {
     $zone->id=$zroot;
+  }
+
+  switch(arg(2)){
+   case 'suppliers':
+    $trole=t('suppliers');
+    $params='role=professional'; break;
+   case 'volunteers':
+    $trole=t('volunteers');
+    $params='role=volunteer'; break;
   }
 
   if ($params) {
@@ -1046,26 +1081,21 @@ function budgets_supplier_list_by_zone($zone,$params = NULL) {
     }
   }
 
-  $output = drupal_get_form('budgets_supplier_list_by_zone_filter',$zone->id,$vars);
+  // Generic SELECT columns
+  $sselect =
+    'SELECT s.id, s.official_rating official_rating, s.role role ';
 
-  $parents = array();
+  // Generic FROM tables
+  $sfrom =
+    ' FROM {supplier} s';
+  $sfromj =
+    $sfrom.', {node} n ';
 
-  if ($zone->id==$zroot) {
-    // listing root zone: don't have to list the parents or childs'
-    $where = ''; //list all
-  } else {
- 	guifi_log(GUIFILOG_TRACE,'list_by_zone (zones)',guifi_zone_get_parents($zone->id));
-  	// other zones, parents and childs should be included, but
-  	// excluding root
-    $zlist = array_diff(guifi_zone_childs_and_parents($zone->id),
-       array(0,$zroot));
-    $where = 'AND (s.zone_id IN ('.implode(',',$zlist).') ';
-    foreach ($zlist as $z)
-      $where .= "OR CONCAT(',',s.zones,',') LIKE '%,".$z.",%' ";
-    $where.=') ';
-  }
-
-  guifi_log(GUIFILOG_TRACE,'list_suppliers_by_zone (zones)',$vars);
+  // Generic WHERE with form filters
+  $swhere = ' WHERE ';
+  $swherej = $swhere.
+    's.id=n.nid ' .
+    ' AND n.status=1 ';
 
   $svars = array();
   foreach ($vars as $k => $v) {
@@ -1078,44 +1108,225 @@ function budgets_supplier_list_by_zone($zone,$params = NULL) {
           } else
             $svars[] = "upper(s.title) like '%".strtoupper($p)."%' ";
         } else
-          $svars[] = $k." LIKE '%".$p."%' ";
+          $svars[] = 's.'.$k." LIKE '%".$p."%' ";
   }
   if (count($svars)>0)
-    $swhere = ' AND ('.implode(' AND ',$svars).') ';
-  else
-    $swhere = '';
+    $swherej.= ' AND ('.implode(' AND ',$svars).') ';
+  guifi_log(GUIFILOG_TRACE,'form vars', $swherej);
 
-  $qquery =
-    'SELECT s.id ' .
-    'FROM {supplier} s, {node} n ' .
-    'WHERE s.id=n.nid ' .
-    ' AND n.status=1 '.
-    $swhere.
-    $where.
+
+  $output = drupal_get_form('budgets_supplier_list_by_zone_filter',$zone->id,$vars);
+
+  $parents = array_diff(guifi_zone_get_parents($zone->id),array($zone->id,0,$zroot));
+
+  if ($zone->id==$zroot) {
+    // listing root zone: don't have to list the parents or childs'
+    $where = ''; //list all
+  } else {
+
+    $azone = array();   // Given zone
+    $abase = array();   // parent zone
+    $achilds = array(); // childs of given zone
+    $abasechilds = array(); // childs of parent zone
+    $slisted = array(); // Listed suppliers
+    $squery = array();  // query to be built
+
+ 	  // STEP 1: Finding suppliers in given zone
+ 	  $zbase = $zone->id;
+
+    $sqry = 'SELECT s.id '.$sfromj.$swherej.
+ 	      " AND (s.zone_id = ".$zone->id." or CONCAT(',',s.zones,',') LIKE '%,".$zone->id.",%') ";
+
+    guifi_log(GUIFILOG_TRACE,'sqry zoneid'.$sqry);
+
+    $qry = db_query($sqry);
+    while ($ret = db_fetch_object($qry)) {
+      guifi_log(GUIFILOG_TRACE,'ret', $ret);
+      $azone[] = $ret->id;
+    }
+
+    if (!empty($azone)) {
+     $squery[] =
+       $sselect. ", '1' q ".
+       $sfrom.
+       $swhere.' (s.id IN ('.implode(',',$azone).')) ';
+       $slisted = $azone;
+    }
+
+
+    // STEP 2: Finding suppliers on given zone child zones
+    $zlist = array_diff(guifi_zone_childs($zone->id),
+       array(0,$zroot ,$zone->id));
+ 	  guifi_log(GUIFILOG_TRACE,'list_by_zone childs (zones)',$zlist);
+
+ 	  $sqry = 'SELECT s.id '.$sfromj.$swherej.
+ 	    " AND ((s.zone_id IN ( ".implode(',',$zlist).') ';
+    foreach ($zlist as $z)
+      $sqry .= "OR CONCAT(',',s.zones,',') LIKE '%,".$z.",%' ";
+    $sqry.=') ';
+    if (!empty($slisted)) {
+      $sqry.= ' AND s.id NOT IN ('.implode(',',$slisted).') ';
+    }
+    $sqry.=')';
+
+    guifi_log(GUIFILOG_TRACE,'sqry childs: '.$sqry);
+
+    $qry = db_query($sqry);
+    while ($ret = db_fetch_object($qry)) {
+      guifi_log(GUIFILOG_TRACE,'ret', $ret);
+      $achilds[] = $ret->id;
+    }
+
+    if (!empty($achilds)) {
+     $slisted = array_merge($achilds,$slisted);
+     $squery[] =
+        $sselect. ", '2' q ".
+        $sfrom.
+        $swhere.' (s.id IN ('.implode(',',$achilds).')) ';
+    }
+
+
+   	// STEP 3: Finding zbase with suppliers
+   	$new_childs = false;
+ 	  do {
+ 	    $zbase = array_shift($parents);
+      guifi_log(GUIFILOG_TRACE,'zbase '.$zbase);
+ 	    $zlist = array_diff(guifi_zone_childs($zbase),
+        array(0,$zroot ));
+ 	    $sqry = 'SELECT s.id,s.zone_id,s.zones '.$sfromj.$swherej.
+       " AND ((s.zone_id IN ( ".implode(',',$zlist).') ';
+      foreach ($zlist as $z)
+        $sqry .= "OR CONCAT(',',s.zones,',') LIKE '%,".$z.",%' ";
+      $sqry.=') ';
+ 	    if (!empty($slisted)) {
+        $sqry.= ' AND s.id NOT IN ('.implode(',',$slisted).') ';
+      }
+      $sqry.=')';
+
+      guifi_log(GUIFILOG_TRACE,'sqry base '.$sqry);
+
+      $qry = db_query($sqry);
+      while ($ret = db_fetch_object($qry)) {
+       guifi_log(GUIFILOG_TRACE,'ret', $ret);
+       $new_childs = true;
+       if (($ret->id==$zbase) or in_array($zbase,explode(',',$ret->zones)))
+         $abase[] = $ret->id;
+      }
+ 	  } while ((!$new_childs) and (!empty($parents)));
+    guifi_log(GUIFILOG_TRACE,'zbase '.$zbase);
+    guifi_log(GUIFILOG_TRACE,'abase '.$abase);
+
+    if (!empty($abase)) {
+     $slisted = array_merge($slisted,$abase);
+     $squery[] =
+       $sselect. ", '3' q ".
+       $sfrom.
+       $swhere.' (s.id IN ('.implode(',',$abase).')) ';
+    }
+
+    // STEP 4: Finding suppliers on zbase child zones
+    $zlist = array_diff(guifi_zone_childs($zbase),
+       array(0,$zroot ,$zbase));
+ 	  guifi_log(GUIFILOG_TRACE,'list_by_zone childs (zones)',$zlist);
+
+ 	  $sqry = 'SELECT s.id '.$sfromj.$swherej.
+ 	    " AND ((s.zone_id IN ( ".implode(',',$zlist).') ';
+    foreach ($zlist as $z)
+      $sqry .= "OR CONCAT(',',s.zones,',') LIKE '%,".$z.",%' ";
+    $sqry.=') ';
+    if (!empty($slisted)) {
+      $sqry.= ' AND s.id NOT IN ('.implode(',',$slisted).') ';
+    }
+    $sqry.=')';
+
+    guifi_log(GUIFILOG_TRACE,'sqry childs: '.$sqry);
+
+    $qry = db_query($sqry);
+    while ($ret = db_fetch_object($qry)) {
+      guifi_log(GUIFILOG_TRACE,'ret', $ret);
+      $abasechilds[] = $ret->id;
+    }
+
+    if (!empty($abasechilds)) {
+     $slisted = array_merge($abasechilds,$slisted);
+     $squery[] =
+        $sselect. ", '4' q ".
+        $sfrom.
+        $swhere.' (s.id IN ('.implode(',',$abasechilds).')) ';
+    }
+
+    // STEP 5: List all others from parents
+    $parents = $parents;
+    if (!empty($parents)) {
+
+      guifi_log(GUIFILOG_TRACE,'STEP 5: remaining parents', $parents);
+      $sqry =
+        $sselect. ", '5' q ".
+        $sfromj.
+        $swherej.
+ 	        " AND ((s.zone_id IN ( ".implode(',',$parents).') ';
+      foreach ($parents as $z)
+        $sqry .= "OR CONCAT(',',s.zones,',') LIKE '%,".$z.",%' ";
+      $sqry.=') ';
+      if (!empty($slisted)) {
+        $sqry.= ' AND s.id NOT IN ('.implode(',',$slisted).') ';
+      }
+      $sqry.=')';
+      $squery[] = $sqry;
+    }
+
+
+
+  }  // listing suppliers because zone wasn't root
+
+  guifi_log(GUIFILOG_TRACE,'list_suppliers_by_zone (zones)',$where);
+
+
+
+  // Generic ORDER BY
+  $sorderby =
     // Order by rating, creating a code for sort the trend:
     //  ''+''=0, ''=1, '-'=2
     'ORDER BY ' .
-    '  REPLACE(' .
+    '  q, REPLACE(' .
     '    REPLACE(' .
     '      IF(' .
-    '        LENGTH(TRIM(s.official_rating)=2),' .
-    '        CONCAT(TRIM(s.official_rating),"1"),' .
-    '        s.official_rating),' .
+    '        LENGTH(TRIM(official_rating)=2),' .
+    '        CONCAT(TRIM(official_rating),"1"),' .
+    '        official_rating),' .
     '      "-",2),' .
     '    "+","0"),' .
     ' role, rand() ';
+
+  $qquery =
+    implode(' UNION ALL ',$squery).
+    $sorderby;
+
   guifi_log(GUIFILOG_TRACE,'list_by_zone (suppliers query)',$qquery);
   $pager = pager_query($qquery,50
   //  variable_get('default_nodes_main', 25)
   );
   // $output = '';
+  $sq = null;
+  $ttitlesq = array (
+    1=>t('Listing :role from given zone of :zbase',array(':role'=>$trole,':zbase'=>$zone->title)),
+    2=>t('Listing :role from zones at :zbase',array(':role'=>$trole,':zbase'=>$zone->title)),
+    3=>t('Listing :role from parent zone of :zbase',array(':role'=>$trole,':zbase'=>guifi_get_zone_name($zbase))),
+    4=>t('Listing :role from zones at :zbase',array(':role'=>$trole,':zbase'=>guifi_get_zone_name($zbase))),
+    5=>t('Listing :role from all other parents',array(':role'=>$trole)),
+  );
   while ($s = db_fetch_object($pager)) {
     $supplier = node_load(array('nid' => $s->id));
+    if ($sq != $s->q) {
+      $sq = $s->q;
+      $output .= theme_box(t($ttitlesq[$sq]),'');
+    }
     $output .= node_view($supplier, TRUE, FALSE, TRUE);
   }
   $output .= theme('pager', NULL, variable_get('default_nodes_main', 10));
 
-  drupal_set_breadcrumb(guifi_zone_ariadna($zone->id,'node/%d/suppliers'));
+  drupal_set_breadcrumb(guifi_zone_ariadna($zone->id,'node/%d/'.arg(2)));
+  drupal_set_title(t(':role at :zname',array(':role'=>$trole,':zname'=>$zone->title)));
 //  $output .= theme_pager(NULL, variable_get("guifi_pagelimit", 50));
 //  $node = node_load(array('nid' => $zone->id));
 //  $output .= theme_links(module_invoke_all('link', 'node', $node, FALSE));
