@@ -990,8 +990,9 @@ function budgets_supplier_list_by_zone_filter($parm,$zid,$keys=NULL) {
 //     '#multiple'=>true,
 //     '#size'=>2,
 //     '#default_value'=>$keys['role'][0],
-// //    '#attributes'=> array('class'=>"budgets-zone-form"),
+//  //    '#attributes'=> array('class'=>"budgets-zone-form"),
 //   );
+  $form['filter']['role'] = array('#type'=>hidden,'#value'=>$keys['role'][0]);
   $form['filter']['zone_id'] = array('#type'=>hidden,'#value'=>$zid);
   $form['filter']['title'] = array(
     '#type'=>'textfield',
@@ -1037,19 +1038,20 @@ function budgets_supplier_list_by_zone_filter_submit($form_id, &$form_values) {
 
   guifi_log(GUIFILOG_TRACE,'budgets_supplier_list_by_zone_submit',$sv);
 
-  drupal_goto('node/'.$v['zone_id'].'/suppliers/'.$s);
+  drupal_goto('node/'.$v['zone_id'].'/'.(($v['role'] == 'professional') ? 'suppliers' : 'volunteers').'/'.$s);
 }
 
 function budgets_supplier_list_by_zone($zone,$params = NULL) {
 
   /*
-   * List suppliers by the following criteria:
-   *  0: Zone base (zbase): If zone base or its childs has no suppliers, move zbase up until there
-   *     are suppliers.
-   *     List zone base & zone childs suppliers.
-   *     If zone base has no suppliers, move zbase up until it has.
-   *  1: Zone parent (zparent): If zone parent has no suppliers, move zparent up until it has.
-   *  2: All parents (zallparents). List all suppliers present at the parents.
+   * List suppliers/volunteers by the following criteria:
+   *  1: Given Zone (zbase)
+   *  2: Childs og given zone
+   *  3: Looks for parent that has more suppliers/volunteers to list either from the parent zone
+   *     or its childs.
+   *     List from the parent zone found.
+   *  4: List childs from the zone parent fopund
+   *  5: List from all other parents
    *
    *
    *  */
@@ -1066,10 +1068,10 @@ function budgets_supplier_list_by_zone($zone,$params = NULL) {
   switch(arg(2)){
    case 'suppliers':
     $trole=t('suppliers');
-    $params='role=professional'; break;
+    $params.=',role=professional'; break;
    case 'volunteers':
     $trole=t('volunteers');
-    $params='role=volunteer'; break;
+    $params.=',role=volunteer'; break;
   }
 
   if ($params) {
