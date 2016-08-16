@@ -1053,7 +1053,6 @@ function budgets_supplier_list_by_zone($zone,$params = NULL) {
    *  4: List childs from the zone parent fopund
    *  5: List from all other parents
    *
-   *
    *  */
 
   guifi_log(GUIFILOG_TRACE,'budgets_supplier_list_by_zone (function)',$params);
@@ -1311,11 +1310,11 @@ function budgets_supplier_list_by_zone($zone,$params = NULL) {
   // $output = '';
   $sq = null;
   $ttitlesq = array (
-    1=>t('Listing :role from given zone of :zbase',array(':role'=>$trole,':zbase'=>$zone->title)),
-    2=>t('Listing :role from zones at :zbase',array(':role'=>$trole,':zbase'=>$zone->title)),
-    3=>t('Listing :role from parent zone of :zbase',array(':role'=>$trole,':zbase'=>guifi_get_zone_name($zbase))),
-    4=>t('Listing :role from zones at :zbase',array(':role'=>$trole,':zbase'=>guifi_get_zone_name($zbase))),
-    5=>t('Listing :role from all other parents',array(':role'=>$trole)),
+    1=>t('Listing').' '.$trole.' '.t('from given zone of').' '.$zone->title,
+    2=>t('Listing').' '.$trole.' '.t('from zones at').' '.$zone->title,
+    3=>t('Listing').' '.$trole.' '.t('from parent zone of').' '.guifi_get_zone_name($zbase),
+    4=>t('Listing').' '.$trole.' '.t('from zones at').' '.guifi_get_zone_name($zbase),
+    5=>t('Listing').' '.$trole.' '.t('from all other parents'),
   );
   while ($s = db_fetch_object($pager)) {
     $supplier = node_load(array('nid' => $s->id));
