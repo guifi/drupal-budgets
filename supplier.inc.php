@@ -1079,7 +1079,7 @@ function budgets_supplier_list_by_zone($zone,$params = NULL) {
     $zone->id=$zroot;
   }
 
-  if ((empty(arg(3))) or (arg(3)=='certified')) {
+  if ((arg(3)==null) or (arg(3)=='certified')) {
     $trole=t('verified suppliers');
     $params.=',role=professional';
   }
