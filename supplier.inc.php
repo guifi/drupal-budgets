@@ -227,15 +227,19 @@ function budgets_supplier_form(&$node,&$param) {
           t('date').'</th><th>'.
           t('guifi.net certificate').'</th></tr>';
       if ($count == $totalv)
-  	    $suffix = '</table></div>';
+  	    $suffix =
+   	       '<tr><td colspan="2"><small>'.
+   	           t('Only guifi.net officers are authorized to edit this fields')
+   	       .'</small></td></tr></table></div>';
       $form['certs']['guifi_certs'][$key] = array(
-        '#type' => 'textfield',
-        //'#title' => t($cert),
-        '#size' => 10,
+        '#type'          => 'textfield',
+        //'#title'         => t($cert),
+        '#size'          => 10,
         '#default_value' => $node->certs['guifi_certs'][$key],
-        '#attributes'=>array('class'=>"cert-field"),
-        '#prefix' => $prefix.'<tr><td>',
-        '#suffix' => '</td><td>'.$cert.'</td>'.$suffix,
+        '#attributes'    =>array('class'=>"cert-field"),
+        '#prefix'        => $prefix.'<tr><td>',
+        '#suffix'        => '</td><td>'.$cert.'</td></tr>'.$suffix,
+        '#disabled'      => !user_access('official rating'),
       );
       $count++;
     }
@@ -761,7 +765,8 @@ function budgets_supplier_get_name($id){
 function budgets_supplier_save($node) {
   global $user;
 
-  guifi_log(GUIFILOG_TRACE,'function budgets_save()',$node->ack);
+//   guifi_log(GUIFILOG_TRACE,'function budgets_save()',$node->ack);
+//   guifi_log(GUIFILOG_TRACE,'function budgets_save()',$node->certs);
 
   foreach ($node->caps as $cap1 => $cap2) {
     $elements = array();
@@ -772,7 +777,7 @@ function budgets_supplier_save($node) {
     $node->$cap1 = implode(',',$elements);
   };
 
-  foreach ($node->certs as $cap1 => $cap2) {
+  if (user_access('official rating')) foreach ($node->certs as $cap1 => $cap2) {
     $elements = array();
     foreach ($cap2 as $key => $value) {
       ($value) ? $elements[] = $key.'='.$value: NULL;
@@ -846,16 +851,17 @@ function budgets_supplier_load_explode_caps($fields,&$node) {
       foreach ($elements as $value)
         $node->caps[$field][strstr($value,'=',true)]=substr(strstr($value,'='),1);
 //      guifi_log(GUIFILOG_BASIC,'function budgets_save 3()',$node->caps);
+      $node->caps[$field] = array_intersect_key($node->caps[$field],guifi_types($field));
     };
 };
 
 function budgets_supplier_load_explode_certs($fields,&$node) {
     foreach ($fields as $field) if ($node->$field != '') {
       $elements = explode(',',$node->$field);
-//      guifi_log(GUIFILOG_BASIC,'function budgets_save 2()',$elements);
+      // guifi_log(GUIFILOG_TRACE,'function supplier certs explode',$elements);
       foreach ($elements as $value)
         $node->certs[$field][strstr($value,'=',true)]=substr(strstr($value,'='),1);
-//      guifi_log(GUIFILOG_BASIC,'function budgets_save 3()',$node->certs);
+      $node->certs[$field] = array_intersect_key($node->certs[$field],guifi_types($field));
     };
 };
 
@@ -922,6 +928,7 @@ function budgets_supplier_list_by_zone_filter($parm,$zid,$keys=NULL) {
   $k = $keys;
   unset($k['role']);
   unset($k['title']);
+  unset($k['guifi_certs']);
 
   $form['filter'] = array(
     '#title'=> t('Filter').' '.$keyword,
@@ -948,6 +955,7 @@ function budgets_supplier_list_by_zone_filter($parm,$zid,$keys=NULL) {
     '#default_value'=> (is_array($keys['tp_certs'])) ? $keys['tp_certs'] : array(),
 //    '#attributes'=> array('class'=>"budgets-zone-form"),
   );
+  if ((arg(3)=='all') or (arg(3)=='volunteers'))
   $form['filter']['certscaps']['guifi_certs'] = array(
     '#type'=>'checkboxes',
     '#title'=>t('guifi.net certificate'),
@@ -1038,13 +1046,19 @@ function budgets_supplier_list_by_zone_filter_submit($form_id, &$form_values) {
 
   guifi_log(GUIFILOG_TRACE,'budgets_supplier_list_by_zone_submit',$sv);
 
-  drupal_goto('node/'.$v['zone_id'].'/'.(($v['role'] == 'professional') ? 'suppliers' : 'volunteers').'/'.$s);
+  $rt = arg(2);
+  if (!empty(arg(3)))
+     $rt .= '/'.arg(3);
+  $rt.='/';
+
+  drupal_goto('node/'.$v['zone_id'].'/'.$rt.$s);
 }
 
 function budgets_supplier_list_by_zone($zone,$params = NULL) {
 
   /*
    * List suppliers/volunteers by the following criteria:
+   *  0: List all suppliers from root zone
    *  1: Given Zone (zbase)
    *  2: Childs og given zone
    *  3: Looks for parent that has more suppliers/volunteers to list either from the parent zone
@@ -1064,13 +1078,16 @@ function budgets_supplier_list_by_zone($zone,$params = NULL) {
     $zone->id=$zroot;
   }
 
-  switch(arg(2)){
-   case 'suppliers':
-    $trole=t('suppliers');
-    $params.=',role=professional'; break;
-   case 'volunteers':
+  if ((empty(arg(3))) or (arg(3)=='certified')) {
+    $trole=t('verified suppliers');
+    $params.=',role=professional';
+  }
+  if (arg(3)=='volunteers') {
     $trole=t('volunteers');
-    $params.=',role=volunteer'; break;
+    $params.=',role=volunteer';
+  }
+  if (arg(3)=='all') {
+    $trole=t('all suppliers & volunteers');
   }
 
   if ($params) {
@@ -1097,6 +1114,8 @@ function budgets_supplier_list_by_zone($zone,$params = NULL) {
   $swherej = $swhere.
     's.id=n.nid ' .
     ' AND n.status=1 ';
+  if ((empty(arg(3))) or (arg(3)=='certified'))
+    $swherej.= 'AND guifi_certs like "%AEconomics%" ';
 
   $svars = array();
   foreach ($vars as $k => $v) {
@@ -1121,8 +1140,11 @@ function budgets_supplier_list_by_zone($zone,$params = NULL) {
   $parents = array_diff(guifi_zone_get_parents($zone->id),array($zone->id,0,$zroot));
 
   if ($zone->id==$zroot) {
-    // listing root zone: don't have to list the parents or childs'
-    $where = ''; //list all
+    // listing root zone: listing all suppliers'
+    $squery[] =
+      $sselect. ", '0' q ".
+       $sfromj.$swherej;
+       $swhere.' (s.id IN ('.implode(',',$azone).')) ';
   } else {
 
     $azone = array();   // Given zone
@@ -1138,7 +1160,7 @@ function budgets_supplier_list_by_zone($zone,$params = NULL) {
     $sqry = 'SELECT s.id '.$sfromj.$swherej.
  	      " AND (s.zone_id = ".$zone->id." or CONCAT(',',s.zones,',') LIKE '%,".$zone->id.",%') ";
 
-    guifi_log(GUIFILOG_TRACE,'sqry zoneid'.$sqry);
+    guifi_log(GUIFILOG_TRACE,'sqry zoneid '.$sqry);
 
     $qry = db_query($sqry);
     while ($ret = db_fetch_object($qry)) {
@@ -1275,9 +1297,6 @@ function budgets_supplier_list_by_zone($zone,$params = NULL) {
       $sqry.=')';
       $squery[] = $sqry;
     }
-
-
-
   }  // listing suppliers because zone wasn't root
 
   guifi_log(GUIFILOG_TRACE,'list_suppliers_by_zone (zones)',$where);
@@ -1310,6 +1329,7 @@ function budgets_supplier_list_by_zone($zone,$params = NULL) {
   // $output = '';
   $sq = null;
   $ttitlesq = array (
+    0=>t('Listing from all').' '.$trole,
     1=>t('Listing').' '.$trole.' '.t('from given zone of').' '.$zone->title,
     2=>t('Listing').' '.$trole.' '.t('from zones at').' '.$zone->title,
     3=>t('Listing').' '.$trole.' '.t('from parent zone of').' '.guifi_get_zone_name($zbase),
@@ -1326,7 +1346,11 @@ function budgets_supplier_list_by_zone($zone,$params = NULL) {
   }
   $output .= theme('pager', NULL, variable_get('default_nodes_main', 10));
 
-  drupal_set_breadcrumb(guifi_zone_ariadna($zone->id,'node/%d/'.arg(2)));
+  $rt = arg(2);
+  if (!empty(arg(3)))
+     $rt .= '/'.arg(3);
+
+  drupal_set_breadcrumb(guifi_zone_ariadna($zone->id,'node/%d/'.$rt));
   drupal_set_title(t(':role at :zname',array(':role'=>$trole,':zname'=>$zone->title)));
 //  $output .= theme_pager(NULL, variable_get("guifi_pagelimit", 50));
 //  $node = node_load(array('nid' => $zone->id));
@@ -1355,15 +1379,15 @@ function budgets_supplier_view($node, $teaser = FALSE, $page = FALSE) {
       if (!empty($node->logo))
         $img = '<img class="supplier-logo" src="/'.$node->logo.'" width="150">';
         if (!empty($node->web_url))
-          $img = '<a href="'.$node->web_url.'">'.$img.'</a>';
-        $body = "<div class=\"supplier-rated\">".$img.$body."</div>";
+          $img = guifi_url($node->web_url,$img);
+         $body = "<div class=\"supplier-rated\">".$img.$body."</div>";
     }
     $node->content['body']['#value'] = $body;
   }
 
   if ($node->rated)
     $node->content['body']['#value'] =
-      '<p class="rating" >'.$node->official_rating.'</p>'.
+      '<br><div><p class="rating" >'.$node->official_rating.'</p></div>'.
       $node->content['body']['#value'];
 
 
@@ -1379,7 +1403,7 @@ function budgets_supplier_view($node, $teaser = FALSE, $page = FALSE) {
     if (!empty($node->logo))
         $img = '<img class="supplier-logo" src="/'.$node->logo.'" width="200">';
         if (!empty($node->web_url))
-          $img = '<a href="'.$node->web_url.'">'.$img.'</a>';
+          $img = guifi_url($node->web_url,$img);
 
     // Quotes
     //to-do
@@ -1462,11 +1486,12 @@ function budgets_supplier_get_suppliername($id) {
 function theme_budgets_supplier_header($node, $teaser) {
 
   $output = '<div class="suppliers-help-rating">' .
-  		'<small><a href="/comment/reply/'.$node->nid.'#comment-form">'.t('User rating: give your feedback & vote!').'</a></small> - '.t('Zone(s)').': ';
+  		'<small><a href="/comment/reply/'.$node->nid.'#comment-form">'.
+      t('User rating: give your feedback & vote!').'</a></small> - '.t('Zone(s)').':<small> ';
   foreach ($node->zones as $k=>$value) {
     $output .= ' > '.guifi_zone_l($value);
   }
-  $output .= '</div><br>';
+  $output .= '</small><br></div>&nbsp;';
 
   return $output;
 }
