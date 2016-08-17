@@ -1047,7 +1047,8 @@ function budgets_supplier_list_by_zone_filter_submit($form_id, &$form_values) {
   guifi_log(GUIFILOG_TRACE,'budgets_supplier_list_by_zone_submit',$sv);
 
   $rt = arg(2);
-  if (!empty(arg(3)))
+  $rt3 = arg(3);
+  if (!empty($rt3))
      $rt .= '/'.arg(3);
   $rt.='/';
 
@@ -1329,7 +1330,7 @@ function budgets_supplier_list_by_zone($zone,$params = NULL) {
   // $output = '';
   $sq = null;
   $ttitlesq = array (
-    0=>t('Listing from all').' '.$trole,
+    0=>t('Listing').' '.$trole.' '.t('from all zones'),
     1=>t('Listing').' '.$trole.' '.t('from given zone of').' '.$zone->title,
     2=>t('Listing').' '.$trole.' '.t('from zones at').' '.$zone->title,
     3=>t('Listing').' '.$trole.' '.t('from parent zone of').' '.guifi_get_zone_name($zbase),
@@ -1347,8 +1348,9 @@ function budgets_supplier_list_by_zone($zone,$params = NULL) {
   $output .= theme('pager', NULL, variable_get('default_nodes_main', 10));
 
   $rt = arg(2);
-  if (!empty(arg(3)))
-     $rt .= '/'.arg(3);
+  $rt3 = arg(3);
+  if (!empty($rt3))
+     $rt .= '/'.$rt3;
 
   drupal_set_breadcrumb(guifi_zone_ariadna($zone->id,'node/%d/'.$rt));
   drupal_set_title(t(':role at :zname',array(':role'=>$trole,':zname'=>$zone->title)));
