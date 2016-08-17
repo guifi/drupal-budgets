@@ -1115,7 +1115,7 @@ function budgets_supplier_list_by_zone($zone,$params = NULL) {
   $swherej = $swhere.
     's.id=n.nid ' .
     ' AND n.status=1 ';
-  if ((empty(arg(3))) or (arg(3)=='certified'))
+  if ((arg(3)==null) or (arg(3)=='certified'))
     $swherej.= 'AND guifi_certs like "%AEconomics%" ';
 
   $svars = array();
