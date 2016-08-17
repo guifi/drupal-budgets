@@ -928,7 +928,8 @@ function budgets_supplier_list_by_zone_filter($parm,$zid,$keys=NULL) {
   $k = $keys;
   unset($k['role']);
   unset($k['title']);
-  unset($k['guifi_certs']);
+  if (!((arg(3)=='all') or (arg(3)=='volunteers')))
+    unset($k['guifi_certs']);
 
   $form['filter'] = array(
     '#title'=> t('Filter').' '.$keyword,
