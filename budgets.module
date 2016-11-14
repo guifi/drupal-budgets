@@ -3298,8 +3298,10 @@ function budgets_batch_form_confirm($form_id, &$form_values) {
     if (empty($budget->budget_type))
       $budget->budget_type = 'none';
     $budget->body = $info.'<br>'.$budget->body;
-    foreach ($budget->items as $k => $item)
+    foreach ($budget->items as $k => $item) {
       $budget->items[$k]['new'] = true;
+      $budget->items[$k]['weight'] = $k;
+    }
 
     node_save($budget);
   }
@@ -3401,7 +3403,7 @@ function budgets_batch_form(&$form_state, $from = NULL, $provider) {
     'node_id'=>t('Node'),
     'budget_type'=>t('Type'),
     'priority'=>t('Priority'),
-    'tiquet_link'=>t('Ticket'),
+    'ticket_link'=>t('Ticket'),
   );
   $fieldsItem=array(
     'key'=>t('Key'),
@@ -3560,6 +3562,7 @@ function budgets_batch_upload($form_id, &$form_values) {
       $row=0;
       while (($data = fgetcsv($fcsv,4096,$fupload['delimiter'])) !== FALSE) {
 
+        $data = array_map("utf8_encode",$data);
         guifi_log(GUIFILOG_TRACE, 'data',$data);
         $row++;
         if ($row <= $fupload['skip'])
@@ -3581,9 +3584,18 @@ function budgets_batch_upload($form_id, &$form_values) {
         $budget['body'] = $data[$fupload['headerbody']];
         $budget['accdate'] = $data[$fupload['headerdate']];
         $budget['node_id'] = $data[$fupload['headernode_id']];
-        $budget['budget_type'] = $data[$fupload['headertype']];
+        $budget['budget_type'] = $data[$fupload['headerbudget_type']];
         $budget['priority'] = $data[$fupload['headerpriority']];
-        $budget['ticket_link'] = $data[$fupload['headerticket']];
+        $budget['ticket_link'] = $data[$fupload['headerticket_link']];
+
+        if (is_numeric($budget['accdate']))
+         $budget['accdate'] = date("Y-m-d",strtotime("1899-12-30 +".$budget['accdate']." day"));
+        else if (strtotime($budget['accdate']))
+         $budget['accdate'] = date('Y-m-d',strtotime($budget['accdate']));
+        else if (date_create_from_format('d/m/Y',$budget['accdate']))
+         $budget['accdate'] = date_format(date_create_from_format('d/m/Y',$budget['accdate']),'Y-m-d');
+        else if (date_create_from_format('d-m-Y',$budget['accdate']))
+         $budget['accdate'] = date_format(date_create_from_format('d-m-Y',$budget['accdate']),'Y-m-d');
 
         guifi_log(GUIFILOG_TRACE, 'budget', $budget);
 
@@ -3636,6 +3648,7 @@ function budgets_batch_upload($form_id, &$form_values) {
       $row=0;
       while (($data = fgetcsv($fcsv,4096,$fupload['delimiter'])) !== FALSE) {
 
+        $data = array_map("utf8_encode",$data);
         guifi_log(GUIFILOG_TRACE, 'data',$data);
         $row++;
         if ($row <= $fupload['skip'])
