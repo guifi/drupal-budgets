@@ -3227,38 +3227,86 @@ function budgets_batch_form_review(&$form_state, $from = NULL, $provider, $tmpId
   }
 
   if (!isset($form_state[post][Upload]))
-    drupal_set_message(t('Review the %budgets budgets to be loaded<br>'.
-      'Once reviewed, to confirm the load, click to the button below',array('%budgets'=>count($budgets))),'info');
+    drupal_set_message(t('Reviewing the %budgets budgets to be loaded.',
+      array('%budgets'=>count($budgets))),'info');
 
-  $minAccdate = time();
-  $maxAccdate = 0;
+  // Validations & informative output
+
+  $errors = array();
+  $output = array();
+
   foreach ($budgets as $key => $budget) {
     if (!isset($form_state[post][Upload]))
-      drupal_set_message(theme_budgets_batch($budget),'info');
-    list($y,$m,$d) = explode('-',$budget[accdate]);
-    $accdate = mktime(0,0,0,$m,$d,$y);
-    if ($accdate > $maxAccdate)
-      $maxAccdate = $accdate;
-    if ($accdate < $minAccdate)
-      $minAccdate = $accdate;
+      $msg = theme_budgets_batch($budget);
+
+    if (strtotime($budget['accdate']) < (time() - (5 * 365 * 24 * 60 * 60))) {
+     drupal_set_message( t('Date %date from %k - %title is too old.',
+      array('%date'=>$budget['accdate'],'%k'=>$budget['key'],'%title'=>$budget['title'])),'error');
+     $errors[] .= $msg;
+     drupal_set_message(t("Date can't be older than 5 years and Valid date formats are: YYYY-MM-DD, YYYY/MM/DD, DD/MM/YYYY, DD-MM-YYYY, and excel/calc number"),
+       'error',false);
+    }
+    if (strtotime($budget['accdate']) > (time() + ( 24 * 60 * 60))) {
+     drupal_set_message( t('Date %date from %k - %title is in the future.',
+      array('%date'=>$budget['accdate'],'%k'=>$budget['key'],'%title'=>$budget['title'])) ,'error');
+     $errors[] = $msg;
+     drupal_set_message(t("Date can't be in the future and Valid date formats are: YYYY-MM-DD, YYYY/MM/DD, DD/MM/YYYY, DD-MM-YYYY, and excel/calc number"),
+       'error',false);
+    }
+
+    $types = guifi_types('budget_type');
+    if (in_array($budget['budget_type'],array_keys($types)) == FALSE) {
+     drupal_set_message( t('Budget type %type from %k - %title is not valid.',
+      array('%type'=>$budget['budget_type'],'%k'=>$budget['key'],'%title'=>$budget['title'])) ,'error');
+     drupal_set_message(t('Valid types are: %keys <br />Corresponding to: %values',
+       array('%keys'=>implode(', ',array_keys($types)),'%values'=>implode(', ',$types))),'error',false);
+
+     $errors[] = $msg;
+
+    }
+
+
+
+    $output[] = $msg;
   }
 
-  $form['upload'] = array('#type' => 'submit', '#value' => t('Confirm'),'#name'=>'Upload',
-    '#executes_submit_callback' => TRUE,
-    '#submit' => array('budgets_batch_form_confirm'),
-    );
+  guifi_log(GUIFILOG_FULL, 'function budgets_batch_form_review(errors)',$errors);
 
-  $form['tmpId'] = array('#type'=>'hidden','#value'=>$tmpId);
+  if (empty($errors)) {
+   drupal_set_message(t('Once reviewed, press the button below to confirm and save.'),'info');
+   foreach($output as $msg) {
 
+     drupal_set_message($msg,'info');
+
+
+     $form['upload'] = array('#type' => 'submit', '#value' => t('Confirm'),'#name'=>'Upload',
+       '#executes_submit_callback' => TRUE,
+       '#submit' => array('budgets_batch_form_confirm'),
+      );
+
+      $form['tmpId'] = array('#type'=>'hidden','#value'=>$tmpId);
+
+      $btypes=guifi_types('budget_type');
+      $kbtypes = array_keys($btypes);
+      $parms='details=detailed,types='.implode('|',$kbtypes).',status=Preparation,from='.
+      date("Y|m|d",$minAccdate).',to='.date("Y|m|d",$maxAccdate).
+      ',orderby=accdate,url=budgets';
+
+      $form['#redirect'] = 'node/'.$provider->id.'/budgets/'.$parms;
+    }
+  } else {
+   drupal_set_message(t('Errors detected, please see messages below, and go back.'),'info');
+   $form['back']['#markup'] = "<input type='button' class='button-user' value='Back' onclick='window.history.go(-2);return;true;'/>";
+
+//   foreach ($errors as $msg)
+//    drupal_set_message($msg,'error');
+   // $form['upload'] = array('#type' => 'submit', '#value' => t('Back'),'#name'=>'Back',
+   //   '#executes_submit_callback' => FALSE,
+   //   '#submit' => array('budgets_batch_form'),
+   //   );
+
+  }
   $form['#attributes']['enctype'] = 'multipart/form-data';
-
-  $btypes=guifi_types('budget_type');
-  $kbtypes = array_keys($btypes);
-  $parms='details=detailed,types='.implode('|',$kbtypes).',status=Preparation,from='.
-    date("Y|m|d",$minAccdate).',to='.date("Y|m|d",$maxAccdate).
-    ',orderby=accdate,url=budgets';
-
-  $form['#redirect'] = 'node/'.$provider->id.'/budgets/'.$parms;
 
   return $form;
 }
@@ -3355,7 +3403,7 @@ function budgets_batch_form(&$form_state, $from = NULL, $provider) {
   $form['format'] = array(
     '#type'=>'fieldset',
     '#title'=>t('File format'),
-    '#description'=>t('Describe the mcapping between the source file and target fields'),
+    '#description'=>t('Describe the mapping between the source file and target fields'),
     '#collapsible'=>true,
     '#collapsed'=>false,
     '#tree'=>false,
@@ -3366,15 +3414,15 @@ function budgets_batch_form(&$form_state, $from = NULL, $provider) {
     '#type'=> 'select',
     '#title'=>t('Delimiter'),
     '#description'=>t('Field delimiter character'),
-    '#default_value'=>chr(9),
+    '#default_value'=>';',
     '#options'=> array(
-      ';'=>'semi-colon (;)',
       ','=>'comma (,))',
       ':'=>'colon (:)',
       '.'=>'dot (,)',
       '|'=>'pipe (|)',
       '·'=>'middle-dot (·)',
       chr(9)=>'tab',
+      ';'=>'semi-colon (;)',
     ),
   );
   $form['format']['skip'] = array(
@@ -3383,13 +3431,13 @@ function budgets_batch_form(&$form_state, $from = NULL, $provider) {
     '#maxlength'=>10,
     '#title'=>t('Skip'),
     '#description'=>t('Lines from the beginning'),
-    '#default_value'=>'0',
+    '#default_value'=>'1',
   );
   $form['format']['inBody'] = array(
     '#type'=> 'checkbox',
     '#title'=>t('Items in Bdoy'),
     '#description'=>t('Load items at the budget body instead of items'),
-    '#default_value'=> true,
+    '#default_value'=> false,
   );
 
   /*
@@ -3550,7 +3598,7 @@ function budgets_batch_upload($form_id, &$form_values) {
     $file = file_save_upload('csv_file_header', array() , $dir);
     if($file){
       drupal_set_message(t('Uploading headers from %name',array('%name'=>$name)));
-      guifi_log(GUIFILOG_TRACE, 'file',$file->filepath);
+      guifi_log(GUIFILOG_FULL, 'file',$file->filepath);
 
       /*
        * Parsing the uploaded file
@@ -3627,6 +3675,7 @@ function budgets_batch_upload($form_id, &$form_values) {
   # $form_state, but rather in $FILES, which requires more checking
   if (isset($_FILES) && !empty($_FILES) && $_FILES['files']['size']['csv_file_items'] != 0) {
 
+    $nitems = 0;
     #this structure is kind of wacky
     $name = $_FILES['files']['name']['csv_file_items'];
     $size = $_FILES['files']['size']['csv_file_items'];
@@ -3677,8 +3726,10 @@ function budgets_batch_upload($form_id, &$form_values) {
             $budgets[$item[key]][body] .= '<br>'.$item[description];
           if ($item[comments])
             $budgets[$item[key]][body] .= '<br>'.$item[comments];
-        } else
+        } else {
           $budgets[$item['key']]['items'][] = $item;
+          $nitems++;
+        }
 
       }
       fclose($fcsv);
@@ -3704,8 +3755,8 @@ function budgets_batch_upload($form_id, &$form_values) {
   fclose($fp);
 
   if ($ret)
-    drupal_set_message(t('Going to load %budgets budgets with %bytes bytes',
-        array('%budgets'=>count($budgets),'%bytes'=>$ret)));
+    drupal_set_message(t('Going to load %budgets budgets with %items items and %bytes bytes',
+        array('%budgets'=>count($budgets),'%items'=>$nitems,'%bytes'=>$ret)));
 
 }
 
