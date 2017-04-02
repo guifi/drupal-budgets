@@ -902,6 +902,8 @@ function budgets_load($node) {
 
   if (is_null($node->notification))
     $node->notification = $user->mail;
+
+  guifi_log(GUIFILOG_TRACE, 'function budgets_load', $node);
   return $node;
 }
 
@@ -2281,7 +2283,10 @@ function budgets_validate(&$node) {
 
 function budgets_save(&$node) {
   global $user;
+  global $language;
 
+  guifi_log(GUIFILOG_TRACE,'language()',$language->language);
+  guifi_log(GUIFILOG_TRACE,'comments()',$node->comment);
   guifi_log(GUIFILOG_TRACE,'function budgets_save()',$node);
 
   if ($node->node_id>0)
@@ -3351,6 +3356,11 @@ function budgets_batch_form_confirm($form_id, &$form_values) {
       $budget->items[$k]['weight'] = $k;
     }
 
+    global $language;
+
+    $budget->language = $language->language;
+    $budget->comment  = 2;
+
     node_save($budget);
   }
   return $form;
@@ -3435,8 +3445,8 @@ function budgets_batch_form(&$form_state, $from = NULL, $provider) {
   );
   $form['format']['inBody'] = array(
     '#type'=> 'checkbox',
-    '#title'=>t('Items in Bdoy'),
-    '#description'=>t('Load items at the budget body instead of items'),
+    '#title'=>t('Items in bdoy'),
+    '#description'=>t('Load items at the budget body description instead of as items'),
     '#default_value'=> false,
   );
 
@@ -3628,7 +3638,7 @@ function budgets_batch_upload($form_id, &$form_values) {
         $budget['comment']=1;
         $budget['supplier_id'] = $fupload['supplier'];
         $budget['key'] = $data[$fupload['headerkey']];
-        $budget['title'] = $data[$fupload['headertitle']];
+        $budget['title'] = substr($data[$fupload['headertitle']],0,127);
         $budget['body'] = $data[$fupload['headerbody']];
         $budget['accdate'] = $data[$fupload['headerdate']];
         $budget['node_id'] = $data[$fupload['headernode_id']];
@@ -4040,6 +4050,8 @@ function theme_budgets_header($node, $teaser) {
     if (isset($sup)) {
       $SContact .= ' - '.l($sup->id.'-'.$sup->title,'node/'.$sup->id);
     }
+
+  guifi_log(GUIFILOG_TRACE, 'SLocation', $SLocation);
 
   $node->expires = mktime(0, 0, 0,
     $node->arrexpires['month'],
