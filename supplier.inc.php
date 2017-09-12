@@ -621,7 +621,7 @@ function budgets_supplier_validate(&$node) {
   	$zone=explode('-',$zone_str);
 //    form_set_error('zones]['.$k,t('%zone is not a valid zone',array('%zone'=>$zone_str)));
     if ($zone_str!='') {
-      $qzone = db_fetch_object(db_query('SELECT id FROM {guifi_zone} WHERE id=%d',$zone[0]));
+      $qzone = db_query('SELECT id FROM {guifi_zone} WHERE id = :id', array(':id' => $zone[0]))->fetchObject();
       if (!($qzone->id))
         form_set_error('zones]['.$k,t('%zone is not a valid zone',array('%zone'=>$zone[0])));
     }
@@ -711,7 +711,7 @@ function budgets_supplier_access($op, $node, $account = NULL) {
     $k = $node;
   else
     $k = $node->id;
-  $node = node_load(array('nid' => $k));
+  $node = node_load($k);
 
   switch ($op) {
     case 'create':
@@ -735,7 +735,7 @@ function budgets_supplier_access($op, $node, $account = NULL) {
 function budgets_supplier_get_supplier_id($uid) {
   guifi_log(GUIFILOG_TRACE, 'function budgets_supplier_get_supplier_id()', $uid);
 
-  $sid = db_fetch_object(db_query("SELECT s.id FROM {supplier} s, {node} n WHERE n.nid=s.id AND n.uid = %d",$uid));
+  $sid = db_query("SELECT s.id FROM {supplier} s, {node} n WHERE n.nid=s.id AND n.uid = :uid", array(':uid' => $uid))->fetchObject();
   return $sid->id;
 }
 
@@ -746,19 +746,19 @@ function budgets_supplier_get_name($id){
 
   $qry = db_query(
     'SELECT ' .
-    '  CONCAT(id, "-", title) str '.
+    '  CONCAT(id, \'-\', title) str '.
     'FROM {supplier} ' .
     'WHERE ' .
-    '  (CONCAT(id, "-", upper(title)) ' .
-    '    LIKE "%'.$string.'%") ' .
+    '  (CONCAT(id, \'-\', upper(title)) ' .
+    '    LIKE \'%'.$string.'%\') ' .
     'ORDER BY title');
 
   $c = 0;
-  while (($value = db_fetch_array($qry)) and ($c < 50)) {
+  while (($value = $qry->fetchAssoc()) and ($c < 50)) {
     $c++;
     $matches[$value['str']] = $value['str'];
   }
-  print drupal_to_js($matches);
+  print drupal_json_encode($matches);
   exit();
 }
 
@@ -866,57 +866,52 @@ function budgets_supplier_load_explode_certs($fields,&$node) {
 };
 
 
-function budgets_supplier_load($node) {
+function budgets_supplier_load($nodes) {
 
-  if (is_object($node))
-    $k = $node->nid;
-  else
-    $k = $node;
+  foreach ($nodes as $node) {
+    $supplier = db_query("SELECT * FROM {supplier} WHERE id = :id", array(':id' => $node->id))->fetchObject();
+    foreach ($supplier as $k => $value) {
 
-  // $node->body=strip_tags($node->body,'<br>');
-
-  $node = db_fetch_object(
-    db_query("SELECT * FROM {supplier} WHERE id = '%d'", $k));
-
-  if (is_null($node->id))
+  if (is_null($supplier->id))
     return FALSE;
 
-  $node->certs['tp_certs'] = array();
-  $node->certs['guifi_certs'] = array();
-  $node->caps['caps_services'] = array();
-  $node->caps['caps_network'] = array();
-  $node->caps['caps_project'] = array();
+  $nodes[$node->id]->certs['tp_certs'] = array();
+  $nodes[$node->id]->certs['guifi_certs'] = array();
+  $nodes[$node->id]->caps['caps_services'] = array();
+  $nodes[$node->id]->caps['caps_network'] = array();
+  $nodes[$node->id]->caps['caps_project'] = array();
 
   budgets_supplier_load_explode_certs(
     array(
       'tp_certs',
       'guifi_certs',
       ),
-      $node);
+      $supplier);
   budgets_supplier_load_explode_caps(
     array(
       'caps_services',
       'caps_network',
       'caps_project'
       ),
-      $node);
+      $supplier);
 
-  $node->zones=explode(',',$node->zones);
+  $nodes[$node->id]->zones = explode(',',$supplier->zones);
 
-  $node->sr_commitment = substr($node->self_rating,0,1);
-  $node->sr_experience = substr($node->self_rating,1,1);
-  $node->or_commitment = substr($node->official_rating,0,1);
-  $node->or_experience = substr($node->official_rating,1,1);
-  $node->or_trend = substr($node->official_rating,2,1);
+  $nodes[$node->id]->sr_commitment = substr($supplier->self_rating,0,1);
+  $nodes[$node->id]->sr_experience = substr($supplier->self_rating,1,1);
+  $nodes[$node->id]->or_commitment = substr($supplier->official_rating,0,1);
+  $nodes[$node->id]->or_experience = substr($supplier->official_rating,1,1);
+  $nodes[$node->id]->or_trend = substr($supplier->official_rating,2,1);
 
-  $node->accounting_urls = unserialize($node->accounting_urls);
+  $nodes[$node->id]->accounting_urls = unserialize($supplier->accounting_urls);
 
   if ($node->official_rating=='~~')
-    $node->rated=FALSE;
+    $nodes[$node->id]->rated=FALSE;
   else
-    $node->rated=TRUE;
-
-  return $node;
+    $nodes[$node->id]->rated=TRUE;
+  }
+  }
+  return $nodes;
 }
 
 function budgets_supplier_list_by_zone_filter($parm,$zid,$keys=NULL) {
@@ -1338,8 +1333,8 @@ function budgets_supplier_list_by_zone($zone,$params = NULL) {
     4=>t('Listing').' '.$trole.' '.t('from zones at').' '.guifi_get_zone_name($zbase),
     5=>t('Listing').' '.$trole.' '.t('from all other parents'),
   );
-  while ($s = db_fetch_object($pager)) {
-    $supplier = node_load(array('nid' => $s->id));
+  while ($s = $pager->fetchObject()) {
+    $supplier = node_load($s->id);
     if ($sq != $s->q) {
       $sq = $s->q;
       $output .= theme_box(t($ttitlesq[$sq]),'');
@@ -1366,7 +1361,7 @@ function budgets_supplier_view($node, $teaser = FALSE, $page = FALSE) {
   global $user;
 
   if (!isset($node->nid))
-    $node = node_load(array('nid' => $node->id));
+    $node = node_load($node->id);
   if ($node->sticky)
     $node->sticky=0;
 
@@ -1481,7 +1476,7 @@ function budgets_supplier_view($node, $teaser = FALSE, $page = FALSE) {
 }
 
 function budgets_supplier_get_suppliername($id) {
-  $node = db_fetch_object(db_query("SELECT s.title name FROM {supplier} s WHERE s.id=%d",$id));
+  $node = db_query("SELECT s.title name FROM {supplier} s WHERE s.id = :id", array(':id' => $id))->fetchObject();
   return $node->name;
 //  return guifi_to_7bits($node->name);
 }
@@ -1681,8 +1676,8 @@ function budgets_supplier_list_budgets_by_supplier($supplier,$params=null) {
   $subtotals = array();
   $time_subtotals = array();
 
-  while ($s = db_fetch_object($query)) {
-    $budget = node_load(array('nid' => $s->id));
+  while ($s = $query->fetchObject()) {
+    $budget = node_load($s->id);
     $subtotals[$budget->supplier_id] += $budget->total;
     if (is_null($s->accdate))
       $tdate=$budget->expires;
@@ -1726,7 +1721,7 @@ function budgets_supplier_fundings($supplier,$type, $pager = 50) {
   );
   $output = '';
   $rows = array();
-  while ($s = db_fetch_object($pager)) {
+  while ($s = $pager->fetchObject()) {
     guifi_log(GUIFILOG_TRACE,'budgets_supplier_fundings (row)',$s);
     switch ($s->subject_type) {
       case 'location':
@@ -1780,7 +1775,7 @@ function budgets_supplier_sla($supplier,$type, $pager = 50) {
   );
   $output = '';
   $rows = array();
-  while ($s = db_fetch_object($pager)) {
+  while ($s = $pager->fetchObject()) {
     guifi_log(GUIFILOG_TRACE,'budgets_supplier_sla (row)',$s);
     switch ($s->subject_type) {
       case 'location':

@@ -219,7 +219,7 @@ function budgets_quote_form(&$node,&$param) {
       'SELECT id, title ' .
       'FROM {supplier} ' .
       'ORDER BY title');
-    while ($sup = db_fetch_object($qsup)) {
+    while ($sup = $qsup->fetchObject()) {
       if (!user_access('administer suppliers')) {
         if (budgets_supplier_access('update',$sup->id))
           $suppliers[$sup->id] = $sup->title;
@@ -400,16 +400,16 @@ function budgets_quote_validate($node, &$form) {
       $sql = sprintf('SELECT count(partno) partno ' .
                      'FROM {supplier_quote} ' .
                      'WHERE partno IS NOT NULL ' .
-                     '  AND partno ="%s" ' .
-                     '  AND id != %d',
-             $node->partno,$node->nid);
+                     '  AND partno = :partno ' .
+                     '  AND id != :id',
+             array(':partno' => $node->partno, ':id' => $node->nid));
     else
       $sql = sprintf('SELECT count(partno) partno ' .
                      'FROM {supplier_quote} ' .
                      'WHERE partno IS NOT NULL ' .
-                     '  AND partno ="%s"',
-             $node->partno);
-    $count = db_fetch_object(db_query($sql));
+                     '  AND partno = :partno',
+             array(':partno' => $node->partno));
+    $count = db_query($sql->fetchObject());
     if ($count->partno){
       form_set_error('partno', t('Partno %partno already exists.',
         array('%partno' => $element['#value'])));
@@ -424,11 +424,11 @@ function budgets_quote_validate($node, &$form) {
   } else
     $errfield = 'supplier_id';
 
-  $count = db_fetch_object(db_query(
+  $count = db_query(
     'SELECT count(id) supplier ' .
     'FROM {supplier} ' .
-    'WHERE id=%d',
-    $node->supplier_id));
+    'WHERE id = :id',
+    array(':id' => $node->supplier_id))->fetchObject();
 
   if (!$count->supplier)
     form_set_error($errfield, t('Supplier does not exist.'));
@@ -447,7 +447,7 @@ function budgets_quote_validate($node, &$form) {
 function budgets_quote_access($op, $node, $account = NULL) {
   global $user;
 
-  $node = node_load(array('nid' => $node->id));
+  $node = node_load($node->id);
   switch ($op) {
     case 'create':
       return user_access('create suppliers',$account);
@@ -483,12 +483,12 @@ function budgets_quote_prepare(&$node) {
   if (!user_access('administer suppliers'))
     return;
 
-  $ns = db_fetch_object(db_query(
+  $ns = db_query(
     'SELECT count(*) suppliers ' .
-    'FROM {supplier}'));
+    'FROM {supplier}')->fetchObject();
   if ($ns->suppliers > 10)
     if (!empty($node->supplier_id)) {
-      $s = node_load(array('nid' => $node->supplier_id));
+      $s = node_load($node->supplier_id);
       $node->supplier = $s->nid.'-'.$s->title;
     } else
       $node->supplier = '';
@@ -560,8 +560,7 @@ function budgets_quote_load($node) {
   else
     $k = $node;
 
-  $node = db_fetch_object(
-    db_query("SELECT * FROM {supplier_quote} WHERE id = '%d'", $k));
+  $node = db_query("SELECT * FROM {supplier_quote} WHERE id = :id", array(':id' => $k))->fetchObject();
 
   if (is_null($node->id))
     return FALSE;
@@ -570,8 +569,7 @@ function budgets_quote_load($node) {
 }
 
 function budgets_quote_load_partno($partno) {
-  $node = db_fetch_object(
-    db_query("SELECT id FROM {supplier_quote} WHERE partno = '%s'", $partno));
+  $node = db_query("SELECT id FROM {supplier_quote} WHERE partno = :partno", array(':partno' => $partno))->fetchObject();
 
   if (is_null($node->id))
     return FALSE;
@@ -581,7 +579,7 @@ function budgets_quote_load_partno($partno) {
 
 function budgets_quote_view($node, $teaser = FALSE, $page = FALSE) {
   $node = node_prepare($node, $teaser);
-  $supplier = node_load(array('nid' => $node->supplier_id));
+  $supplier = node_load($node->supplier_id);
 
   $node->content['refquote'] = array(
     '#value'=> '<small>'.theme_refquote($node,$supplier,$teaser).'</small><hr>',
@@ -655,9 +653,9 @@ function budgets_quote_list_by_supplier($supplier,$params=NULL) {
   if (!$teaser) {
     $output .= '<br<br><hr><h2>'.t('Quotes from').': <em>'.$supplier->title.'</em></h2>';
     $q=0;
-    while ($quote = db_fetch_object($qquotes)) {
+    while ($quote = $qquotes->fetchObject()) {
       guifi_log(GUIFILOG_TRACE,'quote_list (supplier)',$quote);
-      $output .= node_view(node_load(array('nid' => $quote->id)), TRUE, FALSE);
+      $output .= node_view(node_load($quote->id), TRUE, FALSE);
       $q++;
     }
     ($q==0) ? $output .= t('No quotes available') : NULL;
@@ -750,9 +748,9 @@ function budgets_quote_list($params=NULL) {
   if (!$teaser) {
     $output .= '<br<br><hr><h2>'.t('Quotes from').': <em>'.$supplier->title.'</em></h2>';
     $q=0;
-    while ($quote = db_fetch_object($qquotes)) {
+    while ($quote = $qquotes->fetchObject()) {
       guifi_log(GUIFILOG_TRACE,'quote_list (supplier)',$quote);
-      $output .= node_view(node_load(array('nid' => $quote->id)), TRUE, FALSE);
+      $output .= node_view(node_load($quote->id), TRUE, FALSE);
       $q++;
     }
     ($q==0) ? $output .= t('No quotes available') : NULL;

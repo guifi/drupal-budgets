@@ -2,134 +2,612 @@
 /**
  * @file
  * Install, update and uninstall functions for the budgets module.
- * test git commit
  */
 
 function budgets_schema() {
 
   $schema['budgets'] = array(
-    'fields' => array(
-      'id' => array('type' => 'int', 'not null' => TRUE, 'default' => 0),
-      'budget_status' => array('type' => 'varchar', 'length' => '15', 'not null' => FALSE, 'default' => 'Preparation'),
-      'budget_type' => array('type' => 'varchar', 'length' => '15', 'not null'  => TRUE, 'default' => 'crowdfunding', 'comment' => 'CAPEX/OPEX-crowdfunding'),
-      'priority' =>	array('type' => 'varchar', 'length' => '15', 'not null'  => TRUE, 'default' => 'unknown', 'comment' => 'Priority (None/Urgent/Normal/Minor)'),
-      'supplier_id' => array('type' => 'int', 'size' => 'medium', 'unsigned' => TRUE, 'not null'  => TRUE, 'default' => 0, 'comment' => 'Foreign key to supplier'),
-      'ticket_link' => array('type' => 'varchar', 'length' => '100', 'comment' => 'If exists, link to whatever causes the expense, i.e. ticket maintenance...'),
-      'notification' => array('type' => 'varchar', 'length' => '1024', 'not null'  => FALSE),
-      'promoter' => array('type' => 'text', 'size' => 'big', 'not null'  => FALSE),
-      'payment_instructions' => array('type' => 'text', 'size' => 'big', 'not null'  => FALSE),
-      'terms' => array('type' => 'text', 'size' => 'big', 'not null'  => FALSE),
-      'accdate' => array('type' => 'int', 'not null'  => FALSE, 'disp-width' => '11'),
-      'expires' => array('type' => 'int', 'not null'  => TRUE, 'disp-width' => '11', 'default' => 0),
-      'node_id' => array('type' => 'int', 'size' => 'medium', 'unsigned' => TRUE, 'not null'  => TRUE, 'default' => 0, 'comment' => 'Foreign key to guifi_node'),
-      'zone_id' => array('type' => 'int', 'not null'  => TRUE, 'default' => 0, 'comment' => 'Foreign key to guifi_zone'),
-      'currency_txt' => array('type' => 'varchar', 'length' => '10', 'not null'  => FALSE),
-      'currency_symbol' => array('type' => 'varchar', 'length' => '5', 'not null'  => FALSE),
-      'min_contribution' => array('type' => 'numeric', 'not null'  => TRUE, 'default' => 0, 'precision' => '10', 'scale' => '2'),
-      'max_contribution' => array('type' => 'numeric', 'not null'  => FALSE, 'default' => 50000, 'precision' => '20', 'scale' => '2')),
-      'primary key' => array('id'),
+    'fields' => array (
+      'id' => array (
+        'type' => 'int',
+        'not null' => true,
+        'default' => 0,
+      ),
+      'budget_status' => array (
+        'type' => 'varchar',
+        'length' => '15',
+        'not null' => false,
+        'default' => 'Preparation',
+      ),
+      'budget_type' => array (
+        'type' => 'varchar',
+        'length' => '15',
+        'not null' => true,
+        'default' => 'crowdfunding',
+        'comment' => 'CAPEX/OPEX-crowdfunding',
+      ),
+      'priority' => array (
+        'type' => 'varchar',
+        'length' => '15',
+        'not null' => true,
+        'default' => 'unknown',
+        'comment' => 'Priority (None/Urgent/Normal/Minor)',
+      ),
+      'supplier_id' => array (
+        'type' => 'int',
+        'size' => 'medium',
+        'unsigned' => true,
+        'not null' => true,
+        'default' => 0,
+        'comment' => 'Foreign key to supplier',
+      ),
+      'ticket_link' => array (
+        'type' => 'varchar',
+        'length' => '100',
+        'comment' => 'If exists, link to whatever causes the expense, i.e. ticket maintenance...',
+      ),
+      'notification' => array (
+        'type' => 'varchar',
+        'length' => '1024',
+        'not null' => false,
+      ),
+      'promoter' => array (
+        'type' => 'text',
+        'size' => 'big',
+        'not null' => false,
+      ),
+      'payment_instructions' => array (
+        'type' => 'text',
+        'size' => 'big',
+        'not null' => false,
+      ),
+      'terms' => array (
+        'type' => 'text',
+        'size' => 'big',
+        'not null' => false,
+      ),
+      'accdate' => array (
+        'type' => 'int',
+        'not null' => false,
+        'disp-width' => '11',
+      ),
+      'expires' => array (
+        'type' => 'int',
+        'not null' => true,
+        'disp-width' => '11',
+        'default' => 0,
+      ),
+      'node_id' => array (
+        'type' => 'int',
+        'size' => 'medium',
+        'unsigned' => true,
+        'not null' => true,
+        'default' => 0,
+        'comment' => 'Foreign key to guifi_node',
+      ),
+      'zone_id' => array (
+        'type' => 'int',
+        'not null' => true,
+        'default' => 0,
+        'comment' => 'Foreign key to guifi_zone',
+      ),
+      'currency_txt' => array (
+        'type' => 'varchar',
+        'length' => '10',
+        'not null' => false,
+      ),
+      'currency_symbol' => array (
+        'type' => 'varchar',
+        'length' => '5',
+        'not null' => false,
+      ),
+      'min_contribution' => array (
+        'type' => 'numeric',
+        'not null' => true,
+        'default' => 0,
+        'precision' => '10',
+        'scale' => '2',
+      ),
+      'max_contribution' => array (
+        'type' => 'numeric',
+        'not null' => false,
+        'default' => 50000,
+        'precision' => '20',
+        'scale' => '2',
+      ),
+    ),
+    'primary key' => array (
+      0 => 'id',
+    ),
+    'module' => 'budgets',
+    'name' => 'budgets',
   );
+
   $schema['budget_funds'] = array(
-    'fields' => array(
-      'id' => array('type' => 'int', 'not null'  => TRUE, 'default' => 0),
-      'budget_id' => array('type' => 'int', 'not null'  => TRUE, 'default' => 0),
-      'contributor_name' => array('type' => 'varchar', 'length' => '255', 'not null'  => FALSE),
-      'contributor_telf' => array('type' => 'varchar', 'length' => '64', 'not null'  => FALSE),
-      'contributor_email' => array('type' => 'varchar', 'length' => '64', 'not null'  => FALSE),
-      'fund_status' => array('type' => 'varchar', 'length' => '20', 'not null'  => FALSE, 'default' => 'Submitted'),
-      'date' => array('type' => 'int', 'not null'  => TRUE, 'default' => 0, 'disp-width' => '11'),
-      'amount' => array('type' => 'numeric', 'not null'  => TRUE, 'default' => 0, 'precision' => '10', 'scale' => '2'),
-      'comments' => array('type' => 'text', 'size' => 'big', 'not null'  => FALSE),
-      'timestamp_created' => array('type' => 'int', 'not null'  => TRUE, 'default' => 0)),
-      'primary key' => array('budget_id', 'id'),
+    'fields' => array (
+      'id' => array (
+        'type' => 'int',
+        'not null' => true,
+        'default' => 0,
+      ),
+      'budget_id' => array (
+        'type' => 'int',
+        'not null' => true,
+        'default' => 0,
+      ),
+      'contributor_name' => array (
+        'type' => 'varchar',
+        'length' => '255',
+        'not null' => false,
+      ),
+      'contributor_telf' => array (
+        'type' => 'varchar',
+        'length' => '64',
+        'not null' => false,
+      ),
+      'contributor_email' => array (
+        'type' => 'varchar',
+        'length' => '64',
+        'not null' => false,
+      ),
+      'fund_status' => array (
+        'type' => 'varchar',
+        'length' => '20',
+        'not null' => false,
+        'default' => 'Submitted',
+      ),
+      'date' => array (
+        'type' => 'int',
+        'not null' => true,
+        'default' => 0,
+        'disp-width' => '11',
+      ),
+      'amount' => array (
+        'type' => 'numeric',
+        'not null' => true,
+        'default' => 0,
+        'precision' => '10',
+        'scale' => '2',
+      ),
+      'comments' => array (
+        'type' => 'text',
+        'size' => 'big',
+        'not null' => false,
+      ),
+      'timestamp_created' => array (
+        'type' => 'int',
+        'not null' => true,
+        'default' => 0,
+      ),
+    ),
+    'primary key' => array (
+      0 => 'budget_id',
+      1 => 'id',
+    ),
+    'module' => 'budgets',
+    'name' => 'budget_funds',
   );
+
   $schema['budget_items'] = array(
-    'fields' => array(
-      'id' => array('type' => 'int', 'not null'  => TRUE, 'default' => 0),
-      'budget_id' => array('type' => 'int', 'not null'  => TRUE, 'default' => 0),
-      'title' => array('type' => 'varchar', 'length' => 1024, 'not null'  => TRUE, 'default' => '', 'comment' => 'item title'),
-      'description' => array('type' => 'text', 'size' => 'big', 'not null'  => FALSE),
-      'comments' => array('type' => 'text', 'size' => 'big', 'not null'  => FALSE),
-      'quantity' => array('type' => 'int', 'not null'  => TRUE, 'default' => 0),
-      'tax' => array('type' => 'int', 'size' => 'small', 'not null'  => FALSE, 'default' => 0),
-      'cost' => array('type' => 'numeric', 'not null'  => TRUE, 'default' => 0, 'precision' => '10', 'scale' => '2'),
-      'weight' => array('type' => 'int', 'not null'  => TRUE, 'default' => 0)),
-    'primary key' => array('budget_id', 'id'),
+    'fields' => array (
+      'id' => array (
+        'type' => 'int',
+        'not null' => true,
+        'default' => 0,
+      ),
+      'budget_id' => array (
+        'type' => 'int',
+        'not null' => true,
+        'default' => 0,
+      ),
+      'title' => array (
+        'type' => 'varchar',
+        'length' => 1024,
+        'not null' => true,
+        'default' => '',
+        'comment' => 'item title',
+      ),
+      'description' => array (
+        'type' => 'text',
+        'size' => 'big',
+        'not null' => false,
+      ),
+      'comments' => array (
+        'type' => 'text',
+        'size' => 'big',
+        'not null' => false,
+      ),
+      'quantity' => array (
+        'type' => 'int',
+        'not null' => true,
+        'default' => 0,
+      ),
+      'tax' => array (
+        'type' => 'int',
+        'size' => 'small',
+        'not null' => false,
+        'default' => 0,
+      ),
+      'cost' => array (
+        'type' => 'numeric',
+        'not null' => true,
+        'default' => 0,
+        'precision' => '10',
+        'scale' => '2',
+      ),
+      'weight' => array (
+        'type' => 'int',
+        'not null' => true,
+        'default' => 0,
+      ),
+    ),
+    'primary key' => array (
+      0 => 'budget_id',
+      1 => 'id',
+    ),
+    'module' => 'budgets',
+    'name' => 'budget_items',
   );
+
   $schema['supplier'] = array(
-    'fields' => array(
-      'id' => array('type' => 'int', 'not null'  => TRUE, 'default' => 0, 'disp-width' => '10'),
-      'zone_id' => array('type' => 'int', 'unsigned' => TRUE, 'not null'  => TRUE, 'disp-width' => '11', 'default' => 0, 'comment' => 'Foreign key to guifi_zone'),
-      'zones' => array('type' => 'varchar', 'length' => '256', 'not null'=>TRUE, 'comment' => 'Foreign key of zones where the supplier is available'),
-      'title' => array('type' => 'varchar', 'length' => 60, 'not null'  => TRUE, 'default' => '', 'comment' => 'item title'),
-      'frating' => array('type' => 'varchar', 'length' => '5', 'not null'  => FALSE),
-      'wrating' => array('type' => 'varchar', 'length' => '5', 'not null'  => FALSE),
-      'urating' => array('type' => 'numeric', 'not null'  => FALSE, 'default' => 0, 'precision' => '10', 'scale' => '2'),
-      'code' => array('type' => 'varchar', 'length' => 5, 'not null'  => TRUE, 'comment' => 'to be used for building part numbers, abbreviations, etc'),
-      'address1' => array('type' => 'varchar', 'length' => '256', 'not null'=>TRUE),
-      'address2' => array('type' => 'varchar', 'length' => '256', 'not null'=>FALSE),
-      'postal_code' => array('type' => 'varchar', 'length' => '20', 'not null'=>TRUE),
-      'city' => array('type' => 'varchar', 'length' => '128', 'not null'=>TRUE),
-      'region' => array('type' => 'varchar', 'length' => '128', 'not null'=>FALSE),
-      'country' => array('type' => 'varchar', 'length' => '128', 'not null'=>FALSE),
-      'notification' => array('type' => 'varchar', 'length' => '128', 'not null'=>TRUE),
-      'phone' => array('type' => 'varchar', 'length' => '128', 'not null'=>TRUE),
-      'logo' => array('type' => 'varchar', 'length' => '128', 'not null'=>FALSE),
-      'web_url' => array('type' => 'varchar', 'length' => '128', 'not null'  => FALSE),
-      'role' => array('type' => 'varchar', 'length' => '15', 'default'=>'volunteer', 'not null'  => TRUE, 'volunteer, professional' ),
-      'tax_code' => array('type' => 'varchar', 'length' => '128', 'not null'=>TRUE),
-      'default_tax_rate' => array('type' => 'int', 'size' => 'small', 'not null'=>TRUE,'default'=>0),
-      'guifi_certs' => array('type' => 'text', 'not null'  => FALSE),
-      'tp_certs' => array('type' => 'text', 'not null'  => FALSE),
-      'other_certs' => array('type' => 'text', 'not null'  => FALSE),
-      'caps_services' => array('type' => 'text', 'not null'  => FALSE),
-      'caps_network' => array('type' => 'text', 'not null'  => FALSE),
-      'caps_project' => array('type' => 'text', 'not null'  => FALSE),
-      'other_caps' => array('type' => 'text', 'not null'  => FALSE),
-      'self_rating' => array('type' => 'varchar', 'length' => '5', 'not null'  => FALSE, 'default'=>'~~'),
-      'official_rating' => array('type' => 'varchar', 'length' => '5', 'not null'  => FALSE, 'default'=>'~~'),
-      'user_rating' => array('type' => 'numeric', 'not null'  => FALSE, 'default' => 0, 'precision' => '10', 'scale' => '2'),
-      'accounting_urls' => array('type' => 'text', 'not null'  => FALSE),
-      'ack' => array('type' => 'varchar', 'length' => '1', 'not null'  => FALSE, 'default'=> '0','comment'=>'Terms acknoledgement')),
-    'primary key' => array('id'),
+    'fields' => array (
+      'id' => array (
+        'type' => 'int',
+        'not null' => true,
+        'default' => 0,
+        'disp-width' => '10',
+      ),
+      'zone_id' => array (
+        'type' => 'int',
+        'unsigned' => true,
+        'not null' => true,
+        'disp-width' => '11',
+        'default' => 0,
+        'comment' => 'Foreign key to guifi_zone',
+      ),
+      'zones' => array (
+        'type' => 'varchar',
+        'length' => '256',
+        'not null' => true,
+        'comment' => 'Foreign key of zones where the supplier is available',
+      ),
+      'title' => array (
+        'type' => 'varchar',
+        'length' => 60,
+        'not null' => true,
+        'default' => '',
+        'comment' => 'item title',
+      ),
+      'frating' => array (
+        'type' => 'varchar',
+        'length' => '5',
+        'not null' => false,
+      ),
+      'wrating' => array (
+        'type' => 'varchar',
+        'length' => '5',
+        'not null' => false,
+      ),
+      'urating' => array (
+        'type' => 'numeric',
+        'not null' => false,
+        'default' => 0,
+        'precision' => '10',
+        'scale' => '2',
+      ),
+      'code' => array (
+        'type' => 'varchar',
+        'length' => 5,
+        'not null' => true,
+        'comment' => 'to be used for building part numbers, abbreviations, etc',
+      ),
+      'address1' => array (
+        'type' => 'varchar',
+        'length' => '256',
+        'not null' => true,
+      ),
+      'address2' => array (
+        'type' => 'varchar',
+        'length' => '256',
+        'not null' => false,
+      ),
+      'postal_code' => array (
+        'type' => 'varchar',
+        'length' => '20',
+        'not null' => true,
+      ),
+      'city' => array (
+        'type' => 'varchar',
+        'length' => '128',
+        'not null' => true,
+      ),
+      'region' => array (
+        'type' => 'varchar',
+        'length' => '128',
+        'not null' => false,
+      ),
+      'country' => array (
+        'type' => 'varchar',
+        'length' => '128',
+        'not null' => false,
+      ),
+      'notification' => array (
+        'type' => 'varchar',
+        'length' => '128',
+        'not null' => true,
+      ),
+      'phone' => array (
+        'type' => 'varchar',
+        'length' => '128',
+        'not null' => true,
+      ),
+      'logo' => array (
+        'type' => 'varchar',
+        'length' => '128',
+        'not null' => false,
+      ),
+      'web_url' => array (
+        'type' => 'varchar',
+        'length' => '128',
+        'not null' => false,
+      ),
+      'role' => array (
+        'type' => 'varchar',
+        'length' => '15',
+        'default' => 'volunteer',
+        'not null' => true,
+        0 => 'volunteer, professional',
+      ),
+      'tax_code' => array (
+        'type' => 'varchar',
+        'length' => '128',
+        'not null' => true,
+      ),
+      'default_tax_rate' => array (
+        'type' => 'int',
+        'size' => 'small',
+        'not null' => true,
+        'default' => 0,
+      ),
+      'guifi_certs' => array (
+        'type' => 'text',
+        'not null' => false,
+      ),
+      'tp_certs' => array (
+        'type' => 'text',
+        'not null' => false,
+      ),
+      'other_certs' => array (
+        'type' => 'text',
+        'not null' => false,
+      ),
+      'caps_services' => array (
+        'type' => 'text',
+        'not null' => false,
+      ),
+      'caps_network' => array (
+        'type' => 'text',
+        'not null' => false,
+      ),
+      'caps_project' => array (
+        'type' => 'text',
+        'not null' => false,
+      ),
+      'other_caps' => array (
+        'type' => 'text',
+        'not null' => false,
+      ),
+      'self_rating' => array (
+        'type' => 'varchar',
+        'length' => '5',
+        'not null' => false,
+        'default' => '~~',
+      ),
+      'official_rating' => array (
+        'type' => 'varchar',
+        'length' => '5',
+        'not null' => false,
+        'default' => '~~',
+      ),
+      'user_rating' => array (
+        'type' => 'numeric',
+        'not null' => false,
+        'default' => 0,
+        'precision' => '10',
+        'scale' => '2',
+      ),
+      'accounting_urls' => array (
+        'type' => 'text',
+        'not null' => false,
+      ),
+      'ack' => array (
+        'type' => 'varchar',
+        'length' => '1',
+        'not null' => false,
+        'default' => '0',
+        'comment' => 'Terms acknoledgement',
+      ),
+    ),
+    'primary key' => array (
+      0 => 'id',
+    ),
+    'module' => 'budgets',
+    'name' => 'supplier',
   );
+
   $schema['supplier_quote'] = array(
-    'fields' => array(
-      'id' => array('type' => 'int', 'not null'  => TRUE, 'default' => 0),
-      'supplier_id' => array('type' => 'int', 'unsigned' => TRUE, 'not null'  => TRUE, 'default' => 0, 'comment' => 'Foreign key to guifi_zone'),
-      'partno' => array('type' => 'varchar', 'length' => 60, 'not null'  => TRUE, 'default' => '', 'comment' => 'item title'),
-      'title' => array('type' => 'varchar', 'length' => 1024, 'not null'  => TRUE, 'default' => '', 'comment' => 'item title'),
-      'cost' => array('type' => 'numeric', 'not null'  => TRUE, 'default' => 0, 'precision' => '10', 'scale' => '2'),
-      'tax' => array('type' => 'int', 'size' => 'small', 'not null'  => FALSE, 'default' => 0),
-      'expires' => array('type' => 'int', 'not null'  => TRUE)),
-    'primary key' => array('id'),
+    'fields' => array (
+      'id' => array (
+        'type' => 'int',
+        'not null' => true,
+        'default' => 0,
+      ),
+      'supplier_id' => array (
+        'type' => 'int',
+        'unsigned' => true,
+        'not null' => true,
+        'default' => 0,
+        'comment' => 'Foreign key to guifi_zone',
+      ),
+      'partno' => array (
+        'type' => 'varchar',
+        'length' => 60,
+        'not null' => true,
+        'default' => '',
+        'comment' => 'item title',
+      ),
+      'title' => array (
+        'type' => 'varchar',
+        'length' => 1024,
+        'not null' => true,
+        'default' => '',
+        'comment' => 'item title',
+      ),
+      'cost' => array (
+        'type' => 'numeric',
+        'not null' => true,
+        'default' => 0,
+        'precision' => '10',
+        'scale' => '2',
+      ),
+      'tax' => array (
+        'type' => 'int',
+        'size' => 'small',
+        'not null' => false,
+        'default' => 0,
+      ),
+      'expires' => array (
+        'type' => 'int',
+        'not null' => true,
+      ),
+    ),
+    'primary key' => array (
+      0 => 'id',
+    ),
+    'module' => 'budgets',
+    'name' => 'supplier_quote',
   );
 
   return $schema;
 }
 
 function budgets_install() {
-  drupal_install_schema('budgets');
 
   /*
    *  budget_status
    */
-  db_query("INSERT INTO {guifi_types} (id, type, text, description, relations) VALUES
-    ('1', 'budget_status', 'Preparation', 'Preparation - Private (Not visible)', 'crowdfunding|f-capex|f-opex|f-conn|w-opex|w-capex|none|other'),
-    ('2', 'budget_status', 'Planned', 'Planned - Published', 'crowdfunding|f-capex|f-opex|f-conn|w-opex|w-capex|none|other'),
-    ('3', 'budget_status', 'Approved', 'Approved', 'crowdfunding|none|other'),
-    ('4', 'budget_status', 'Executed', 'Executed - For Compensation', 'f-capex|f-opex|f-conn|w-opex|w-capex|other'),
-    ('5', 'budget_status', 'Review', 'Under review - Issues to be corrected', 'f-capex|f-opex|f-conn|w-opex|w-capex|other'),
-    ('6', 'budget_status', 'Reviewed', 'Reviewed - To be Compensated', 'f-capex|f-opex|f-conn|w-opex|w-capex|other'),
-    ('7', 'budget_status', 'Compensated', 'Compensated', 'f-capex|f-opex|f-conn|w-opex|w-capex|other'),
-    ('8', 'budget_status', 'Open', 'Crowdfunding open', 'crowdfunding|none|other'),
-    ('9', 'budget_status', 'Closed', 'Closed', 'crowdfunding|f-capex|f-opex|f-conn|w-opex|w-capex|none|other'),
-    ('10', 'budget_status', 'Abandoned', 'Abandoned', 'crowdfunding|f-capex|f-opex|f-conn|w-opex|w-capex|none|other'),
-    ('11', 'budget_status', 'Executed_BAD', 'Executed - Bad practice', 'f-capex|f-opex|f-conn|w-opex|w-capex|other'),
-    ('12', 'budget_status', 'Review_BAD', 'Reviewed - Bad practice', 'f-capex|f-opex|f-conn|w-opex|w-capex|other'),
-    ('13', 'budget_status', 'Reviewed_BAD', 'Under review - Bad practice', 'f-capex|f-opex|f-conn|w-opex|w-capex|other'),
-    ('14', 'budget_status', 'Invoiced_BAD', 'Invoiced - Bad practice', 'f-capex|f-opex|f-conn|w-opex|w-capex|other')
-    ");
+  $budget_status = array(
+    array(
+      'id' => '1',
+      'type' => 'budget_status',
+      'text' => 'Preparation',
+      'description' => 'Preparation - Private (Not visible)',
+      'relations' => 'crowdfunding|f-capex|f-opex|f-conn|w-opex|w-capex|none|other',
+    ),
+    array(
+      'id' => '2',
+      'type' => 'budget_status',
+      'text' => 'Planned',
+      'description' => 'Planned - Published',
+      'relations' => 'crowdfunding|f-capex|f-opex|f-conn|w-opex|w-capex|none|other',
+    ),
+    array(
+      'id' => '3',
+      'type' => 'budget_status',
+      'text' => 'Approved',
+      'description' => 'Approved',
+      'relations' => 'crowdfunding|none|other',
+    ),
+    array(
+      'id' => '4',
+      'type' => 'budget_status',
+      'text' => 'Executed',
+      'description' => 'Executed - For Compensation',
+      'relations' => 'f-capex|f-opex|f-conn|w-opex|w-capex|none|other',
+    ),
+    array(
+      'id' => '5',
+      'type' => 'budget_status',
+      'text' => 'Review',
+      'description' => 'Under review - Issues to be corrected',
+      'relations' => 'f-capex|f-opex|f-conn|w-opex|w-capex|none|other',
+    ),
+    array(
+      'id' => '6',
+      'type' => 'budget_status',
+      'text' => 'Reviewed',
+      'description' => 'Reviewed - To be Compensated',
+      'relations' => 'f-capex|f-opex|f-conn|w-opex|w-capex|none|other',
+    ),
+    array(
+      'id' => '7',
+      'type' => 'budget_status',
+      'text' => 'Compensated',
+      'description' => 'Compensated',
+      'relations' => 'f-capex|f-opex|f-conn|w-opex|w-capex|none|other',
+    ),
+    array(
+      'id' => '8',
+      'type' => 'budget_status',
+      'text' => 'Open',
+      'description' => 'Crowdfunding open',
+      'relations' => 'crowdfunding|none|other',
+    ),
+    array(
+      'id' => '9',
+      'type' => 'budget_status',
+      'text' => 'Closed',
+      'description' => 'Closed',
+      'relations' => 'crowdfunding|f-capex|f-opex|f-conn|w-opex|w-capex|none|other',
+    ),
+    array(
+      'id' => '10',
+      'type' => 'budget_status',
+      'text' => 'Abandoned',
+      'description' => 'Abandoned',
+      'relations' => 'crowdfunding|f-capex|f-opex|f-conn|w-opex|w-capex|none|other',
+    ),
+    array(
+      'id' => '11',
+      'type' => 'budget_status',
+      'text' => 'Executed_BAD',
+      'description' => 'Executed - Bad practice',
+      'relations' => 'f-capex|f-opex|f-conn|w-opex|w-capex|none|other',
+    ),
+    array(
+      'id' => '12',
+      'type' => 'budget_status',
+      'text' => 'Review_BAD',
+      'description' => 'Under review - Bad practice',
+      'relations' => '|f-capex|f-opex|f-conn|w-opex|w-capex|none|other',
+    ),
+    array(
+      'id' => '13',
+      'type' => 'budget_status',
+      'text' => 'Reviewed_BAD',
+      'description' => 'Reviewed - Bad practice',
+      'relations' => 'f-capex|f-opex|f-conn|w-opex|w-capex|none|other',
+    ),
+    array(
+      'id' => '14',
+      'type' => 'budget_status',
+      'text' => 'Invoiced_BAD',
+      'description' => 'Invoiced - Bad practice',
+      'relations' => 'f-capex|f-opex|f-conn|w-opex|w-capex|none|other',
+    ),
+  );
+  $query = db_insert('guifi_types')->fields(array(
+             'id',
+             'type',
+             'text',
+             'description',
+             'relations',
+           ));
+  foreach ($budget_status as $record) {
+    $query->values($record);
+  }
+  $query->execute();
+
 
   /*
    *  budget_type
@@ -239,417 +717,6 @@ function budgets_uninstall() {
   variable_del('budget_currency_long');
 }
 //
-// Database update from SVN revision 413
-//
-function budgets_update_413() {
-  $items = array();
 
-  $items[] = update_sql("DELETE FROM `variable` WHERE `name` = 'budget_payment'");
-  $items[] = update_sql("DELETE FROM `variable` WHERE `name` = 'budget_expires'");
-  $items[] = update_sql("ALTER TABLE `budgets`
-  CHANGE `budget_status` `budget_status` VARCHAR( 15 ) NULL DEFAULT 'Preparation' comment 'Preparation , Open , Closed'");
-  $items[] = update_sql("ALTER TABLE `budget_funds`
-  CHANGE `fund_status` `fund_status` VARCHAR( 20 ) NULL DEFAULT 'Submitted' comment 'Submitted, Accepted, Declined, Paid'");
-  return $items;
-}
-
-function budgets_update_414() {
-  $items = array();
-
-  db_change_field($items, 'budgets', 'guifi_zones', 'zone_id',
-    array('type' => 'int',
-      'disp-width' => 11,
-      'not null'  => TRUE,
-      'default' => 0,
-      'comment' => 'Foreign key to guifi_zone')
-    );
-  db_add_field($items, 'budget_items', 'title',
-    array('type' => 'varchar', 'length' => 60, 'not null'  => TRUE, 'default' => '', 'comment' => 'item title'));
-  db_add_field($items, 'budgets', 'notification',
-    array('type' => 'varchar', 'length' => '1024', 'not null'  => FALSE));
-  db_change_field($items, 'budgets', 'max_contribution', 'max_contribution',
-    array('type' => 'numeric', 'not null'  => FALSE, 'default' => 50000, 'precision' => '20', 'scale' => '2'));
-  db_change_field($items, 'budgets', 'nid', 'id',
-    array('type' => 'int', 'not null'  => TRUE, 'default' => 0, 'disp-width' => '10'));
-  db_change_field($items, 'budget_funds', 'nid', 'budget_id',
-    array('type' => 'int', 'not null'  => TRUE, 'default' => 0, 'disp-width' => '10'));
-  db_change_field($items, 'budget_funds', 'fund_id', 'id',
-    array('type' => 'int', 'not null'  => TRUE, 'default' => 0, 'disp-width' => '10'));
-  db_change_field($items, 'budget_items', 'nid', 'budget_id',
-    array('type' => 'int', 'not null'  => TRUE, 'default' => 0, 'disp-width' => '10'));
-  db_change_field($items, 'budget_items', 'item_id', 'id',
-    array('type' => 'int', 'not null'  => TRUE, 'default' => 0, 'disp-width' => '10'));
-  db_create_table($items, 'supplier',
-    array(
-    'fields' => array(
-      'id' => array('type' => 'int', 'not null'  => TRUE, 'default' => 0, 'disp-width' => '10'),
-      'zone_id' => array('type' => 'int', 'unsigned' => TRUE, 'not null'  => TRUE, 'disp-width' => '11', 'default' => 0, 'comment' => 'Foreign key to guifi_zone'),
-      'title' => array('type' => 'varchar', 'length' => 60, 'not null'  => TRUE, 'default' => '', 'comment' => 'item title')
-      ),
-    'primary key' => array('id'),
-    )
-  );
-  db_create_table($items, 'supplier_quote',
-    array(
-    'fields' => array(
-      'id' => array('type' => 'int', 'not null'  => TRUE, 'default' => 0, 'disp-width' => '10'),
-      'supplier_id' => array('type' => 'int', 'unsigned' => TRUE, 'not null'  => TRUE, 'disp-width' => '11', 'default' => 0, 'comment' => 'Foreign key to guifi_zone'),
-      'partno' => array('type' => 'varchar', 'length' => 60, 'not null'  => TRUE, 'default' => '', 'comment' => 'item title'),
-      'title' => array('type' => 'varchar', 'length' => 60, 'not null'  => TRUE, 'default' => '', 'comment' => 'item title'),
-      'cost' => array('type' => 'numeric', 'not null'  => TRUE, 'default' => 0, 'precision' => '10', 'scale' => '2'),
-      'expires' => array('type' => 'int', 'not null'  => TRUE, 'disp-width' => '11')
-      ),
-    'primary key' => array('id'),
-    )
-  );
-
-  return $items;
-}
-
-function budgets_update_424() {
-  $items = array();
-
-  db_change_field($items, 'budget_items', 'title', 'title',
-    array('type' => 'varchar', 'length' => 1024, 'not null'  => TRUE, 'default' => '', 'comment' => 'item title'));
-
-  return $items;
-}
-
-function budgets_update_476() {
-  $items = array();
-
-  db_drop_field($items, 'supplier_quote', 'description');
-
-  return $items;
-}
-
-function budgets_update_478() {
-  $items = array();
-
-  db_change_field($items, 'supplier_quote', 'title', 'title',
-    array('type' => 'varchar', 'length' => 1024, 'not null'  => TRUE, 'default' => '', 'comment' => 'supplier title'));
-
-  return $items;
-}
-
-function budgets_update_533() {
-  $items = array();
-
-  db_add_field($items,'budgets','budget_type',
-  	array('type' => 'varchar', 'length' => '15', 'not null'  => TRUE, 'default' => 'crowdfunding', 'comment' => 'CAPEX/OPEX-croudfunding'));
-  db_add_field($items,'budgets','supplier_id',
-    array('type' => 'int', 'size' => 'medium', 'unsigned' => TRUE, 'not null'  => TRUE, 'default' => 0, 'comment' => 'Foreign key to supplier'));
-  db_add_field($items,'budgets','node_id',
-    array('type' => 'int', 'size' => 'medium', 'unsigned' => TRUE, 'not null'  => TRUE, 'default' => 0, 'comment' => 'Foreign key to guifi_node'));
-
-  db_add_field($items,'budgets','ticket_link',
-    array('type' => 'varchar', 'length' => '100', 'comment' => 'If exists, link to whatever causes the expense, i.e. ticket maintenance...'));
-  db_add_field($items,'budgets','accdate',
-    array('type' => 'int', 'not null'  => FALSE, 'disp-width' => '11'));
-  db_add_field($items,'budget_items','tax',
-    array('type' => 'int', 'size' => 'small', 'not null'  => FALSE, 'default' => 0));
-
-  db_add_field($items,'supplier','frating',
-      array('type' => 'varchar', 'length' => '5', 'not null'  => FALSE));
-  db_add_field($items,'supplier','wrating',
-      array('type' => 'varchar', 'length' => '5', 'not null'  => FALSE));
-  db_add_field($items,'supplier','urating',
-      array('type' => 'numeric', 'not null'  => FALSE, 'default' => 0, 'precision' => '10', 'scale' => '2'));
-
-
-  db_add_field($items,'supplier','code',
-      array('type' => 'varchar', 'length' => 5, 'not null'  => TRUE, 'comment' => 'to be used for building part numbers, abbreviations, etc'));
-  db_add_field($items,'supplier','address1',
-      array('type' => 'varchar', 'length' => '256', 'not null'=>TRUE));
-  db_add_field($items,'supplier','address2',
-      array('type' => 'varchar', 'length' => '256', 'not null'=>FALSE));
-  db_add_field($items,'supplier','postal_code',
-      array('type' => 'varchar', 'length' => '20', 'not null'=>TRUE));
-  db_add_field($items,'supplier','city',
-      array('type' => 'varchar', 'length' => '128', 'not null'=>TRUE));
-  db_add_field($items,'supplier','country',
-      array('type' => 'varchar', 'length' => '128', 'not null'=>FALSE));
-  db_add_field($items,'supplier','notification',
-      array('type' => 'varchar', 'length' => '128', 'not null'=>TRUE));
-  db_add_field($items,'supplier','phone',
-      array('type' => 'varchar', 'length' => '128', 'not null'=>TRUE));
-  db_add_field($items,'supplier','logo',
-      array('type' => 'varchar', 'length' => '128', 'not null'=>FALSE));
-  db_add_field($items,'supplier','tax_code',
-      array('type' => 'varchar', 'length' => '128', 'not null'=>TRUE));
-  db_add_field($items,'supplier','default_tax_rate',
-      array('type' => 'int', 'size' => 'small', 'not null'=>TRUE, 'default'=>0));
-  db_add_field($items,'supplier','guifi_certs',
-      array('type' => 'text', 'not null'  => FALSE));
-  db_add_field($items,'supplier','tp_certs',
-      array('type' => 'text', 'not null'  => FALSE));
-  db_add_field($items,'supplier','other_certs',
-      array('type' => 'text', 'not null'  => FALSE));
-  db_add_field($items,'supplier','caps_services',
-      array('type' => 'text', 'not null'  => FALSE));
-  db_add_field($items,'supplier','caps_network',
-      array('type' => 'text', 'not null'  => FALSE));
-  db_add_field($items,'supplier','caps_project',
-      array('type' => 'text', 'not null'  => FALSE));
-  db_add_field($items,'supplier','other_caps',
-      array('type' => 'text', 'not null'  => FALSE));
-
-  db_add_field($items,'supplier','zones',
-      array('type' => 'varchar', 'length' => '256', 'not null'=>TRUE, 'comment' => 'Fireign key of zones where the supplier is available'));
-
-  db_add_field($items,'supplier','self_rating',
-    array('type' => 'varchar', 'length' => '5', 'not null'  => FALSE,'default' => '~~'));
-  db_add_field($items,'supplier','official_rating',
-    array('type' => 'varchar', 'length' => '5', 'not null'  => FALSE,'default' => '~~'));
-  db_add_field($items,'supplier','user_rating',
-    array('type' => 'numeric', 'not null'  => FALSE, 'default' => 0, 'precision' => '10', 'scale' => '2'));
-  db_add_field($items,'supplier','accounting_urls',
-    array('type' => 'text', 'not null'  => FALSE));
-
-  db_add_field($items,'supplier','web_url',
-      array('type' => 'varchar', 'length' => '128', 'not null'  => FALSE));
-  db_add_field($items,'supplier','role',
-      array('type' => 'varchar', 'length' => '15', 'default'=>'volunteer', 'not null'  => TRUE, 'volunteer, professional' ));
-  db_add_field($items,'supplier','region',
-      array('type' => 'varchar', 'length' => '128', 'not null'=>FALSE));
-  db_add_field($items,'supplier','ack',
-      array('type' => 'varchar', 'length' => '1', 'not null'  => FALSE, 'default'=>0,'comment'=>'Terms acknoledgement'));
-  db_add_field($items,'supplier_quote','tax',
-      array('type' => 'int', 'size' => 'small', 'not null'  => FALSE, 'default' => 0));
-}
-
-function budgets_update_534() {
-  /*
-   *  budget_status
-   */
-  db_query("INSERT INTO {guifi_types} (id, type, text, description, relations) VALUES ('1', 'budget_status', 'Preparation', 'Preparation', NULL)");
-  db_query("INSERT INTO {guifi_types} (id, type, text, description, relations) VALUES ('2', 'budget_status', 'Review', 'Under review', NULL)");
-  db_query("INSERT INTO {guifi_types} (id, type, text, description, relations) VALUES ('3', 'budget_status', 'Approved', 'Approved', NULL)");
-  db_query("INSERT INTO {guifi_types} (id, type, text, description, relations) VALUES ('4', 'budget_status', 'Executed', 'Executed', NULL)");
-  db_query("INSERT INTO {guifi_types} (id, type, text, description, relations) VALUES ('5', 'budget_status', 'Open', 'Crowdfunding open', NULL)");
-  db_query("INSERT INTO {guifi_types} (id, type, text, description, relations) VALUES ('6', 'budget_status', 'Closed', 'Closed', NULL)");
-  db_query("INSERT INTO {guifi_types} (id, type, text, description, relations) VALUES ('7', 'budget_status', 'Abandoned', 'Abandoned', NULL)");
-  db_query("INSERT INTO {guifi_types} (id, type, text, description, relations) VALUES ('8', 'budget_status', 'Executed', 'Executed', NULL)");
-
-  /*
-   *  budget_type
-   */
-  db_query("INSERT INTO {guifi_types} (id, type, text, description, relations) VALUES ('1', 'budget_type', 'none', 'None', NULL)");
-  db_query("INSERT INTO {guifi_types} (id, type, text, description, relations) VALUES ('2', 'budget_type', 'crowdfunding', 'Crowdfunding', NULL)");
-  db_query("INSERT INTO {guifi_types} (id, type, text, description, relations) VALUES ('3', 'budget_type', 'w-capex', 'Wireless-CAPEX', NULL)");
-  db_query("INSERT INTO {guifi_types} (id, type, text, description, relations) VALUES ('4', 'budget_type', 'w-opex', 'Wireless-OPEX', NULL)");
-  db_query("INSERT INTO {guifi_types} (id, type, text, description, relations) VALUES ('5', 'budget_type', 'f-capex', 'Fiber-CAPEX', NULL)");
-  db_query("INSERT INTO {guifi_types} (id, type, text, description, relations) VALUES ('6', 'budget_type', 'f-opex', 'Fiber-OPEX', NULL)");
-
-  db_query("UPDATE {supplier} set zones = zone_id");
-
-  db_query("DELETE FROM {guifi_types} WHERE type in ('caps_services','caps_network','caps_project','tp_certs','guifi_certs')");
-
-  db_query("INSERT INTO {guifi_types} (id, type, text, description, relations) VALUES ('1', 'commitment_rate', 'A','A-Totally commited, priority to the Commons, ', NULL)");
-  db_query("INSERT INTO {guifi_types} (id, type, text, description, relations) VALUES ('2', 'commitment_rate', 'B','B-Case by case, depending on circumstances', NULL)");
-  db_query("INSERT INTO {guifi_types} (id, type, text, description, relations) VALUES ('3', 'commitment_rate', 'C','C-General provider. No special commitment', NULL)");
-  db_query("INSERT INTO {guifi_types} (id, type, text, description, relations) VALUES ('4', 'commitment_rate', '~','Not rated', NULL)");
-
-  db_query("INSERT INTO {guifi_types} (id, type, text, description, relations) VALUES ('1', 'experience_rate', 'A','A-Main activity and above the average experience', NULL)");
-  db_query("INSERT INTO {guifi_types} (id, type, text, description, relations) VALUES ('2', 'experience_rate', 'B','B-Some experience or up to the average', NULL)");
-  db_query("INSERT INTO {guifi_types} (id, type, text, description, relations) VALUES ('3', 'experience_rate', 'C','C-None or few experience, willing to start', NULL)");
-  db_query("INSERT INTO {guifi_types} (id, type, text, description, relations) VALUES ('4', 'experience_rate', '~','Not rated', NULL)");
-  /*
-   * 3th part certs (tp_certs)
-   */
-  db_query("INSERT INTO {guifi_types} (id, type, text, description, relations) VALUES ('1', 'tp_certs', 'ISP', 'NRA Registered - ISP Provider', NULL)");
-  db_query("INSERT INTO {guifi_types} (id, type, text, description, relations) VALUES ('2', 'tp_certs', 'TIProf', 'TI Builder', NULL)");
-  db_query("INSERT INTO {guifi_types} (id, type, text, description, relations) VALUES ('3', 'tp_certs', 'TPEng', 'TI Engineering', NULL)");
-  db_query("INSERT INTO {guifi_types} (id, type, text, description, relations) VALUES ('4', 'tp_certs', 'VWorks', 'Trained on Vertical Works', NULL)");
-  db_query("INSERT INTO {guifi_types} (id, type, text, description, relations) VALUES ('5', 'tp_certs', 'LRisks', 'Trained on Labour Risks', NULL)");
-  db_query("INSERT INTO {guifi_types} (id, type, text, description, relations) VALUES ('6', 'tp_certs', 'CDIns', 'Civil Damages Insurance', NULL)");
-
-  /*
-   * guifi_certs
-   */
-  db_query("INSERT INTO {guifi_types} (id, type, text, description, relations) VALUES ('1', 'guifi_certs', 'Commons','Comuns XOLN Compliance', NULL)");
-  db_query("INSERT INTO {guifi_types} (id, type, text, description, relations) VALUES ('2', 'guifi_certs', 'BEthics', 'Bussiness Practices & Ethics Compliance', NULL)");
-  db_query("INSERT INTO {guifi_types} (id, type, text, description, relations) VALUES ('3', 'guifi_certs', 'BPractices','Best Practices Compliance', NULL)");
-  db_query("INSERT INTO {guifi_types} (id, type, text, description, relations) VALUES ('4', 'guifi_certs', 'PoPIX-Part','PoPIX Participant agreement', NULL)");
-  db_query("INSERT INTO {guifi_types} (id, type, text, description, relations) VALUES ('5', 'guifi_certs', 'PoPIX-Mgmt','PoP-IX Management Agreement', NULL)");
-  db_query("INSERT INTO {guifi_types} (id, type, text, description, relations) VALUES ('6', 'guifi_certs', 'FO-Dist','Fibre Optics Distribution Agreement', NULL)");
-  db_query("INSERT INTO {guifi_types} (id, type, text, description, relations) VALUES ('7', 'guifi_certs', 'FO-Mgmt','Fibre Optics Management Agreement', NULL)");
-  db_query("INSERT INTO {guifi_types} (id, type, text, description, relations) VALUES ('8', 'guifi_certs', 'W-Dist', 'Wireless Distribution Agreement', NULL)");
-  db_query("INSERT INTO {guifi_types} (id, type, text, description, relations) VALUES ('9', 'guifi_certs', 'W-Mgmt','Wireless Management Agreement', NULL)");
-  db_query("INSERT INTO {guifi_types} (id, type, text, description, relations) VALUES ('10', 'guifi_certs', 'AVolunteer','Volunteer Agreement', 'volunteer')");
-
-  /*
-   * caps_services
-   */
-  db_query("INSERT INTO {guifi_types} (id, type, text, description, relations) VALUES ('1', 'caps_services', 'isp','Internet Service Provider (ISP)','professional')");
-  db_query("INSERT INTO {guifi_types} (id, type, text, description, relations) VALUES ('2', 'caps_services', 'ishare','Internet sharing','volunteer')");
-  db_query("INSERT INTO {guifi_types} (id, type, text, description, relations) VALUES ('3', 'caps_services', 'voip','Telephony (VoIP) Provider','professional')");
-  db_query("INSERT INTO {guifi_types} (id, type, text, description, relations) VALUES ('4', 'caps_services', 'mobile','Mobile Provider','professional')");
-  db_query("INSERT INTO {guifi_types} (id, type, text, description, relations) VALUES ('5', 'caps_services', 'iptv','TV (IpTv) Provider','professional')");
-  db_query("INSERT INTO {guifi_types} (id, type, text, description, relations) VALUES ('6', 'caps_services', 'surv','Surveillance','professional')");
-  /*
-   * caps_network
-   */
-  db_query("INSERT INTO {guifi_types} (id, type, text, description, relations) VALUES ('1', 'caps_network', 'wprovider','Wifi Equipment Provider','professional')");
-  db_query("INSERT INTO {guifi_types} (id, type, text, description, relations) VALUES ('2', 'caps_network', 'wbuilder','Wifi Installer', 'professional')");
-  db_query("INSERT INTO {guifi_types} (id, type, text, description, relations) VALUES ('3', 'caps_network', 'wmgmt','Wifi Mantainer', 'professional')");
-  db_query("INSERT INTO {guifi_types} (id, type, text, description, relations) VALUES ('4', 'caps_network', 'fprovider','Fibre Optics Equipment Provider','professional')");
-  db_query("INSERT INTO {guifi_types} (id, type, text, description, relations) VALUES ('5', 'caps_network', 'fbuilder','Fibre Optics Installer','professional')");
-  db_query("INSERT INTO {guifi_types} (id, type, text, description, relations) VALUES ('6', 'caps_network', 'fmgmt','Fibre Optics Mantainer','professional')");
-  db_query("INSERT INTO {guifi_types} (id, type, text, description, relations) VALUES ('7', 'caps_network', 'netbe','Best effort','volunteer')");
-  /*
-   * caps_project
-   */
-  db_query("INSERT INTO {guifi_types} (id, type, text, description, relations) VALUES ('1', 'caps_project', 'pduct','Civil works / Ducting','professional')");
-  db_query("INSERT INTO {guifi_types} (id, type, text, description, relations) VALUES ('2', 'caps_project', 'peng', 'Project Engineering','professional')");
-  db_query("INSERT INTO {guifi_types} (id, type, text, description, relations) VALUES ('3', 'caps_project', 'pmgmt','Project Management','professional')");
-  db_query("INSERT INTO {guifi_types} (id, type, text, description, relations) VALUES ('4', 'caps_project', 'pmbe','Best effort','volunteer')");
-  /*
-   * skills
-   */
-  db_query("DELETE FROM {guifi_types} WHERE type in ('skills')");
-  db_query("INSERT INTO {guifi_types} (id, type, text, description, relations) VALUES ('1', 'skills', 0,'No', 'professional|volunteer')");
-  db_query("INSERT INTO {guifi_types} (id, type, text, description, relations) VALUES ('2', 'skills', 1,'Yes, but no experience yet', 'professional|volunteer')");
-  db_query("INSERT INTO {guifi_types} (id, type, text, description, relations) VALUES ('3', 'skills', 2,'Subcontracting', 'professional|volunteer')");
-  db_query("INSERT INTO {guifi_types} (id, type, text, description, relations) VALUES ('4', 'skills', 3,'Yes, some experience', 'professional|volunteer')");
-  db_query("INSERT INTO {guifi_types} (id, type, text, description, relations) VALUES ('5', 'skills', 4,'Yes, experienced', 'professional|volunteer')");
-}
-
-function budgets_update_540() {
-  $items = array();
-
-  db_query("INSERT INTO {guifi_types} (id, type, text, description, relations) VALUES ('10', 'guifi_certs', 'AVolunteer','Volunteer Agreement', 'volunteer')");
-}
-
-function budgets_update_542() {
-  $items = array();
-
-  db_query("DELETE FROM {guifi_types} WHERE type in ('guifi_certs')");
-  db_query("INSERT INTO {guifi_types} (id, type, text, description, relations) VALUES ('1',  'guifi_certs', 'Commons','Comuns XOLN Compliance', NULL)");
-  db_query("INSERT INTO {guifi_types} (id, type, text, description, relations) VALUES ('2',  'guifi_certs', 'BEthics', 'Bussiness Practices & Ethics Compliance', NULL)");
-  db_query("INSERT INTO {guifi_types} (id, type, text, description, relations) VALUES ('3',  'guifi_certs', 'BPractices','Best Practices Compliance', NULL)");
-  db_query("INSERT INTO {guifi_types} (id, type, text, description, relations) VALUES ('4',  'guifi_certs', 'PoPIX-Part','PoPIX Participant agreement', NULL)");
-  db_query("INSERT INTO {guifi_types} (id, type, text, description, relations) VALUES ('5',  'guifi_certs', 'PoPIX-Mgmt','PoP-IX Management Agreement', NULL)");
-  db_query("INSERT INTO {guifi_types} (id, type, text, description, relations) VALUES ('6',  'guifi_certs', 'AEconomics','Economic Activity Agreement', NULL)");
-  db_query("INSERT INTO {guifi_types} (id, type, text, description, relations) VALUES ('7',  'guifi_certs', 'AVolunteer','Volunteer Agreement', 'volunteer')");
-}
-
-function budgets_update_543() {
-
-  db_query("DELETE FROM {guifi_types} WHERE type in ('budget_status','budget_type')");
-  db_query("INSERT INTO {guifi_types} (id, type, text, description, relations) VALUES ('1',  'budget_status', 'Preparation','Preparation', NULL)");
-  db_query("INSERT INTO {guifi_types} (id, type, text, description, relations) VALUES ('2',  'budget_status', 'Review','Under review', NULL)");
-  db_query("INSERT INTO {guifi_types} (id, type, text, description, relations) VALUES ('3',  'budget_status', 'Approved','Approved', NULL)");
-  db_query("INSERT INTO {guifi_types} (id, type, text, description, relations) VALUES ('4',  'budget_status', 'Executed','Executed', NULL)");
-  db_query("INSERT INTO {guifi_types} (id, type, text, description, relations) VALUES ('5',  'budget_status', 'Open','Crowdfunding open', NULL)");
-  db_query("INSERT INTO {guifi_types} (id, type, text, description, relations) VALUES ('6',  'budget_status', 'Closed','Closed', NULL)");
-  db_query("INSERT INTO {guifi_types} (id, type, text, description, relations) VALUES ('7',  'budget_status', 'Abandoned','Abandoned', NULL)");
-
-  db_query("INSERT INTO {guifi_types} (id, type, text, description, relations) VALUES ('1',  'budget_type', 'none','Not defined', NULL)");
-  db_query("INSERT INTO {guifi_types} (id, type, text, description, relations) VALUES ('2',  'budget_type', 'crowdfunding','Crowdfunding', NULL)");
-  db_query("INSERT INTO {guifi_types} (id, type, text, description, relations) VALUES ('3',  'budget_type', 'w-capex','Wireless-CAPEX', NULL)");
-  db_query("INSERT INTO {guifi_types} (id, type, text, description, relations) VALUES ('4',  'budget_type', 'w-opex','Wireless-OPEX', NULL)");
-  db_query("INSERT INTO {guifi_types} (id, type, text, description, relations) VALUES ('5',  'budget_type', 'f-capex','Fiber-CAPEX', NULL)");
-  db_query("INSERT INTO {guifi_types} (id, type, text, description, relations) VALUES ('6',  'budget_type', 'f-opex','Fiber-OPEX', NULL)");
-
-}
-
-function budgets_update_544() {
-
-  db_query("INSERT INTO {guifi_types} (id, type, text, description, relations) VALUES ('8',  'budget_status', 'Compensated','Compensated', NULL)");
-}
-
-function budgets_update_545() {
-
-  $query = db_query(
-        "SELECT b.id, b.node_id " .
-        "FROM {budgets} b " .
-  		"WHERE " .
-  		"zone_id = 0 ".
-  		"AND node_id > 0");
-  while ($budget = db_fetch_object($query)) {
-  	  $zid = guifi_get_zone_of_node($budget->node_id);
-      db_query("UPDATE {budgets} SET zone_id = %d WHERE id = %d",$zid,$budget->id);
-  };
-}
-
-function budgets_update_547	() {
-
-  $query = db_query(
-        "SELECT b.id, u.uid " .
-        "FROM {budgets} b, {node} n, {users} u " .
-  		"WHERE b.id=n.nid AND u.uid=n.uid " .
-  		"AND u.uid IN (11597,4169,1376) ".
-  		"AND supplier_id = 0");
-  while ($budget = db_fetch_object($query)) {
-    switch ($budget->uid) {
-      case 11597: db_query ("UPDATE {budgets} SET supplier_id=61891 WHERE id = %d",$budget->id);
-        break;
-      case 4169: db_query ("UPDATE {budgets} SET supplier_id=59855 WHERE id = %d",$budget->id);
-        break;
-      case 1376: db_query ("UPDATE {budgets} SET supplier_id=61722 WHERE id = %d",$budget->id);
-        break;
-    }
-  };
-}
-
-function budgets_update_548	() {
-
-  $items = array();
-
-  $items[] = update_sql("INSERT INTO {guifi_types} (id, type, text, description, relations) VALUES ('7', 'budget_type', 'f-conn', 'Fiber Conn financed', NULL)");
-
-  return $items;
-}
-
-function budgets_update_551	() {
-
-  $items = array();
-
-  $items[] = update_sql("INSERT INTO {guifi_types} (id, type, text, description, relations) VALUES ('0', 'budget_type', 'other', 'Other expenses', NULL)");
-
-  $items[] = update_sql("INSERT INTO {guifi_types} (id, type, text, description, relations) VALUES ('1', 'budget_priority', 'unknown' , 'Unknown', 'YES')");
-  $items[] = update_sql("INSERT INTO {guifi_types} (id, type, text, description, relations) VALUES ('2', 'budget_priority', 'urgent', 'Urgent', 'YES')");
-  $items[] = update_sql("INSERT INTO {guifi_types} (id, type, text, description, relations) VALUES ('3', 'budget_priority', 'normal', 'Normal', 'YES')");
-  $items[] = update_sql("INSERT INTO {guifi_types} (id, type, text, description, relations) VALUES ('4', 'budget_priority', 'minor', 'Minor', NULL)");
-  db_add_field($items,'budgets','priority',
-  	array('type' => 'varchar', 'length' => '15', 'not null'  => TRUE, 'default' => 'unknown', 'comment' => 'Priority (Unknown/Urgent/Normal/Minor)'));
-
-  return $items;
-}
-
-function budgets_update_555() {
-  $items = array();
-
-  $items[] = update_sql("DELETE FROM {guifi_types} WHERE type = 'budget_status'");
-
-  $items[] = update_sql("INSERT INTO {guifi_types} (id, type, text, description, relations) VALUES
-    ('1', 'budget_status', 'Preparation', 'Preparation - Private (Not visible)', 'crowdfunding|f-capex|f-opex|f-conn|w-opex|w-capex|none|other'),
-    ('2', 'budget_status', 'Planned', 'Planned - Published', 'crowdfunding|f-capex|f-opex|f-conn|w-opex|w-capex|none|other'),
-    ('3', 'budget_status', 'Approved', 'Approved', 'crowdfunding|none|other'),
-    ('4', 'budget_status', 'Executed', 'Executed - For Compensation', 'f-capex|f-opex|f-conn|w-opex|w-capex|other'),
-    ('5', 'budget_status', 'Review', 'Under review - Issues to be corrected', 'f-capex|f-opex|f-conn|w-opex|w-capex|other'),
-    ('6', 'budget_status', 'Reviewed', 'Reviewed - To be Compensated', 'f-capex|f-opex|f-conn|w-opex|w-capex|other'),
-    ('7', 'budget_status', 'Compensated', 'Compensated', 'f-capex|f-opex|f-conn|w-opex|w-capex|other'),
-    ('8', 'budget_status', 'Open', 'Crowdfunding open', 'crowdfunding|none|other'),
-    ('9', 'budget_status', 'Closed', 'Closed', 'crowdfunding|f-capex|f-opex|f-conn|w-opex|w-capex|none|other'),
-    ('10', 'budget_status', 'Abandoned', 'Abandoned', 'crowdfunding|f-capex|f-opex|f-conn|w-opex|w-capex|none|other')
-  ");
-
-  return $items;
-}
-
-function budgets_update_6555() {
-  $items = array();
-
-  $items[] = update_sql("INSERT INTO {guifi_types} (id, type, text, description, relations) VALUES
-    ('11', 'budget_status', 'Executed_BAD', 'Executed - Bad practice', 'f-capex|f-opex|f-conn|w-opex|w-capex|other'),
-    ('12', 'budget_status', 'Review_BAD', 'Reviewed - Bad practice', 'f-capex|f-opex|f-conn|w-opex|w-capex|other'),
-    ('13', 'budget_status', 'Reviewed_BAD', 'Under review - Bad practice', 'f-capex|f-opex|f-conn|w-opex|w-capex|other'),
-    ('14', 'budget_status', 'Invoiced_BAD', 'Invoiced - Bad practice', 'f-capex|f-opex|f-conn|w-opex|w-capex|other')
-  ");
-
-  return $items;
-}
 
 ?>
